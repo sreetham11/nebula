@@ -1,0 +1,16 @@
+venv/
+**/__pycache__/
+**/*.pyc
+.DS_Store
+.git/
+.gitignore
+
+# Not needed in the image -- the Dockerfile regenerates these at build time
+# (data_gen + pipeline run during `docker build`), and the dashboard is a
+# separate static site, not part of the API image.
+dashboard/
+data/
+models/
+validation_outputs/
+
+*.md

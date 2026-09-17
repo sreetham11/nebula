@@ -1,0 +1,9 @@
+timestamp,subsystem_id,subsystem_type,fault_type,severity
+2026-08-12 01:02:30.671013718,DOOR_04_2,door,motor_wear,4
+2026-08-13 07:45:23.320651343,BOGIE_06_2,bogie,wheel_flat,4
+2026-08-17 10:15:04.282844726,DOOR_03_2,door,seal_degradation,3
+2026-08-17 13:13:09.872920194,BOGIE_01_2,bogie,wheel_flat,4
+2026-08-19 03:09:12.244117788,DOOR_06_1,door,seal_degradation,4
+2026-08-21 19:47:53.479570924,BOGIE_04_1,bogie,bearing_failure,3
+2026-08-28 14:15:38.977031873,DOOR_01_1,door,seal_degradation,5
+2026-09-02 10:40:02.686019398,BOGIE_02_1,bogie,suspension_wear,5

@@ -1,0 +1,20 @@
+venv/
+__pycache__/
+*.pyc
+.DS_Store
+node_modules/
+.env
+.env.*
+
+# regenerable model artifacts (rerun pipeline/run_pipeline.py)
+models/*.pt
+models/*.pkl
+models/*.joblib
+models/*.npy
+models/*_meta.json
+
+# regenerable derived data (rerun pipeline/run_pipeline.py) -- keep the
+# raw generator outputs (door_data.csv, bogie_data.csv, fault_log.csv)
+# checked in since they're the Phase 1 deliverable and small
+data/*_scored.csv
+data/fleet_status.csv

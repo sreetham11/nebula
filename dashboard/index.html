@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NEBULA X — Predictive Fault Detection</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0b0f14;
+    --panel: #121821;
+    --panel-alt: #161e29;
+    --border: #232d3a;
+    --text: #e6edf3;
+    --text-dim: #8b98a5;
+    --accent: #3ea6ff;
+    --normal: #2ecc71;
+    --caution: #f1c40f;
+    --warning: #e67e22;
+    --critical: #e74c3c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 14px;
+  }
+  header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  header h1 { font-size: 18px; margin: 0; font-weight: 600; }
+  header h1 span { color: var(--accent); }
+  .synthetic-badge {
+    background: #3d2b00;
+    color: #f1c40f;
+    border: 1px solid #6b4e00;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .api-status {
+    font-size: 11px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-dim); }
+  .dot.ok { background: var(--normal); }
+  .dot.bad { background: var(--critical); }
+
+  main {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 16px;
+    padding: 16px;
+    max-width: 1500px;
+    margin: 0 auto;
+  }
+  @media (max-width: 900px) {
+    main { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .panel h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-dim);
+    margin: 0 0 12px 0;
+  }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .stat-tile {
+    background: var(--panel-alt);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+  .stat-tile .num { font-size: 22px; font-weight: 700; }
+  .stat-tile .label { font-size: 10.5px; color: var(--text-dim); text-transform: uppercase; margin-top: 2px; }
+  .stat-tile.normal .num { color: var(--normal); }
+  .stat-tile.caution .num { color: var(--caution); }
+  .stat-tile.warning .num { color: var(--warning); }
+  .stat-tile.critical .num { color: var(--critical); }
+
+  .charts-row {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  .chart-box { background: var(--panel-alt); border: 1px solid var(--border); border-radius: 8px; padding: 10px; height: 260px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--border); }
+  th { color: var(--text-dim); font-weight: 500; text-transform: uppercase; font-size: 10.5px; }
+  tr.unit-row { cursor: pointer; }
+  tr.unit-row:hover { background: var(--panel-alt); }
+  tr.unit-row.selected { background: #1a2431; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .badge.Normal { background: #123420; color: var(--normal); }
+  .badge.Caution { background: #3d3400; color: var(--caution); }
+  .badge.Warning { background: #4a2a00; color: var(--warning); }
+  .badge.Critical { background: #4a1414; color: var(--critical); }
+
+  #liveFeed { max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+  .feed-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--panel-alt);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--text-dim);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 11.5px;
+    animation: fadeIn 0.4s ease;
+  }
+  .feed-item.Normal { border-left-color: var(--normal); }
+  .feed-item.Caution { border-left-color: var(--caution); }
+  .feed-item.Warning { border-left-color: var(--warning); }
+  .feed-item.Critical { border-left-color: var(--critical); }
+  .feed-item .fu { font-weight: 600; }
+  .feed-item .ft { color: var(--text-dim); }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+  #unitDetail .placeholder { color: var(--text-dim); font-size: 12.5px; padding: 20px 0; text-align: center; }
+  .trace-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .trace-step:last-child { border-bottom: none; }
+  .trace-dot { width: 9px; height: 9px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; background: var(--text-dim); }
+  .trace-dot.on { background: var(--warning); }
+  .trace-step .st-title { font-weight: 600; font-size: 12.5px; }
+  .trace-step .st-detail { font-size: 11.5px; color: var(--text-dim); margin-top: 2px; }
+
+  .action-box {
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--panel-alt);
+    border: 1px solid var(--border);
+    font-size: 12.5px;
+  }
+  .action-box .lbl { color: var(--text-dim); font-size: 10.5px; text-transform: uppercase; margin-bottom: 4px; }
+
+  #unitChartBox { height: 200px; margin-top: 12px; }
+
+  footer { text-align: center; color: var(--text-dim); font-size: 11px; padding: 20px; }
+
+  /* Business impact calculator */
+  .impact-panel { grid-column: 1 / -1; border-color: #2a4a3a; background: linear-gradient(180deg, #10201a 0%, var(--panel) 60%); }
+  .impact-panel h2 { color: #8fe3b8; }
+  .impact-inputs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 700px) { .impact-inputs { grid-template-columns: 1fr; } }
+  .impact-input-group { display: flex; flex-direction: column; gap: 5px; }
+  .impact-input-group label { font-size: 11px; color: var(--text-dim); line-height: 1.3; }
+  .impact-input-wrap { position: relative; }
+  .impact-input-wrap .prefix {
+    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+    color: var(--text-dim); font-size: 13px; pointer-events: none;
+  }
+  .impact-input-wrap.mult .prefix { left: auto; right: 10px; }
+  .impact-inputs input {
+    width: 100%;
+    background: var(--panel-alt);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px 8px 22px;
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+  }
+  .impact-inputs input:focus { outline: none; border-color: #2ecc71; }
+  .impact-input-wrap.mult input { padding: 8px 26px 8px 10px; }
+  .impact-summary {
+    font-size: 13.5px;
+    line-height: 1.6;
+    padding: 12px 14px;
+    background: var(--panel-alt);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+  .impact-summary b { color: #8fe3b8; }
+  .impact-figures {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  @media (max-width: 700px) { .impact-figures { grid-template-columns: 1fr; } }
+  .impact-figure {
+    background: var(--panel-alt);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .impact-figure .amount { font-size: 26px; font-weight: 800; color: #2ecc71; }
+  .impact-figure .desc { font-size: 11px; color: var(--text-dim); margin-top: 4px; line-height: 1.4; }
+  .impact-caption { font-size: 10.5px; color: var(--text-dim); margin-top: 12px; line-height: 1.5; }
+
+  /* Detection sensitivity slider */
+  .sensitivity-panel { margin-bottom: 16px; border-color: #3a3320; background: linear-gradient(180deg, #201c10 0%, var(--panel) 60%); }
+  .sensitivity-panel h2 { color: #e8c766; }
+  .sensitivity-slider-row { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .sensitivity-slider-row input[type="range"] {
+    flex: 1;
+    accent-color: #e8c766;
+    height: 4px;
+    cursor: pointer;
+  }
+  .sensitivity-pct-badge {
+    background: var(--panel-alt);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #e8c766;
+    white-space: nowrap;
+    min-width: 88px;
+    text-align: center;
+  }
+  .sensitivity-endpoints { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--text-dim); margin-bottom: 14px; }
+  .sensitivity-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .sensitivity-stat {
+    background: var(--panel-alt);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 10px;
+    text-align: center;
+  }
+  .sensitivity-stat .num { font-size: 19px; font-weight: 700; color: #e8c766; }
+  .sensitivity-stat .label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; margin-top: 2px; }
+  .sensitivity-caption { font-size: 10.5px; color: var(--text-dim); margin-top: 10px; line-height: 1.5; }
+
+  /* Train diagram (digital twin view) */
+  .diagram-panel { grid-column: 1 / -1; }
+  .diagram-panel h2 { display: flex; align-items: center; gap: 10px; }
+  .diagram-legend { display: flex; gap: 14px; font-size: 10.5px; color: var(--text-dim); font-weight: 400; text-transform: none; }
+  .diagram-legend span { display: inline-flex; align-items: center; gap: 4px; }
+  .diagram-legend .swatch { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+  #trainDiagramSvgWrap { width: 100%; overflow-x: auto; }
+  #trainDiagramSvgWrap svg { display: block; min-width: 640px; }
+  .diagram-unit { cursor: pointer; }
+  .diagram-unit .diagram-shape { transition: filter 0.15s ease; }
+  .diagram-unit:hover .diagram-shape { filter: brightness(1.35); stroke: #ffffff !important; stroke-width: 2px; }
+  .diagram-unit.selected .diagram-shape { stroke: #3ea6ff !important; stroke-width: 2.5px; }
+  .diagram-tooltip {
+    position: fixed;
+    z-index: 50;
+    background: #0b0f14;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 11.5px;
+    line-height: 1.5;
+    pointer-events: none;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+  }
+  .diagram-caption { font-size: 10.5px; color: var(--text-dim); margin-top: 10px; line-height: 1.5; }
+
+  /* Maintenance actions (simulated work orders) */
+  .wo-table-wrap { max-height: 380px; overflow-y: auto; }
+  .wo-table-wrap table td { vertical-align: top; }
+  .wo-table-wrap td.wo-desc { max-width: 240px; line-height: 1.4; color: var(--text-dim); }
+  .wo-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .wo-badge.Urgent { background: #4a1414; color: var(--critical); }
+  .wo-badge.Medium { background: #4a2a00; color: var(--warning); }
+  .wo-badge.PendingAssignment { background: #232d3a; color: var(--text-dim); }
+  .wo-badge.Acknowledged { background: #0d2a3d; color: var(--accent); }
+  .wo-badge.Scheduled { background: #123420; color: var(--normal); }
+  .wo-btn {
+    background: var(--panel-alt);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 4px 9px;
+    font-size: 10.5px;
+    cursor: pointer;
+    margin-right: 6px;
+    margin-bottom: 4px;
+    white-space: nowrap;
+  }
+  .wo-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .wo-empty { color: var(--text-dim); text-align: center; padding: 18px 0; font-size: 12.5px; }
+
+  /* About & architecture */
+  .full-width-panel { grid-column: 1 / -1; }
+  .about-panel p { font-size: 12.5px; line-height: 1.65; color: var(--text-dim); margin: 0 0 10px 0; }
+  .about-panel p:last-child { margin-bottom: 0; }
+  .about-panel strong { color: var(--text); }
+  .about-panel code {
+    background: var(--panel-alt);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 11.5px;
+    color: #8fe3b8;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>NEBULA <span>X</span> — Predictive Fault Detection</h1>
+  <div style="display:flex; align-items:center; gap:12px;">
+    <span class="synthetic-badge">⚠ SYNTHETIC DATA — real LTA dataset pending</span>
+    <span class="api-status"><span class="dot" id="apiDot"></span><span id="apiStatusText">connecting…</span></span>
+  </div>
+</header>
+
+<main>
+  <div class="panel impact-panel" id="businessImpact">
+    <h2>💰 Business Impact Calculator</h2>
+    <div class="impact-inputs">
+      <div class="impact-input-group">
+        <label for="costFailure">Cost per unplanned failure / service disruption</label>
+        <div class="impact-input-wrap"><span class="prefix">$</span>
+          <input type="number" id="costFailure" value="50000" min="0" step="1000">
+        </div>
+      </div>
+      <div class="impact-input-group">
+        <label for="costMaintenance">Cost per scheduled maintenance intervention</label>
+        <div class="impact-input-wrap"><span class="prefix">$</span>
+          <input type="number" id="costMaintenance" value="5000" min="0" step="500">
+        </div>
+      </div>
+      <div class="impact-input-group">
+        <label for="fleetMultiplier">Fleet multiplier (scale to a larger rolling stock fleet)</label>
+        <div class="impact-input-wrap mult"><span class="prefix">×</span>
+          <input type="number" id="fleetMultiplier" value="10" min="1" step="1">
+        </div>
+      </div>
+    </div>
+
+    <div class="impact-summary" id="impactSummary">Loading validation results…</div>
+
+    <div class="impact-figures">
+      <div class="impact-figure">
+        <div class="amount" id="impactObservedSavings">–</div>
+        <div class="desc">Savings over the synthetic 6-week validation window, this fleet size (<span id="impactUnitCount">–</span> units)</div>
+      </div>
+      <div class="impact-figure">
+        <div class="amount" id="impactAnnualSavings">–</div>
+        <div class="desc">Estimated annual savings, extrapolated and scaled by the fleet multiplier (<span id="impactAnnualUnitCount">–</span> units)</div>
+      </div>
+    </div>
+
+    <div class="impact-caption">
+      Illustrative default costs based on typical rail-industry disruption/maintenance figures — edit the fields above to reflect real LTA/SMRT numbers.
+      Savings estimates are derived from <span id="impactSourceNote">this pipeline's validation results</span> (predictive detections that occurred before a logged fault, per <code>validation_outputs/lead_time_summary.csv</code>) and a simple annualization of the 6-week synthetic monitoring window — treat as directional, not a budget figure.
+    </div>
+  </div>
+
+  <div class="panel diagram-panel" id="trainDiagramPanel">
+    <h2>
+      🚆 Rolling Stock Digital Twin
+      <span class="diagram-legend">
+        <span><span class="swatch" style="background:#2ecc71"></span>Normal</span>
+        <span><span class="swatch" style="background:#f1c40f"></span>Caution</span>
+        <span><span class="swatch" style="background:#e67e22"></span>Warning</span>
+        <span><span class="swatch" style="background:#e74c3c"></span>Critical</span>
+      </span>
+    </h2>
+    <div id="trainDiagramSvgWrap"><div class="placeholder" style="color:var(--text-dim); font-size:12.5px; padding:20px 0;">Loading fleet layout…</div></div>
+    <div class="diagram-caption">Schematic side view, not to scale — each train consist's door and bogie subsystems are colored live by current risk level. Hover a shape for its unit ID and score; click to open its decision trace below.</div>
+  </div>
+
+  <div>
+    <div class="panel sensitivity-panel" id="sensitivityPanel">
+      <h2>🎚 Detection Sensitivity</h2>
+      <div class="sensitivity-slider-row">
+        <input type="range" id="sensitivitySlider" min="90" max="99.5" step="0.5" value="97.5">
+        <span class="sensitivity-pct-badge" id="sensitivityPctBadge">97.5th pct</span>
+      </div>
+      <div class="sensitivity-endpoints">
+        <span>◀ Aggressive (90th pct) — fires earlier, more false alarms</span>
+        <span>Conservative (99.5th pct) — fewer false alarms, may catch later ▶</span>
+      </div>
+      <div class="sensitivity-stats">
+        <div class="sensitivity-stat"><div class="num" id="sensAlerts">–</div><div class="label">Total Alerts</div></div>
+        <div class="sensitivity-stat"><div class="num" id="sensCaught">–</div><div class="label">Faults Caught</div></div>
+        <div class="sensitivity-stat"><div class="num" id="sensLeadTime">–</div><div class="label">Avg Lead Time</div></div>
+      </div>
+      <div class="sensitivity-caption" id="sensitivityCaption">Loading…</div>
+    </div>
+
+    <div class="panel">
+      <h2>Fleet Overview</h2>
+      <div class="stat-row" id="statRow">
+        <div class="stat-tile"><div class="num" id="statTotal">–</div><div class="label">Total Units</div></div>
+        <div class="stat-tile normal"><div class="num" id="statNormal">–</div><div class="label">Normal</div></div>
+        <div class="stat-tile caution"><div class="num" id="statCaution">–</div><div class="label">Caution</div></div>
+        <div class="stat-tile warning"><div class="num" id="statWarning">–</div><div class="label">Warning</div></div>
+        <div class="stat-tile critical"><div class="num" id="statCritical">–</div><div class="label">Critical</div></div>
+      </div>
+      <div class="charts-row">
+        <div class="chart-box"><canvas id="riskBarChart"></canvas></div>
+        <div class="chart-box"><canvas id="statusDonut"></canvas></div>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Unit</th><th>Subsystem</th><th>Train</th><th>Risk</th><th>Recon Err</th></tr>
+        </thead>
+        <tbody id="fleetTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="panel" style="margin-top:16px;" id="maintenanceActionsPanel">
+      <h2>🛠 Maintenance Actions</h2>
+      <div class="wo-table-wrap">
+        <table>
+          <thead>
+            <tr><th>Work Order</th><th>Unit</th><th>Priority</th><th>Description</th><th>Created</th><th>Status</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="workOrderTableBody">
+            <tr><td colspan="7" class="wo-empty">No active alerts — work orders appear here automatically when a unit crosses into Warning or Critical.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="diagram-caption">Simulated maintenance workflow — illustrates how alerts would integrate with an existing CMMS (Computerized Maintenance Management System) or work order platform. Generated client-side for this demo session only; "Acknowledge"/"Schedule" just update local state, no real ticketing backend.</div>
+    </div>
+
+    <div class="panel" style="margin-top:16px;">
+      <h2>Simulated Live Feed <span style="color:var(--text-dim); font-weight:400; text-transform:none;">(polling synthetic onboard telemetry, sped up for demo)</span></h2>
+      <div id="liveFeed"></div>
+    </div>
+  </div>
+
+  <div class="panel" id="unitDetail">
+    <h2>Unit Detail</h2>
+    <div id="unitDetailBody"><div class="placeholder">Click a unit in the fleet table to inspect its decision trace.</div></div>
+  </div>
+
+  <div class="panel full-width-panel about-panel" id="aboutPanel">
+    <h2>ℹ️ About &amp; Architecture</h2>
+    <p>
+      NEBULA X is a predictive maintenance prototype for rolling stock fault detection, built for the
+      NEBULA X hackathon (LTA Singapore). It fuses a rolling-statistics baseline with a healthy-trained
+      autoencoder over door and bogie subsystem signals to flag developing wear before it becomes an
+      unplanned service disruption — see the <strong>Detection Sensitivity</strong> panel above for how
+      that threshold trades off alert volume against lead time.
+    </p>
+    <p>
+      <strong>Data path today:</strong> synthetic CSVs generated to mirror the expected onboard sensor
+      schema, standing in for the real dataset that drops during the event.
+      <strong>Data path in production:</strong> this pipeline is designed to ingest onboard telemetry
+      directly from each train's TCMS (Train Control and Management System) and/or depot-side SCADA
+      feeds in place of the synthetic CSVs — <code>pipeline/schema_config.py</code> is the single file
+      that maps column names to a real data source, so swapping one in shouldn't require touching the
+      model or dashboard code.
+    </p>
+  </div>
+</main>
+
+<footer>NEBULA X — hackathon prototype for LTA Singapore. All figures on this page are derived from a synthetic placeholder dataset. Not real fleet data.</footer>
+
+<div class="diagram-tooltip" id="diagramTooltip" hidden></div>
+
+<script>
+const API_BASE = "http://localhost:8000";
+const RISK_COLORS = { Normal: "#2ecc71", Caution: "#f1c40f", Warning: "#e67e22", Critical: "#e74c3c" };
+const RISK_ORDER = ["Normal", "Caution", "Warning", "Critical"];
+
+let riskBarChart, statusDonut, unitLineChart;
+let selectedUnit = null;
+let fleetCache = [];
+let validationCache = null;
+const SYNTHETIC_WINDOW_DAYS = 42; // 6-week synthetic generation window (data_gen/config.py: DURATION_WEEKS=6)
+const DAYS_PER_YEAR = 365;
+
+// Maintenance Actions: simulated work orders, in-memory for this session
+// only (no backend, no browser storage -- resets on reload, same as every
+// other piece of dashboard state).
+let workOrders = [];
+let workOrderByUnit = {}; // unit_id -> work order object, for dedup (one open work order per unit)
+let workOrderSeq = 1001;
+
+async function apiGet(path) {
+  const res = await fetch(API_BASE + path);
+  if (!res.ok) throw new Error(`${path} -> ${res.status}`);
+  return res.json();
+}
+
+function setApiStatus(ok) {
+  document.getElementById("apiDot").className = "dot " + (ok ? "ok" : "bad");
+  document.getElementById("apiStatusText").textContent = ok ? "API connected" : "API unreachable";
+}
+
+async function refreshFleet() {
+  try {
+    const data = await apiGet("/fleet-status");
+    setApiStatus(true);
+    fleetCache = data.units;
+    renderStats(data.status_counts, data.total_units);
+    renderFleetTable(data.units);
+    renderRiskBarChart(data.units);
+    renderStatusDonut(data.status_counts);
+    renderTrainDiagram(data.units);
+    generateWorkOrdersFromFleet(data.units);
+    recalcImpact();
+  } catch (e) {
+    setApiStatus(false);
+    console.error(e);
+  }
+}
+
+async function loadValidationSummary() {
+  try {
+    validationCache = await apiGet("/validation-summary");
+    recalcImpact();
+  } catch (e) {
+    document.getElementById("impactSummary").textContent =
+      "Validation summary unavailable — run pipeline/run_pipeline.py to generate validation_outputs/lead_time_summary.csv.";
+    console.error(e);
+  }
+}
+
+function debounce(fn, ms) {
+  let timer = null;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), ms);
+  };
+}
+
+function renderSensitivity(data) {
+  document.getElementById("sensitivityPctBadge").textContent = `${data.percentile}th pct`;
+  document.getElementById("sensAlerts").textContent = data.total_alerts.toLocaleString("en-US");
+  document.getElementById("sensCaught").textContent = `${data.faults_caught}/${data.total_faults}`;
+  document.getElementById("sensLeadTime").textContent =
+    data.avg_lead_time_days != null ? `${data.avg_lead_time_days.toFixed(1)}d` : "–";
+
+  const doorT = data.thresholds_used.door?.toFixed(3);
+  const bogieT = data.thresholds_used.bogie?.toFixed(3);
+  document.getElementById("sensitivityCaption").innerHTML =
+    `Recomputed live from precomputed reconstruction-error arrays (door threshold ${doorT}, bogie threshold ${bogieT} ` +
+    `at this percentile) — no retraining. Lower percentile = more sensitive = more alerts fire, generally earlier.`;
+}
+
+async function loadSensitivityScan(percentile) {
+  try {
+    const path = percentile != null ? `/sensitivity-scan?percentile=${percentile}` : "/sensitivity-scan";
+    const data = await apiGet(path);
+    document.getElementById("sensitivitySlider").value = data.percentile;
+    renderSensitivity(data);
+  } catch (e) {
+    document.getElementById("sensitivityCaption").textContent =
+      "Sensitivity scan unavailable — run pipeline/run_pipeline.py to generate the val_recon_errors artifacts.";
+    console.error(e);
+  }
+}
+
+const onSensitivitySlide = debounce(() => {
+  loadSensitivityScan(document.getElementById("sensitivitySlider").value);
+}, 120);
+
+function fmtMoney(n) {
+  if (!isFinite(n)) return "–";
+  return "$" + Math.round(n).toLocaleString("en-US");
+}
+
+function recalcImpact() {
+  if (!validationCache) return;
+
+  const costFailure = parseFloat(document.getElementById("costFailure").value) || 0;
+  const costMaintenance = parseFloat(document.getElementById("costMaintenance").value) || 0;
+  const fleetMultiplier = parseFloat(document.getElementById("fleetMultiplier").value) || 1;
+
+  const n = validationCache.detected_count;
+  const avgLeadDays = validationCache.avg_lead_time_days;
+  const savingsPerFault = Math.max(costFailure - costMaintenance, 0);
+  const currentFleetUnits = fleetCache.length || null;
+
+  // Observed: savings actually realized by the N detections over the
+  // synthetic dataset's own 6-week window, at the current synthetic fleet size.
+  const observedSavings = n * savingsPerFault;
+
+  // Annualized + scaled: rate of faults-per-unit-time seen in the synthetic
+  // window, projected across a full year and a larger fleet via the
+  // fleet multiplier. This is a simple linear extrapolation for a
+  // directional estimate, not a statistical forecast.
+  const faultsPerYearCurrentFleet = n * (DAYS_PER_YEAR / SYNTHETIC_WINDOW_DAYS);
+  const faultsPerYearScaled = faultsPerYearCurrentFleet * fleetMultiplier;
+  const annualSavings = faultsPerYearScaled * savingsPerFault;
+
+  document.getElementById("impactSummary").innerHTML =
+    `Based on <b>${n} detected fault${n === 1 ? "" : "s"}</b> with an average lead time of ` +
+    `<b>${avgLeadDays != null ? avgLeadDays.toFixed(1) + " days"  : "n/a"}</b>, converting these from emergency ` +
+    `failures to scheduled maintenance saves an estimated <b>${fmtMoney(observedSavings)}</b>.`;
+
+  document.getElementById("impactObservedSavings").textContent = fmtMoney(observedSavings);
+  document.getElementById("impactAnnualSavings").textContent = fmtMoney(annualSavings);
+  document.getElementById("impactUnitCount").textContent = currentFleetUnits != null ? currentFleetUnits : "24";
+  document.getElementById("impactAnnualUnitCount").textContent =
+    currentFleetUnits != null ? Math.round(currentFleetUnits * fleetMultiplier) : "–";
+}
+
+function renderStats(counts, total) {
+  document.getElementById("statTotal").textContent = total;
+  document.getElementById("statNormal").textContent = counts.Normal || 0;
+  document.getElementById("statCaution").textContent = counts.Caution || 0;
+  document.getElementById("statWarning").textContent = counts.Warning || 0;
+  document.getElementById("statCritical").textContent = counts.Critical || 0;
+}
+
+function renderFleetTable(units) {
+  const sorted = [...units].sort((a, b) => RISK_ORDER.indexOf(b.risk_level) - RISK_ORDER.indexOf(a.risk_level));
+  const body = document.getElementById("fleetTableBody");
+  body.innerHTML = "";
+  for (const u of sorted) {
+    const tr = document.createElement("tr");
+    tr.className = "unit-row" + (selectedUnit === u.unit_id ? " selected" : "");
+    tr.onclick = () => selectUnit(u.unit_id);
+    tr.innerHTML = `
+      <td>${u.unit_id}</td>
+      <td>${u.subsystem_type}</td>
+      <td>${u.train_id}</td>
+      <td><span class="badge ${u.risk_level}">${u.risk_level}</span></td>
+      <td>${u.ae_recon_error != null ? u.ae_recon_error.toFixed(2) : "–"}</td>
+    `;
+    body.appendChild(tr);
+  }
+}
+
+function renderRiskBarChart(units) {
+  const sorted = [...units].sort((a, b) => (b.ae_recon_error || 0) - (a.ae_recon_error || 0)).slice(0, 12);
+  const ctx = document.getElementById("riskBarChart");
+  const labels = sorted.map(u => u.unit_id);
+  const values = sorted.map(u => u.ae_recon_error || 0);
+  const colors = sorted.map(u => RISK_COLORS[u.risk_level] || "#666");
+  if (riskBarChart) riskBarChart.destroy();
+  riskBarChart = new Chart(ctx, {
+    type: "bar",
+    data: { labels, datasets: [{ label: "Reconstruction error", data: values, backgroundColor: colors }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, title: { display: true, text: "Anomaly score by unit (top 12)", color: "#8b98a5", font: { size: 11 } } },
+      scales: {
+        x: { ticks: { color: "#8b98a5", font: { size: 9 } }, grid: { color: "#232d3a" } },
+        y: { ticks: { color: "#8b98a5" }, grid: { color: "#232d3a" } },
+      },
+    },
+  });
+}
+
+function renderStatusDonut(counts) {
+  const ctx = document.getElementById("statusDonut");
+  const labels = RISK_ORDER;
+  const values = labels.map(l => counts[l] || 0);
+  const colors = labels.map(l => RISK_COLORS[l]);
+  if (statusDonut) statusDonut.destroy();
+  statusDonut = new Chart(ctx, {
+    type: "doughnut",
+    data: { labels, datasets: [{ data: values, backgroundColor: colors, borderColor: "#121821", borderWidth: 2 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: "bottom", labels: { color: "#e6edf3", font: { size: 10 }, boxWidth: 10 } },
+        title: { display: true, text: "Status distribution", color: "#8b98a5", font: { size: 11 } },
+      },
+    },
+  });
+}
+
+// --- Train diagram (digital twin) --------------------------------------
+let trainDiagramBuilt = false;
+
+function groupUnitsByTrain(units) {
+  const byTrain = {};
+  for (const u of units) {
+    if (!byTrain[u.train_id]) byTrain[u.train_id] = { doors: [], bogies: [] };
+    byTrain[u.train_id][u.subsystem_type === "door" ? "doors" : "bogies"].push(u);
+  }
+  for (const t in byTrain) {
+    byTrain[t].doors.sort((a, b) => a.unit_id.localeCompare(b.unit_id));
+    byTrain[t].bogies.sort((a, b) => a.unit_id.localeCompare(b.unit_id));
+  }
+  return byTrain;
+}
+
+function buildTrainDiagram(units) {
+  const byTrain = groupUnitsByTrain(units);
+  const trainIds = Object.keys(byTrain).sort();
+  const rowHeight = 100;
+  const topPad = 16;
+  const width = 1000;
+  const height = topPad + trainIds.length * rowHeight + 6;
+  const carW = 300, carH = 46, gap = 18, startX = 130;
+
+  let svg = `<svg viewBox="0 0 ${width} ${height}" width="100%" height="${height}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">`;
+
+  trainIds.forEach((trainId, rowIdx) => {
+    const { doors, bogies } = byTrain[trainId];
+    const nCars = Math.max(doors.length, bogies.length, 1);
+    const rowTop = topPad + rowIdx * rowHeight;
+    const carY = rowTop + 10;
+
+    svg += `<text x="12" y="${carY + carH / 2 + 4}" fill="#8b98a5" font-size="12" font-family="monospace">${trainId}</text>`;
+
+    for (let c = 0; c < nCars; c++) {
+      const carX = startX + c * (carW + gap);
+
+      if (c < nCars - 1) {
+        svg += `<rect x="${carX + carW}" y="${carY + carH / 2 - 4}" width="${gap}" height="8" fill="#232d3a"/>`;
+      }
+      // car body + decorative windows
+      svg += `<rect x="${carX}" y="${carY}" width="${carW}" height="${carH}" rx="8" fill="#161e29" stroke="#2a3644" stroke-width="1.5"/>`;
+      svg += `<rect x="${carX + 16}" y="${carY + 8}" width="26" height="16" rx="3" fill="#0b0f14" stroke="#2a3644"/>`;
+      svg += `<rect x="${carX + carW - 42}" y="${carY + 8}" width="26" height="16" rx="3" fill="#0b0f14" stroke="#2a3644"/>`;
+
+      const door = doors[c];
+      if (door) {
+        const doorW = 20, doorH = carH - 8;
+        const doorX = carX + carW * 0.6, doorY = carY + 4;
+        svg += `<g class="diagram-unit" data-unit-id="${door.unit_id}" id="diagram-unit-${door.unit_id}">`;
+        svg += `<rect class="diagram-shape" x="${doorX}" y="${doorY}" width="${doorW}" height="${doorH}" rx="3" fill="${RISK_COLORS[door.risk_level] || "#555"}" stroke="#0b0f14" stroke-width="1.5"/>`;
+        svg += `<line x1="${doorX + doorW / 2}" y1="${doorY + 2}" x2="${doorX + doorW / 2}" y2="${doorY + doorH - 2}" stroke="#0b0f14" stroke-width="1"/>`;
+        svg += `</g>`;
+      }
+
+      const bogie = bogies[c];
+      if (bogie) {
+        const frameW = 64, frameH = 12, wheelR = 7;
+        const bogieCX = carX + carW / 2, bogieY = carY + carH + 6;
+        const wheelCY = bogieY + frameH + wheelR;
+        svg += `<g class="diagram-unit" data-unit-id="${bogie.unit_id}" id="diagram-unit-${bogie.unit_id}">`;
+        svg += `<rect class="diagram-shape" x="${bogieCX - frameW / 2}" y="${bogieY}" width="${frameW}" height="${frameH}" rx="3" fill="${RISK_COLORS[bogie.risk_level] || "#555"}" stroke="#0b0f14" stroke-width="1.5"/>`;
+        svg += `<circle cx="${bogieCX - frameW / 2 + 12}" cy="${wheelCY}" r="${wheelR}" fill="#1a1f26" stroke="#3a4451"/>`;
+        svg += `<circle cx="${bogieCX + frameW / 2 - 12}" cy="${wheelCY}" r="${wheelR}" fill="#1a1f26" stroke="#3a4451"/>`;
+        svg += `</g>`;
+        svg += `<line x1="${carX - 6}" y1="${wheelCY + wheelR + 5}" x2="${carX + carW + 6}" y2="${wheelCY + wheelR + 5}" stroke="#232d3a" stroke-width="2"/>`;
+      }
+    }
+  });
+
+  svg += `</svg>`;
+  document.getElementById("trainDiagramSvgWrap").innerHTML = svg;
+
+  const wrap = document.getElementById("trainDiagramSvgWrap");
+  wrap.addEventListener("mousemove", onDiagramMouseMove);
+  wrap.addEventListener("mouseleave", () => { document.getElementById("diagramTooltip").hidden = true; });
+  wrap.addEventListener("click", onDiagramClick);
+
+  trainDiagramBuilt = true;
+}
+
+function updateTrainDiagramColors(units) {
+  for (const u of units) {
+    const g = document.getElementById(`diagram-unit-${u.unit_id}`);
+    if (!g) continue;
+    const shape = g.querySelector(".diagram-shape");
+    if (shape) shape.setAttribute("fill", RISK_COLORS[u.risk_level] || "#555");
+  }
+  updateDiagramSelection();
+}
+
+function renderTrainDiagram(units) {
+  if (!trainDiagramBuilt) {
+    buildTrainDiagram(units);
+  } else {
+    updateTrainDiagramColors(units);
+  }
+}
+
+function updateDiagramSelection() {
+  document.querySelectorAll("#trainDiagramSvgWrap .diagram-unit.selected").forEach(el => el.classList.remove("selected"));
+  if (selectedUnit) {
+    const g = document.getElementById(`diagram-unit-${selectedUnit}`);
+    if (g) g.classList.add("selected");
+  }
+}
+
+function onDiagramMouseMove(e) {
+  const g = e.target.closest(".diagram-unit");
+  const tooltip = document.getElementById("diagramTooltip");
+  if (!g) { tooltip.hidden = true; return; }
+  const uid = g.dataset.unitId;
+  const info = fleetCache.find(u => u.unit_id === uid);
+  if (!info) { tooltip.hidden = true; return; }
+  tooltip.hidden = false;
+  const err = info.ae_recon_error != null ? info.ae_recon_error.toFixed(2) : "–";
+  tooltip.innerHTML = `<b>${uid}</b><br><span class="badge ${info.risk_level}">${info.risk_level}</span> &nbsp;recon error ${err}`;
+  tooltip.style.left = (e.clientX + 14) + "px";
+  tooltip.style.top = (e.clientY + 14) + "px";
+}
+
+function onDiagramClick(e) {
+  const g = e.target.closest(".diagram-unit");
+  if (!g) return;
+  selectUnit(g.dataset.unitId);
+  document.getElementById("unitDetail").scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+// --- Maintenance Actions (simulated work orders) -------------------------
+
+const WO_ALERT_LEVELS = ["Warning", "Critical"];
+
+function woPriorityFor(riskLevel) {
+  return riskLevel === "Critical" ? "Urgent" : "Medium";
+}
+
+function woDescriptionFor(unit) {
+  const subsystemHint = unit.subsystem_type === "door"
+    ? "Door cycle-time / motor-current deviation — possible motor wear, seal degradation, or track misalignment."
+    : "Bogie temperature / vibration deviation — possible bearing wear, suspension wear, or wheel flat.";
+  const err = unit.ae_recon_error != null ? unit.ae_recon_error.toFixed(2) : "n/a";
+  return `${subsystemHint} Reconstruction error ${err} (${unit.risk_level}).`;
+}
+
+// Only opens ONE work order per unit while it stays flagged -- a fresh
+// /fleet-status poll re-observing the same Warning/Critical unit should not
+// spawn duplicates. If a unit's work order is later closed out (removed
+// from workOrderByUnit) a new alert on that unit would open another.
+function generateWorkOrdersFromFleet(units) {
+  let changed = false;
+  for (const unit of units) {
+    if (!WO_ALERT_LEVELS.includes(unit.risk_level)) continue;
+    if (workOrderByUnit[unit.unit_id]) continue;
+
+    const wo = {
+      id: `WO-${workOrderSeq++}`,
+      unitId: unit.unit_id,
+      subsystemType: unit.subsystem_type,
+      priority: woPriorityFor(unit.risk_level),
+      description: woDescriptionFor(unit),
+      createdAt: new Date(),
+      status: "Pending Assignment",
+    };
+    workOrders.push(wo);
+    workOrderByUnit[unit.unit_id] = wo;
+    changed = true;
+  }
+  if (changed) renderWorkOrders();
+}
+
+function updateWorkOrderStatus(woId, newStatus) {
+  const wo = workOrders.find(w => w.id === woId);
+  if (!wo) return;
+  wo.status = newStatus;
+  renderWorkOrders();
+}
+
+function woActionButtons(wo) {
+  if (wo.status === "Scheduled") return "";
+  let html = "";
+  if (wo.status !== "Acknowledged") {
+    html += `<button class="wo-btn" onclick="updateWorkOrderStatus('${wo.id}','Acknowledged')">Acknowledge</button>`;
+  }
+  html += `<button class="wo-btn" onclick="updateWorkOrderStatus('${wo.id}','Scheduled')">Schedule</button>`;
+  return html;
+}
+
+function renderWorkOrders() {
+  const tbody = document.getElementById("workOrderTableBody");
+  if (workOrders.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="wo-empty">No active alerts — work orders appear here automatically when a unit crosses into Warning or Critical.</td></tr>`;
+    return;
+  }
+  const sorted = [...workOrders].sort((a, b) => b.createdAt - a.createdAt);
+  tbody.innerHTML = sorted.map(wo => `
+    <tr>
+      <td>${wo.id}</td>
+      <td>${wo.unitId}</td>
+      <td><span class="wo-badge ${wo.priority}">${wo.priority}</span></td>
+      <td class="wo-desc">${wo.description}</td>
+      <td>${wo.createdAt.toLocaleString()}</td>
+      <td><span class="wo-badge ${wo.status.replace(/\s+/g, "")}">${wo.status}</span></td>
+      <td>${woActionButtons(wo)}</td>
+    </tr>
+  `).join("");
+}
+
+// --- Unit detail (click-into-unit) --------------------------------------
+
+async function selectUnit(unitId) {
+  selectedUnit = unitId;
+  renderFleetTable(fleetCache);
+  updateDiagramSelection();
+  const body = document.getElementById("unitDetailBody");
+  body.innerHTML = `<div class="placeholder">Loading ${unitId}…</div>`;
+  try {
+    const d = await apiGet(`/unit/${unitId}?history_points=200`);
+    renderUnitDetail(d);
+  } catch (e) {
+    body.innerHTML = `<div class="placeholder">Failed to load ${unitId}</div>`;
+    console.error(e);
+  }
+}
+
+function renderUnitDetail(d) {
+  const body = document.getElementById("unitDetailBody");
+  const sigEntries = Object.entries(d.latest.signals).map(([k, v]) => `${k}: <b>${v}</b>`).join(" &nbsp;|&nbsp; ");
+
+  body.innerHTML = `
+    <div style="margin-bottom:10px;">
+      <div style="font-size:15px; font-weight:700;">${d.unit_id} <span class="badge ${d.latest.risk_level}" style="margin-left:6px;">${d.latest.risk_level}</span></div>
+      <div style="color:var(--text-dim); font-size:11.5px; margin-top:2px;">${d.subsystem_type} · ${d.train_id} · as of ${d.latest.timestamp}</div>
+      <div style="font-size:12px; margin-top:8px;">${sigEntries}</div>
+    </div>
+    <div id="traceSteps"></div>
+    <div class="action-box">
+      <div class="lbl">Recommended Action</div>
+      ${d.recommended_action}
+    </div>
+    <div id="unitChartBox"><canvas id="unitLineChart"></canvas></div>
+  `;
+
+  const traceEl = document.getElementById("traceSteps");
+  traceEl.innerHTML = "";
+  for (const step of d.decision_trace) {
+    const el = document.createElement("div");
+    el.className = "trace-step";
+    el.innerHTML = `<div class="trace-dot ${step.flagged ? "on" : ""}"></div>
+      <div><div class="st-title">${step.step}</div><div class="st-detail">${step.detail}</div></div>`;
+    traceEl.appendChild(el);
+  }
+
+  const labels = d.history.map(h => h.timestamp);
+  const reconSeries = d.history.map(h => h.ae_recon_error);
+  const ctx = document.getElementById("unitLineChart");
+  if (unitLineChart) unitLineChart.destroy();
+  unitLineChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [{
+        label: "Reconstruction error",
+        data: reconSeries,
+        borderColor: "#00cec9",
+        backgroundColor: "transparent",
+        borderWidth: 1.2,
+        pointRadius: 0,
+        tension: 0.15,
+      }],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, title: { display: true, text: "Anomaly trend (history)", color: "#8b98a5", font: { size: 11 } } },
+      scales: {
+        x: { ticks: { display: false }, grid: { color: "#232d3a" } },
+        y: { ticks: { color: "#8b98a5", font: { size: 9 } }, grid: { color: "#232d3a" } },
+      },
+    },
+  });
+}
+
+function renderLiveFeed(events) {
+  const feed = document.getElementById("liveFeed");
+  for (const ev of events.reverse()) {
+    const el = document.createElement("div");
+    el.className = "feed-item " + ev.risk_level;
+    const sigStr = Object.entries(ev.signals).map(([k, v]) => `${k}=${v}`).join(", ");
+    el.innerHTML = `<span><span class="fu">${ev.unit_id}</span> <span class="ft">${sigStr}</span></span>
+      <span class="badge ${ev.risk_level}">${ev.risk_level}</span>`;
+    feed.prepend(el);
+  }
+  while (feed.children.length > 40) feed.removeChild(feed.lastChild);
+}
+
+async function pollLiveFeed() {
+  try {
+    const data = await apiGet("/live-feed?batch_size=4");
+    renderLiveFeed(data.events);
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+["costFailure", "costMaintenance", "fleetMultiplier"].forEach(id => {
+  document.getElementById(id).addEventListener("input", recalcImpact);
+});
+document.getElementById("sensitivitySlider").addEventListener("input", onSensitivitySlide);
+
+refreshFleet();
+pollLiveFeed();
+loadValidationSummary();
+loadSensitivityScan();
+setInterval(refreshFleet, 15000);
+setInterval(pollLiveFeed, 1800);
+</script>
+
+</body>
+</html>
