@@ -106,17 +106,21 @@ def run_ablation():
             "baseline_lead_time": round(baseline_lead, 2) if baseline_lead is not None else None,
             "autoencoder_lead_time": round(ae_lead, 2) if ae_lead is not None else None,
             "fused_lead_time": round(fused_lead, 2) if fused_lead is not None else None,
-            "_baseline_method": baseline_method,
-            "_ae_method": ae_method,
-            "_fused_method": fused_method,
+            "baseline_method": baseline_method,
+            "ae_method": ae_method,
+            "fused_method": fused_method,
         })
 
     result = pd.DataFrame(rows)
     os.makedirs(sc.VALIDATION_OUTPUT_DIR, exist_ok=True)
     out_path = os.path.join(sc.VALIDATION_OUTPUT_DIR, "ablation_comparison.csv")
-    # Saved CSV matches exactly the requested columns; the _method columns
-    # are diagnostic-only and printed to console, not persisted.
-    result[["unit_id", "baseline_lead_time", "autoencoder_lead_time", "fused_lead_time"]].to_csv(out_path, index=False)
+    # The *_method columns ("sustained" vs "fallback_isolated" vs "none",
+    # see _first_alert_crossing above) are persisted alongside the lead
+    # times -- the dashboard's Model Validation section reads them to tell
+    # a genuine sustained detection apart from a noise-triggered isolated
+    # spike, rather than just trusting that a lead time value exists.
+    result[["unit_id", "baseline_lead_time", "autoencoder_lead_time", "fused_lead_time",
+            "baseline_method", "ae_method", "fused_method"]].to_csv(out_path, index=False)
 
     print("\n=== Ablation: lead time by method, hours (blank = never fired before fault) ===")
     print(result[["unit_id", "subsystem_type", "fault_type",
@@ -127,7 +131,7 @@ def run_ablation():
           "    pre-fault readings) vs 'fallback_isolated' (no sustained alert existed, so the\n"
           "    FIRST isolated firing was used instead -- for a sparse/spiky detector this can be\n"
           "    a chance false positive rather than genuine early warning) ===")
-    print(result[["unit_id", "_baseline_method", "_ae_method", "_fused_method"]].to_string(index=False))
+    print(result[["unit_id", "baseline_method", "ae_method", "fused_method"]].to_string(index=False))
 
     print("\n=== Method summary ===")
     for col, label in [
@@ -142,7 +146,7 @@ def run_ablation():
             line += f", mean lead time {mean_lead:.1f}h"
         print(line)
 
-    n_baseline_fallback = (result["_baseline_method"] == "fallback_isolated").sum()
+    n_baseline_fallback = (result["baseline_method"] == "fallback_isolated").sum()
     if n_baseline_fallback == len(result):
         print(f"\n  CAVEAT: all {len(result)}/{len(result)} baseline-alone lead times came from the\n"
               "  fallback_isolated path -- the baseline z-flag never sustained through to any fault\n"

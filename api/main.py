@@ -52,6 +52,7 @@ SCORED = {}
 BASELINE_STATS = {}
 VAL_RECON_ERRORS = {}
 FAULT_LOG = None
+VALIDATION_FAULTS_BY_UNIT = {}
 LIVE_FEED_DF = None
 LIVE_CURSOR_LOCK = threading.Lock()
 LIVE_CURSOR = {"pos": 0}
@@ -129,6 +130,24 @@ def _load_sensitivity_data():
     FAULT_LOG = pd.read_csv(sc.FAULT_LOG_PATH, parse_dates=["timestamp"])
 
 
+def _load_validation_faults():
+    """
+    Loads validate.py's per-unit lead-time results (validation_outputs/
+    lead_time_summary.csv -- the same file /validation-summary reads for
+    the fleet-wide average lead time) into a unit_id-keyed lookup, so
+    /unit/{id} can attach each of the 8 known-fault units' OWN specific
+    lead time (not the fleet average) without re-reading the file on every
+    request. Left empty if the file doesn't exist yet (pipeline not run) --
+    /unit/{id} just omits known_fault's lead-time fields in that case.
+    """
+    global VALIDATION_FAULTS_BY_UNIT
+    path = os.path.join(sc.VALIDATION_OUTPUT_DIR, "lead_time_summary.csv")
+    if not os.path.exists(path):
+        return
+    df = pd.read_csv(path)
+    VALIDATION_FAULTS_BY_UNIT = {row["unit_id"]: row.to_dict() for _, row in df.iterrows()}
+
+
 def _build_live_feed():
     global LIVE_FEED_DF
     frames = []
@@ -148,6 +167,7 @@ def startup():
     _load_artifacts()
     _build_baseline_stats()
     _load_sensitivity_data()
+    _load_validation_faults()
     _build_live_feed()
 
 
@@ -382,6 +402,53 @@ def validation_summary():
     }
 
 
+@app.get("/model-validation")
+def model_validation():
+    """
+    Read-only view over ablation.py's approach comparison
+    (validation_outputs/ablation_comparison.csv) -- does not recompute
+    anything, just summarizes it for the dashboard's Model Validation
+    section. Run pipeline/ablation.py to (re)generate that file.
+
+    A detection only counts as "genuine" if its method is "sustained" (the
+    alert held for >=70% of the remaining pre-fault readings -- see
+    ablation.py's _first_alert_crossing/SUSTAIN_FRAC). "fallback_isolated"
+    means no sustained alert ever existed and a single isolated spike was
+    used as a fallback lead-time estimate -- that's noise, not a genuine
+    early warning, so it's excluded from the average lead time. An
+    approach is only given a numeric average lead time if a majority of
+    its detections are genuine; otherwise it's reported as unreliable,
+    same as ablation.py's own console caveat.
+    """
+    path = os.path.join(sc.VALIDATION_OUTPUT_DIR, "ablation_comparison.csv")
+    if not os.path.exists(path):
+        raise HTTPException(503, "ablation comparison not yet computed; run pipeline/ablation.py")
+
+    df = pd.read_csv(path)
+    n = len(df)
+
+    def summarize(lead_col, method_col):
+        genuine = df[method_col] == "sustained"
+        genuine_count = int(genuine.sum())
+        reliable = n > 0 and genuine_count / n >= 0.5
+        avg_days = float(df.loc[genuine, lead_col].mean() / 24.0) if reliable and genuine_count else None
+        return {
+            "genuine_detections": genuine_count,
+            "total_faults": n,
+            "avg_lead_time_days": avg_days,
+            "reliable": reliable,
+        }
+
+    return {
+        "generated_from": "SYNTHETIC placeholder dataset ablation run (pipeline/ablation.py)",
+        "total_faults": n,
+        "approaches": [
+            {"name": "Rolling z-score baseline", **summarize("baseline_lead_time", "baseline_method")},
+            {"name": "Autoencoder (healthy-trained)", **summarize("fused_lead_time", "fused_method")},
+        ],
+    }
+
+
 @app.get("/unit/{unit_id}")
 def unit_detail(unit_id: str, history_points: int = 400):
     subsystem_type = None
@@ -411,6 +478,35 @@ def unit_detail(unit_id: str, history_points: int = 400):
     raw_values = np.array([latest[sig] for sig in cfg["signal_cols"]])
     healthy_zscores = (raw_values - scaler.mean_) / scaler.scale_
 
+    # Known-fault ground truth (fault_log.csv, the generator's own record of
+    # which units had a fault injected and when) -- used by the frontend's
+    # "why was this flagged" explanation to only claim a pattern matches a
+    # "known degradation signature" for units that actually have one,
+    # rather than asserting it for every unit.
+    known_fault = None
+    if FAULT_LOG is not None:
+        matches = FAULT_LOG[FAULT_LOG["subsystem_id"] == unit_id]
+        if len(matches):
+            fault_row = matches.iloc[0]
+            known_fault = {
+                "fault_type": fault_row["fault_type"],
+                "severity": int(fault_row["severity"]),
+                "fault_timestamp": str(fault_row["timestamp"]),
+            }
+
+    # If this unit is also one of validate.py's 8 known-fault cases with a
+    # detected lead time, attach ITS OWN lead_time_hours/lead_time_days
+    # (not the fleet-wide average /validation-summary reports) so the
+    # dashboard's lead-time visual can show the specific number for
+    # whichever unit is selected.
+    val_fault = VALIDATION_FAULTS_BY_UNIT.get(unit_id)
+    if val_fault is not None and known_fault is not None:
+        detected = bool(val_fault["detected_before_fault"])
+        known_fault["detected_before_fault"] = detected
+        known_fault["first_warning_timestamp"] = str(val_fault["first_warning_timestamp"]) if detected else None
+        known_fault["lead_time_hours"] = float(val_fault["lead_time_hours"]) if detected and pd.notna(val_fault["lead_time_hours"]) else None
+        known_fault["lead_time_days"] = float(val_fault["lead_time_days"]) if detected and pd.notna(val_fault["lead_time_days"]) else None
+
     if len(unit_df) > history_points:
         step = len(unit_df) // history_points
         hist = unit_df.iloc[::step]
@@ -435,6 +531,9 @@ def unit_detail(unit_id: str, history_points: int = 400):
             "signal_zscores": {
                 sig: float(z) for sig, z in zip(cfg["signal_cols"], healthy_zscores)
             },
+            "signal_healthy_mean": {
+                sig: float(m) for sig, m in zip(cfg["signal_cols"], scaler.mean_)
+            },
             "baseline_flag": bool(latest["baseline_flag"]),
             "baseline_max_abs_z": None if pd.isna(latest["baseline_max_abs_z"]) else float(latest["baseline_max_abs_z"]),
             "ae_recon_error": None if pd.isna(latest["ae_recon_error"]) else float(latest["ae_recon_error"]),
@@ -442,6 +541,7 @@ def unit_detail(unit_id: str, history_points: int = 400):
         },
         "thresholds": ARTIFACTS[subsystem_type]["thresholds"],
         "recommended_action": RECOMMENDED_ACTIONS[risk_level],
+        "known_fault": known_fault,
         "decision_trace": [
             {"step": "Baseline check", "detail": f"max |z| across signals = "
              f"{latest['baseline_max_abs_z']:.2f}" if pd.notna(latest['baseline_max_abs_z']) else "n/a",
