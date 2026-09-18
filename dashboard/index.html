@@ -62,7 +62,7 @@
     overflow: hidden;
   }
   .header-inner {
-    max-width: 1440px;
+    max-width: 1280px;
     margin: 0 auto;
     padding: 0 var(--sp-3);
     display: flex;
@@ -144,21 +144,33 @@
 
   main {
     display: grid;
-    grid-template-columns: 1fr 380px;
-    gap: var(--sp-3);
-    padding: var(--sp-3);
-    max-width: 1440px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-3) var(--sp-3);
+    max-width: 1280px;
     margin: 0 auto;
   }
-  @media (max-width: 900px) {
-    main { grid-template-columns: 1fr; }
+
+  /* Two panels side by side, for content that does not need the full
+     measure -- a 40-row live feed or a slider stretched across 1280px is
+     mostly empty space. Tops aligned, so a panel that grows (the upload
+     results) does not drag its neighbour's header down with it. */
+  .panel-pair {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--sp-2);
+    align-items: start;
+  }
+  @media (max-width: 1000px) {
+    .panel-pair { grid-template-columns: minmax(0, 1fr); }
   }
 
   .panel {
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    padding: var(--sp-3);
+    padding: 18px 20px;
+    min-width: 0;   /* so a wide table scrolls inside the panel instead of forcing the grid track wider */
   }
   .panel h2 {
     display: flex;
@@ -176,9 +188,13 @@
 
   .stat-row {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: var(--sp-2);
+    grid-template-columns: repeat(5, minmax(0, 128px));
+    justify-content: start;
+    gap: var(--sp-1);
     margin-bottom: var(--sp-2);
+  }
+  @media (max-width: 620px) {
+    .stat-row { grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); }
   }
   .stat-tile {
     background: var(--panel-alt);
@@ -221,7 +237,8 @@
   .priority-alert-heading.level-Warning::before { background: var(--warning); }
   .priority-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(230px, 296px));
+    justify-content: start;
     gap: var(--sp-2);
   }
   .priority-card {
@@ -254,13 +271,13 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     padding: var(--sp-2);
-    height: 260px;
+    height: 224px;
     transition: border-color 0.15s ease;
   }
   .chart-box:hover { border-color: var(--border-strong); }
 
   table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--border); }
   th {
     color: var(--text-dim);
     font-weight: 600;
@@ -311,8 +328,8 @@
      clicking a shape in the twin updates the panel right next to it. */
   .twin-detail-row {
     display: grid;
-    grid-template-columns: 1fr 380px;
-    gap: var(--sp-3);
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: var(--sp-2);
   }
   @media (max-width: 900px) {
     .twin-detail-row { grid-template-columns: 1fr; }
@@ -614,7 +631,8 @@
   .impact-panel { grid-column: 1 / -1; }
   .impact-inputs {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 290px));
+    justify-content: start;
     gap: var(--sp-2);
     margin-bottom: var(--sp-2);
   }
@@ -653,10 +671,11 @@
   .impact-summary b { color: var(--accent); }
   .impact-figures {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 430px));
+    justify-content: start;
     gap: var(--sp-2);
   }
-  @media (max-width: 700px) { .impact-figures { grid-template-columns: 1fr; } }
+  @media (max-width: 700px) { .impact-figures { grid-template-columns: minmax(0, 1fr); } }
   .impact-figure {
     background: var(--panel-alt);
     border: 1px solid var(--border);
@@ -789,6 +808,25 @@
   .wo-empty { color: var(--text-dim); text-align: center; padding: var(--sp-2) 0; font-size: 12.5px; }
 
   .full-width-panel { grid-column: 1 / -1; }
+
+  .fleet-table-wrap th:nth-child(1), .fleet-table-wrap td:nth-child(1) { width: 12%; }
+  .fleet-table-wrap th:nth-child(2), .fleet-table-wrap td:nth-child(2) { width: 9%; }
+  .fleet-table-wrap th:nth-child(3), .fleet-table-wrap td:nth-child(3) { width: 10%; }
+  .fleet-table-wrap th:nth-child(4), .fleet-table-wrap td:nth-child(4) { width: 9%; }
+  .fleet-table-wrap th:nth-child(5), .fleet-table-wrap td:nth-child(5) { width: 15%; }
+  .fleet-table-wrap th:nth-child(6), .fleet-table-wrap td:nth-child(6) { width: 12%; }
+  /* Primary signal takes the surplus -- it is the only free-text column. */
+  .fleet-table-wrap th:nth-child(7), .fleet-table-wrap td:nth-child(7) { width: 33%; }
+
+  .wo-table-wrap th:nth-child(4), .wo-table-wrap td:nth-child(4) { width: 34%; }
+
+  /* The services cards reflow rather than being pinned at three across, so
+     they stay readable if this panel is ever paired into half a row. */
+  .ai-grid { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+
+  /* Live feed sits in a half-width track now; cap it so a long run of
+     events scrolls in place instead of pushing the page down. */
+  #liveFeed { max-height: 420px; overflow-y: auto; }
 
   /* =====================================================================
      Engineering readout conventions
@@ -1113,7 +1151,8 @@
     </div>
   </div>
 
-  <div class="panel full-width-panel" id="uploadPanel">
+  <div class="panel-pair full-width-panel">
+  <div class="panel" id="uploadPanel">
     <h2>
       <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M12 4L8 8M12 4l4 4"/><path d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
       Score Your Own Data
@@ -1135,7 +1174,7 @@
     <div id="uploadResult"></div>
   </div>
 
-  <div class="panel full-width-panel" id="aiPanel">
+  <div class="panel" id="aiPanel">
     <h2>
       <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.2 2.2M16.9 16.9l2.2 2.2M19.1 4.9l-2.2 2.2M7.1 16.9l-2.2 2.2"/></svg>
       External Services
@@ -1147,8 +1186,10 @@
       from the API process's environment — the browser never holds a key and never calls these providers directly.
     </div>
   </div>
+  </div>
 
-  <div class="panel sensitivity-panel full-width-panel" id="sensitivityPanel">
+  <div class="panel-pair full-width-panel">
+  <div class="panel sensitivity-panel" id="sensitivityPanel">
     <h2>
       <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2" fill="var(--panel)"/><circle cx="16" cy="12" r="2" fill="var(--panel)"/><circle cx="8" cy="18" r="2" fill="var(--panel)"/></svg>
       Detection Sensitivity
@@ -1167,6 +1208,16 @@
       <div class="sensitivity-stat"><div class="num" id="sensLeadTime">–</div><div class="label">Avg Lead Time</div></div>
     </div>
     <div class="sensitivity-caption" id="sensitivityCaption">Loading…</div>
+  </div>
+
+  <div class="panel">
+    <h2>
+      <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-7 4 14 2-7h6"/></svg>
+      Simulated Live Feed
+    </h2>
+    <div class="sub-note" style="margin:-8px 0 10px 0;">Polling synthetic onboard telemetry, sped up for demo.</div>
+    <div id="liveFeed"></div>
+  </div>
   </div>
 
   <div class="panel full-width-panel">
@@ -1234,13 +1285,6 @@
     <div class="diagram-caption">Simulated maintenance workflow — illustrates how alerts would integrate with an existing CMMS (Computerized Maintenance Management System) or work order platform. Generated client-side for this demo session only; "Acknowledge"/"Schedule" just update local state, no real ticketing backend.</div>
   </div>
 
-  <div class="panel full-width-panel">
-    <h2>
-      <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-7 4 14 2-7h6"/></svg>
-      Simulated Live Feed <span style="color:var(--text-dim); font-weight:400; text-transform:none; letter-spacing:0; font-family:var(--font-body); font-size:11px;">(polling synthetic onboard telemetry, sped up for demo)</span>
-    </h2>
-    <div id="liveFeed"></div>
-  </div>
 </main>
 
 <footer>RAILPULSE — a predictive maintenance prototype for LTA Singapore. All figures on this page are derived from a synthetic placeholder dataset. Not real fleet data.</footer>
@@ -1768,9 +1812,12 @@ const chipIndex = {};   // chip element id -> {unitId, signal, label, kind}
 // Geometry. Pulled out because several of these are load-bearing for each
 // other (the chip grid starts below the rail, the rail below the wheels).
 const DG = {
-  startX: 118, carW: 372, carH: 62, carGap: 26,
-  rowH: 186, topPad: 10,
-  chipH: 21, chipGap: 6, chipCols: 4,
+  startX: 108, carW: 372, carH: 52, carGap: 24,
+  rowH: 152, topPad: 10,
+  chipH: 18, chipGap: 5, chipCols: 4,
+  // Bogie assembly, pulled out because the rail line and the chip grid are
+  // both positioned off the bottom of the wheels.
+  frameW: 96, frameH: 11, wheelR: 7,
 };
 
 // One chip per system a work order could be raised against. `kind: "unit"`
@@ -1837,10 +1884,10 @@ function chipSvg(id, x, y, w, h, label, state) {
       <rect class="chip-bg" x="${x}" y="${y}" width="${w}" height="${h}" rx="4"
             fill="${state.color}" fill-opacity="${state.opacity}" stroke="${BORDER_HEX}" stroke-width="1"/>
       <rect class="chip-bar" x="${x}" y="${y}" width="3" height="${h}" rx="1.5" fill="${state.color}"/>
-      <text x="${x + 9}" y="${y + h / 2 + 3.5}" fill="${TEXT_DIM_HEX}" font-size="8.5"
+      <text x="${x + 8}" y="${y + h / 2 + 3.2}" fill="${TEXT_DIM_HEX}" font-size="8"
             font-family="'Inter', sans-serif" font-weight="700" letter-spacing="0.4">${label}</text>
-      <text class="chip-val" x="${x + w - 7}" y="${y + h / 2 + 3.5}" text-anchor="end"
-            fill="${state.color}" font-size="9.5" font-family="'Inter', sans-serif"
+      <text class="chip-val" x="${x + w - 6}" y="${y + h / 2 + 3.2}" text-anchor="end"
+            fill="${state.color}" font-size="9" font-family="'Inter', sans-serif"
             font-weight="600">${state.text}</text>
     </g>`;
 }
@@ -1857,13 +1904,14 @@ function buildTrainDiagram(units) {
 
   for (const k in chipIndex) delete chipIndex[k];
 
-  let svg = `<svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">`;
+  let svg = `<svg viewBox="0 0 ${width} ${height}" width="100%" preserveAspectRatio="xMidYMin meet"
+      style="display:block; min-width:820px; height:auto;" xmlns="http://www.w3.org/2000/svg">`;
 
   trainIds.forEach((trainId, rowIdx) => {
     const entry = byTrain[trainId];
     const nCars = Math.max(entry.door.length, entry.bogie.length, entry.car.length, 1);
     const rowTop = DG.topPad + rowIdx * DG.rowH;
-    const carY = rowTop + 6;
+    const carY = rowTop + 5;
 
     // Worst Health Index anywhere in this consist, so a train can be
     // triaged without reading every chip in its row.
@@ -1873,11 +1921,11 @@ function buildTrainDiagram(units) {
     const worstUnit = worst != null ? consistUnits.find(u => u.health_index === worst) : null;
     const worstColor = worstUnit ? healthColor(worstUnit.health_band) : TEXT_DIM_HEX;
 
-    svg += `<text x="10" y="${carY + 20}" fill="${"#E9EEF3"}" font-size="12.5"
+    svg += `<text x="8" y="${carY + 17}" fill="#E9EEF3" font-size="12"
               font-family="'Inter', sans-serif" font-weight="700">${trainId}</text>`;
-    svg += `<text x="10" y="${carY + 36}" fill="${TEXT_DIM_HEX}" font-size="9.5"
+    svg += `<text x="8" y="${carY + 31}" fill="${TEXT_DIM_HEX}" font-size="9"
               font-family="'Inter', sans-serif">worst health</text>`;
-    svg += `<text x="10" y="${carY + 52}" fill="${worstColor}" font-size="15"
+    svg += `<text x="8" y="${carY + 46}" fill="${worstColor}" font-size="14"
               font-family="'Inter', sans-serif" font-weight="700">${worst != null ? Math.round(worst) : "–"}</text>`;
 
     for (let c = 0; c < nCars; c++) {
@@ -1895,7 +1943,7 @@ function buildTrainDiagram(units) {
       // of the silhouette that is itself a monitored system.
       const hvacState = chipState(carUnit ? carUnit.unit_id : null, CAR_CHIPS.find(ch => ch.key === "hvac"));
       svg += `<g class="diagram-unit" data-unit-id="${carUnit ? carUnit.unit_id : ""}">
-          <rect class="diagram-shape" x="${carX + DG.carW * 0.30}" y="${carY - 10}" width="${DG.carW * 0.40}" height="10" rx="3"
+          <rect class="diagram-shape" x="${carX + DG.carW * 0.30}" y="${carY - 8}" width="${DG.carW * 0.40}" height="8" rx="3"
                 fill="${hvacState.color}" fill-opacity="0.5" stroke="${BORDER_HEX}" stroke-width="1"/>
         </g>`;
 
@@ -1906,18 +1954,18 @@ function buildTrainDiagram(units) {
       // visible on the silhouette and not only in its chip.
       const lightState = chipState(carUnit ? carUnit.unit_id : null, CAR_CHIPS.find(ch => ch.key === "light"));
       for (let w = 0; w < 4; w++) {
-        const wx = carX + 22 + w * 54;
-        if (wx + 38 > carX + DG.carW * 0.58) break;
-        svg += `<rect x="${wx}" y="${carY + 12}" width="38" height="20" rx="3"
+        const wx = carX + 20 + w * 52;
+        if (wx + 36 > carX + DG.carW * 0.58) break;
+        svg += `<rect x="${wx}" y="${carY + 8}" width="36" height="17" rx="3"
                   fill="${lightState.color}" fill-opacity="0.16" stroke="${BORDER_HEX}" stroke-width="1"/>`;
       }
-      svg += `<text x="${carX + 14}" y="${carY + DG.carH - 9}" fill="${TEXT_DIM_HEX}" font-size="9"
+      svg += `<text x="${carX + 12}" y="${carY + DG.carH - 8}" fill="${TEXT_DIM_HEX}" font-size="8.5"
                 font-family="'Inter', sans-serif" font-weight="600">${carUnit ? carUnit.unit_id : "CAR " + (c + 1)}</text>`;
 
       // Door leaf
       if (doorUnit) {
-        const doorW = 26, doorH = DG.carH - 14;
-        const doorX = carX + DG.carW * 0.68, doorY = carY + 7;
+        const doorW = 24, doorH = DG.carH - 12;
+        const doorX = carX + DG.carW * 0.68, doorY = carY + 6;
         const risk = RISK_COLORS[doorUnit.risk_level] || TEXT_DIM_HEX;
         svg += `<g class="diagram-unit" data-unit-id="${doorUnit.unit_id}" id="diagram-unit-${doorUnit.unit_id}">
             <rect class="diagram-shape" x="${doorX}" y="${doorY}" width="${doorW}" height="${doorH}" rx="3"
@@ -1928,10 +1976,10 @@ function buildTrainDiagram(units) {
       }
 
       // Bogie + wheelset
-      const bogieY = carY + DG.carH + 5;
-      const wheelCY = bogieY + 13 + 8;
+      const bogieY = carY + DG.carH + 4;
+      const wheelCY = bogieY + DG.frameH + DG.wheelR;
       if (bogieUnit) {
-        const frameW = 96, frameH = 13, wheelR = 8;
+        const { frameW, frameH, wheelR } = DG;
         const cx = carX + DG.carW / 2;
         const risk = RISK_COLORS[bogieUnit.risk_level] || TEXT_DIM_HEX;
         svg += `<g class="diagram-unit" data-unit-id="${bogieUnit.unit_id}" id="diagram-unit-${bogieUnit.unit_id}">
@@ -1941,12 +1989,12 @@ function buildTrainDiagram(units) {
             <circle cx="${cx + frameW / 2 - 16}" cy="${wheelCY}" r="${wheelR}" fill="${BG_HEX}" stroke="${BORDER_HEX}" stroke-width="1.5"/>
           </g>`;
       }
-      const railY = wheelCY + 8 + 4;
+      const railY = wheelCY + DG.wheelR + 4;
       svg += `<line x1="${carX - 10}" y1="${railY}" x2="${carX + DG.carW + 10}" y2="${railY}"
                 stroke="${BORDER_HEX}" stroke-width="2"/>`;
 
       // Chip grid: 2 rows of 4, aligned to the car it belongs to.
-      const chipsTop = railY + 12;
+      const chipsTop = railY + 10;
       CAR_CHIPS.forEach((chip, idx) => {
         const col = idx % DG.chipCols;
         const row = Math.floor(idx / DG.chipCols);

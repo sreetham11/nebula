@@ -60,17 +60,17 @@
     }
   },
   "DOOR_06_1": {
-    "fingerprint": "0a9f82dbab936656",
+    "fingerprint": "817bf64b10aef047",
     "model": "claude-opus-5",
-    "generated_at": "2026-09-18T11:19:29+00:00",
+    "generated_at": "2026-09-18T16:13:32+00:00",
     "response": {
       "unit_id": "DOOR_06_1",
       "status": "ok",
       "model": "claude-opus-5",
-      "generated_at": "2026-09-18T11:19:29+00:00",
-      "why_flagged": "The autoencoder reconstruction error is 250.3978, far above the Critical threshold of 1.3337 (and the lower Caution 1.0986 and Warning 1.2187 thresholds), so the unit is at Critical risk. Both monitored signals sit well above the healthy-fleet means: cycle_time_sec at 6.594 vs a baseline mean of 4.2005 (+15.87 sigma) and motor_current_amps at 5.076 vs a baseline mean of 3.0528 (+14.48 sigma). Note that baseline_deviation_flagged is false and max_abs_rolling_baseline_z is 1.6, so the rolling-baseline check did not itself trigger.",
-      "predicted_issue": "One plausible explanation is increased mechanical resistance in the door travel path, since longer cycle time together with higher motor current is consistent with the motor working harder to complete each movement. This is a hypothesis drawn from the signal pattern only, not a confirmed fault; obstruction, binding in the guides or track, or drive-train friction could all produce a similar signature.",
-      "recommended_inspection": "Have a technician cycle the door manually and under power to feel for binding, drag or uneven travel, and visually check the track, rollers, guides and seals for debris, wear or misalignment. Comparing measured cycle time and motor current on-site against the 4.2005 s and 3.0528 A healthy means would confirm whether the elevated readings reproduce.",
+      "generated_at": "2026-09-18T16:13:32+00:00",
+      "why_flagged": "The autoencoder reconstruction error is 111.8841, far above the Critical threshold of 1.0262 (the highest band crossed). All four door signals move together in the unfavourable direction: motor current is 5.252 A (+15.77 sigma vs the healthy mean of 3.0507 A), cycle time is 5.989 s (+11.9 sigma vs 4.2005 s), motor speed is down to 1240.8 rpm (-8.84 sigma vs 1442.4946 rpm), and motor temperature is 54.06 C (+4.01 sigma vs 44.2424 C).",
+      "predicted_issue": "The combination of higher current and temperature with lower speed and longer cycle time is consistent with the door motor working against added mechanical resistance. One plausible hypothesis is increased friction or binding in the door travel path or drive train, forcing the motor to draw more current at reduced speed; this is a hypothesis from signal patterns only, not a confirmed fault.",
+      "recommended_inspection": "Operate the door through several full open/close cycles by hand and under power and check for binding, uneven travel, or stiffness in the track, rollers, and drive linkage. Also check the motor and gearbox housing for abnormal heat and listen for strain or slipping during the cycle.",
       "disclaimer": "AI-assisted suggestion generated from this unit's pipeline output -- not a confirmed diagnosis."
     }
   },
@@ -86,6 +86,51 @@
       "why_flagged": "The autoencoder reconstruction error for DOOR_01_1 is 148.782, far above the Critical threshold of 1.3337 (and the lower Caution 1.0986 and Warning 1.2187 thresholds). Two signals sit well above the healthy-fleet means: motor_current_amps at 5.082 A versus a healthy mean of 3.0528 A (+14.52 sigma), and cycle_time_sec at 5.87 s versus a healthy mean of 4.2005 s (+11.07 sigma). The rolling baseline check was not flagged (max_abs_rolling_baseline_z 0.43), so the detection rests on the reconstruction error and these healthy-baseline deviations.",
       "predicted_issue": "One plausible explanation is increased mechanical resistance in the door travel path \" for example binding or added friction in the guides, rollers, or linkage \" which would be consistent with the door drawing more motor current while also taking longer to complete a cycle. This is a hypothesis drawn from the signal pattern only and is not a confirmed fault; drive or transmission degradation could produce a similar current-and-time signature.",
       "recommended_inspection": "Have a technician run the door through several manual open/close cycles and check for binding, uneven travel, or stiffness along the track, rollers, and linkage. Observing where in the cycle the resistance occurs would help confirm or rule out a mechanical drag source versus a drive-side issue.",
+      "disclaimer": "AI-assisted suggestion generated from this unit's pipeline output -- not a confirmed diagnosis."
+    }
+  },
+  "CAR_01_2": {
+    "fingerprint": "5f2f400dda68a4bb",
+    "model": "claude-opus-5",
+    "generated_at": "2026-09-18T16:13:15+00:00",
+    "response": {
+      "unit_id": "CAR_01_2",
+      "status": "ok",
+      "model": "claude-opus-5",
+      "generated_at": "2026-09-18T16:13:15+00:00",
+      "why_flagged": "This unit is at Normal: its autoencoder reconstruction error of 0.5079 sits below the lowest Caution threshold of 0.6094, and no threshold was crossed. No baseline deviation flag was raised, and the largest signal excursion is modest \u2014 battery voltage at 110.37 V (+1.47 sigma above the healthy mean of 108.94 V) and HVAC supply temperature at 11.11 C (-1.46 sigma below the healthy mean of 12.50 C), with max absolute rolling baseline z of 1.50.",
+      "predicted_issue": "No fault is indicated. If anything, the pattern of slightly high battery voltage alongside slightly low HVAC supply temperature and HVAC current (22.98 A, -0.87 sigma) is consistent with normal variation in charging and cooling demand, for example lighter thermal load; this is a hypothesis only and does not amount to a detected defect.",
+      "recommended_inspection": "No inspection is required on this detection. At the next scheduled visit, a technician could spot-check auxiliary battery charger output voltage and HVAC supply air temperature at the diffuser to confirm both remain within normal operating range.",
+      "disclaimer": "AI-assisted suggestion generated from this unit's pipeline output -- not a confirmed diagnosis."
+    }
+  },
+  "BOGIE_02_2": {
+    "fingerprint": "6c893bed3601263d",
+    "model": "claude-opus-5",
+    "generated_at": "2026-09-18T16:13:29+00:00",
+    "response": {
+      "unit_id": "BOGIE_02_2",
+      "status": "ok",
+      "model": "claude-opus-5",
+      "generated_at": "2026-09-18T16:13:29+00:00",
+      "why_flagged": "This unit is at Normal risk: its autoencoder reconstruction error of 0.536 sits below the lowest (Caution) threshold of 0.6018, and no baseline deviation flag was raised. The largest signal departures are modest and in the benign direction for wear indicators \ntraction_motor_rpm at 102.3 (-1.58 sigma), traction_motor_temp_c at 55.87 C (-1.52 sigma) and brake_capacity_pct at 97.2% (-1.46 sigma), while vibration_rms (0.3391, -0.27 sigma) and axle temperature_c (37.713 C, -0.16 sigma) are essentially at the healthy mean. Max absolute rolling baseline z was 1.54.",
+      "predicted_issue": "No fault is indicated. One plausible explanation for the low traction motor rpm and correspondingly low motor temperature is that the reading was captured while the train was stationary or coasting, which would also make the slightly low brake capacity figure of 97.2% hard to interpret in isolation rather than a sign of degradation.",
+      "recommended_inspection": "No intervention is required on this reading. If a check is convenient during the next scheduled depot visit, a technician could confirm brake pad and friction surface thickness against the service limit to verify that the 97.2% brake capacity value reflects normal wear rather than an emerging trend.",
+      "disclaimer": "AI-assisted suggestion generated from this unit's pipeline output -- not a confirmed diagnosis."
+    }
+  },
+  "BOGIE_03_2": {
+    "fingerprint": "aff41a1678188423",
+    "model": "claude-opus-5",
+    "generated_at": "2026-09-18T16:13:32+00:00",
+    "response": {
+      "unit_id": "BOGIE_03_2",
+      "status": "ok",
+      "model": "claude-opus-5",
+      "generated_at": "2026-09-18T16:13:32+00:00",
+      "why_flagged": "This unit is at Normal risk: the autoencoder reconstruction error is 0.4454, below the Caution threshold of 0.6018, and no threshold was crossed. No baseline deviation was flagged. The largest signal offsets are all in the benign direction \\u2014 axle bearing temperature at 33.807 C (-2.26 sigma), traction motor temp at 56.32 C (-1.45 sigma) and vibration_rms at 0.3344 (-0.39 sigma) are all below the healthy means, and traction_motor_rpm is 78.5 (-1.61 sigma), with max absolute rolling baseline z of 2.08.",
+      "predicted_issue": "No fault is indicated. One plausible explanation for the low rpm (78.5 vs a healthy mean of 1309.9354) together with cooler bearing and traction motor temperatures is simply that the reading was captured at low speed or near standstill, when thermal loads have not built up. Brake capacity at 97.27% is only -1.33 sigma from the 97.9998% mean, which is a minor offset rather than a loss of capability.",
+      "recommended_inspection": "No inspection is required on this detection. If a planner wants confirmation, compare a reading taken during sustained running against this one to check that bearing and traction motor temperatures rise into the normal band under load, and note the brake capacity reading at that time.",
       "disclaimer": "AI-assisted suggestion generated from this unit's pipeline output -- not a confirmed diagnosis."
     }
   }
