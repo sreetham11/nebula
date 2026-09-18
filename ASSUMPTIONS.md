@@ -46,12 +46,47 @@ and override anything before the real dataset lands. Grouped by phase.
 - **Door cycle_count**: cumulative counter incremented per reading based on
   a peak-hours (06:00-23:00) vs off-peak usage pattern; not tied to
   degradation.
-- **No explicit train-level correlation** between a train's door and bogie
-  health — each unit degrades independently. Real fleets might show
-  correlated wear (e.g. one rough route wearing all subsystems on a train
-  faster); skipped for scope.
+- **No explicit train-level correlation** between a train's door, bogie and
+  car-auxiliary health — each unit degrades independently. Real fleets might
+  show correlated wear (e.g. one rough route wearing all subsystems on a
+  train faster); skipped for scope.
+- **Fault-specific signal subsets.** Each fault type perturbs only the
+  channels it mechanically implicates (`DEGRADATION_SIGNAL_DELTAS` in
+  `data_gen/config.py`): a comms antenna fault moves radio RSSI and nothing
+  else, a brake fault moves brake capacity plus a little bearing heat. This
+  is deliberately harder than moving every channel at once — it forces the
+  model to learn which combination co-moves rather than watching any single
+  channel. `suspension_wear` moves no mean at all; it is variance-only.
+- **Falling signals.** Motor speed, brake capacity, lighting load, battery
+  charge, battery voltage and radio RSSI degrade *downward*. The generator
+  handles negative magnitudes explicitly so a "backslide" is always a move
+  back toward healthy regardless of direction.
+- **Car auxiliary systems are one unit, not four.** HVAC, lighting, battery
+  and radio share a car body and, in practice, an auxiliary converter, so
+  they are modelled as one six-channel unit. The cost is that a red car
+  doesn't say which of the four is sick — which is exactly why
+  `/fleet-signals` exposes per-channel deviation and the digital twin draws
+  a chip per system rather than colouring the whole carriage.
+- **Duty-cycle dependence is real, not noise.** Traction motor speed and
+  temperature, HVAC current and battery charge all key off a service-hours
+  mask (06:00-23:00), so a stabled train legitimately reads low on several
+  channels. The autoencoder sees this in-window and handles it; the
+  *display* z-score is against the pooled healthy distribution and therefore
+  swings ±1-2σ from time of day alone. The dashboard says so in place, and
+  the decision trace refuses to name a "primary signal" below 2σ.
 
 ## Phase 2 — detection pipeline (`pipeline/`)
+
+- **Health Index is presentation, not a model.** `pipeline/health_index.py`
+  restates reconstruction error as a bounded 0-100 number anchored on that
+  subsystem's own calibrated thresholds (100 at the healthy median, 75/60/40
+  at Caution/Warning/Critical, 0 at 10x Critical), interpolated in
+  `log(error)` because the error is a squared quantity with a long tail. It
+  exists because reconstruction error is not comparable across subsystems —
+  each autoencoder is calibrated separately — and because a bare "62.5"
+  carries no scale. It never changes a risk level, and the 10x-Critical
+  floor is an admittedly arbitrary cutoff: past the calibrated range there
+  is no principled scale left.
 
 - **Baseline model**: rolling window of 144 readings (~1 day at ~10 min
   cadence), min 30 periods, |z| > 3 flags. Tunable in `model_config.py`.

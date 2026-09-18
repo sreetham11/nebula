@@ -1,9 +1,12 @@
 unit_id,subsystem_type,fault_type,severity,fault_timestamp,first_warning_timestamp,lead_time_hours,lead_time_days,detected_before_fault
-DOOR_04_2,door,motor_wear,4,2026-08-12 01:02:30.671013718,2026-08-01 17:03:12,247.99,10.33,True
-BOGIE_06_2,bogie,wheel_flat,4,2026-08-13 07:45:23.320651343,2026-08-09 07:14:20,96.52,4.02,True
-DOOR_03_2,door,seal_degradation,3,2026-08-17 10:15:04.282844726,2026-08-15 10:01:09,48.23,2.01,True
-BOGIE_01_2,bogie,wheel_flat,4,2026-08-17 13:13:09.872920194,2026-08-07 01:49:53,251.39,10.47,True
-DOOR_06_1,door,seal_degradation,4,2026-08-19 03:09:12.244117788,2026-08-14 16:28:44,106.67,4.44,True
-BOGIE_04_1,bogie,bearing_failure,3,2026-08-21 19:47:53.479570924,2026-08-15 13:14:54,150.55,6.27,True
-DOOR_01_1,door,seal_degradation,5,2026-08-28 14:15:38.977031873,2026-08-25 06:43:32,79.54,3.31,True
-BOGIE_02_1,bogie,suspension_wear,5,2026-09-02 10:40:02.686019398,2026-08-23 09:32:32,241.13,10.05,True
+CAR_05_1,car,hvac_compressor_wear,5,2026-08-07 23:34:19.834986153,2026-08-04 06:10:17,89.4,3.73,True
+BOGIE_04_1,bogie,brake_pad_wear,4,2026-08-11 00:05:40.949154778,2026-08-08 23:38:03,48.46,2.02,True
+DOOR_06_1,door,track_misalignment,4,2026-08-14 23:39:10.759584786,2026-08-13 12:47:14,34.87,1.45,True
+CAR_04_1,car,comms_antenna_fault,4,2026-08-17 09:21:30.358717753,2026-08-12 02:20:52,127.01,5.29,True
+DOOR_01_1,door,seal_degradation,4,2026-08-21 02:40:45.538894961,2026-08-13 17:11:12,177.49,7.4,True
+BOGIE_06_2,bogie,bearing_failure,3,2026-08-21 19:06:55.424931950,2026-08-16 10:30:26,128.61,5.36,True
+DOOR_04_2,door,seal_degradation,4,2026-08-24 03:28:49.569006547,2026-08-20 02:32:16,96.94,4.04,True
+DOOR_03_2,door,track_misalignment,4,2026-08-25 08:32:36.255127765,2026-08-17 05:14:14,195.31,8.14,True
+BOGIE_02_1,bogie,wheel_flat,4,2026-08-27 00:47:17.738161508,2026-08-22 11:28:48,109.31,4.55,True
+CAR_04_2,car,lighting_driver_failure,5,2026-09-02 09:27:37.864492414,2026-08-24 03:40:32,221.78,9.24,True
+BOGIE_01_2,bogie,wheel_flat,4,2026-09-03 21:43:44.694172932,2026-09-03 20:40:37,1.05,0.04,True

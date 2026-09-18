@@ -1,5 +1,6 @@
 """
-End-to-end pipeline runner: for each subsystem (door, bogie) --
+End-to-end pipeline runner: for each subsystem in schema_config.SUBSYSTEMS
+(door, bogie, car) --
   1. load raw sensor data + fault log
   2. compute baseline rolling z-score flags
   3. split healthy units BY UNIT into train / validation (no unit's
@@ -121,9 +122,9 @@ def process_subsystem(subsystem_type, fault_log, rng):
     return df
 
 
-def build_fleet_status(door_df, bogie_df, fault_log):
+def build_fleet_status(scored_by_type, fault_log):
     rows = []
-    for subsystem_type, df in [("door", door_df), ("bogie", bogie_df)]:
+    for subsystem_type, df in scored_by_type.items():
         cfg = sc.SUBSYSTEMS[subsystem_type]
         id_col, ts_col = cfg["id_col"], cfg["timestamp_col"]
         for uid, g in df.groupby(id_col):
@@ -148,9 +149,12 @@ def build_fleet_status(door_df, bogie_df, fault_log):
 def main():
     rng = np.random.default_rng(RANDOM_SEED)
     fault_log = data_loader.load_fault_log()
-    door_df = process_subsystem("door", fault_log, rng)
-    bogie_df = process_subsystem("bogie", fault_log, rng)
-    fleet = build_fleet_status(door_df, bogie_df, fault_log)
+    # Driven off schema_config, so adding a subsystem there is the only
+    # change needed to train, score and validate a new one.
+    scored_by_type = {
+        st: process_subsystem(st, fault_log, rng) for st in sc.SUBSYSTEM_TYPES
+    }
+    fleet = build_fleet_status(scored_by_type, fault_log)
 
     print("\n=== FLEET STATUS SUMMARY ===")
     print(fleet["risk_level"].value_counts())
@@ -158,7 +162,7 @@ def main():
 
     print("\n=== Running validation ===")
     import validate
-    validate.run_validation(door_df, bogie_df, fault_log)
+    validate.run_validation(scored_by_type, fault_log)
 
 
 if __name__ == "__main__":

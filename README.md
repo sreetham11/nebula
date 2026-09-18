@@ -1,8 +1,21 @@
 # NEBULA X — Predictive Fault Detection
 
 Hackathon prototype for LTA Singapore: detects wear/anomaly signatures in
-door and bogie rolling stock subsystems and flags them before they become
-unplanned service disruptions.
+rolling stock and flags them before they become unplanned service
+disruptions. Three subsystems are modelled per train, each with its own
+autoencoder and its own calibrated thresholds:
+
+| Subsystem | Unit        | Modelled signals |
+|-----------|-------------|------------------|
+| `door`    | `DOOR_xx_n` | cycle time, motor current, motor temperature, motor speed |
+| `bogie`   | `BOGIE_xx_n`| axle bearing temperature, vibration RMS, traction motor temperature, traction motor speed, friction brake capacity |
+| `car`     | `CAR_xx_n`  | HVAC supply air temperature, HVAC current, saloon lighting load, battery state of charge, battery voltage, radio signal strength |
+
+Each fault type moves only the channels it mechanically implicates -- a
+comms antenna fault does not touch battery charge, and a brake fault does
+not heat the bearings -- so the model has to learn which *combination* of
+channels moves together rather than watching any one of them cross a line.
+See `DEGRADATION_SIGNAL_DELTAS` in `data_gen/config.py` for the full map.
 
 **Built entirely against synthetic placeholder data** (see
 `data_gen/generate_data.py` docstring) since the real dataset drops during
@@ -24,7 +37,7 @@ pip install -r requirements.txt
 ## Run everything, in order
 
 ```bash
-# 1. Generate synthetic data -> data/*.csv
+# 1. Generate synthetic data -> data/door_data.csv, bogie_data.csv, car_data.csv
 python data_gen/generate_data.py
 
 # 2. Train models, score the fleet, run validation -> models/, data/*_scored.csv,
@@ -37,6 +50,75 @@ cd api && uvicorn main:app --reload --port 8000
 # 3b. In another terminal, serve the dashboard
 cd dashboard && python3 -m http.server 8080
 # open http://localhost:8080
+```
+
+## Reading the numbers: Health Index vs reconstruction error
+
+Reconstruction error is what the model produces and stays the number of
+record, but on its own it is unreadable and **not comparable across
+subsystems** -- each autoencoder is trained and calibrated separately, so a
+door's 8.0 and a car's 8.0 mean different things.
+
+`pipeline/health_index.py` restates it as a bounded **0-100 Health Index**,
+anchored on that subsystem's own calibrated thresholds:
+
+| Reconstruction error | Health Index |
+|----------------------|--------------|
+| at or below the healthy fleet median | 100 |
+| at the Caution threshold  | 75 |
+| at the Warning threshold  | 60 |
+| at the Critical threshold | 40 |
+| 10x the Critical threshold or worse | 0 |
+
+Interpolation is linear in `log(error)`, because reconstruction error is a
+squared quantity with a long right tail. Two consequences worth knowing:
+the band boundaries land on the same index value for every subsystem, so 58
+on a door and 58 on a car mean the same severity; and the index is monotone
+in reconstruction error, so ranking by either agrees within a subsystem.
+
+It is a presentation layer. It adds no information and **never changes a
+risk level** -- risk still comes from `pipeline/fusion.py`. The dashboard
+therefore never shows the index without the raw error and the threshold it
+was measured against sitting next to it.
+
+### Per-signal deviation
+
+The API also reports each channel's deviation from the healthy fleet,
+**signed so that positive always means deteriorating**: brake capacity 4σ
+*below* the healthy mean and bearing temperature 4σ *above* it both report
+`+4.0`. Which direction is bad for which channel lives in `SIGNAL_METADATA`
+in `pipeline/schema_config.py`.
+
+One caveat the dashboard states in-place: the reference is the *pooled*
+healthy distribution, which spans every duty state a unit passes through. A
+train stabled overnight genuinely shows low traction motor speed and a cool
+traction motor, so ±1-2σ on a single channel is ordinary time-of-day
+variation. Below 2σ the decision trace says outright that no single channel
+stands out and that the detection rests on the combination.
+
+## Score your own data (CSV / Parquet upload)
+
+The dashboard's **Score Your Own Data** panel takes a dropped file and runs
+every unit in it through the models already on disk. `POST /upload`, handled
+by `api/ingest.py`.
+
+**It does not retrain**, and nothing is persisted -- the synthetic fleet the
+rest of the page reads is untouched. Column names are matched case- and
+separator-insensitively against an alias table, so `Motor Current (A)` and
+`motor_current_amps` both resolve; `GET /upload-schema` returns the expected
+columns and their aliases. An explicit `mapping` form field (JSON, schema
+column -> your column) overrides all of it.
+
+The important part is the **sanity check** it returns underneath the
+results: each signal's mean in the uploaded file against the healthy
+population the scaler was fitted on. If the upload is different equipment,
+or the same signals in different units of measurement, the scaler's healthy
+mean/std do not apply and everything will score as anomalous. Past ±3σ that
+is surfaced as a warning above the results table rather than left for
+someone to discover from a suspiciously red fleet.
+
+```bash
+curl -F "file=@your_data.csv" http://localhost:8000/upload
 ```
 
 ## Maintenance Copilot (optional, needs an Anthropic API key)

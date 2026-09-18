@@ -30,7 +30,7 @@ import joblib
 import numpy as np
 import pandas as pd
 import torch
-from fastapi import FastAPI, HTTPException, Response
+from fastapi import FastAPI, File, Form, HTTPException, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, List, Optional
@@ -41,6 +41,9 @@ from model_config import BASELINE_Z_THRESHOLD, RISK_LEVELS, RECON_ERROR_WARNING_
 from autoencoder import SequenceAutoencoder, get_device  # noqa: E402
 from fusion import _base_level_from_recon_error, _escalate  # noqa: E402
 from ablation import _first_alert_crossing  # noqa: E402 -- reuse the same sustained-vs-fallback detection logic used in the ablation report
+import health_index as hi  # noqa: E402 -- bounded 0-100 restatement of reconstruction error (presentation only)
+
+import ingest  # noqa: E402 -- CSV upload scored against the frozen trained models
 
 import copilot  # noqa: E402 -- Maintenance Copilot (server-side Anthropic API call; key never leaves the server)
 import research  # noqa: E402 -- Investigate Fault (server-side Exa search; key never leaves the server)
@@ -58,6 +61,17 @@ RECOMMENDED_ACTIONS = {
     "Warning": "Schedule a maintenance inspection within 48-72 hours.",
     "Critical": "Immediate inspection required. Consider pulling unit from service.",
 }
+
+# A deviation is measured against the POOLED healthy distribution, which
+# spans every duty state a unit passes through -- a train stabled overnight
+# genuinely shows low traction motor rpm, a cool traction motor and a
+# fully-charged battery. So one to two sigma on a single channel is normal
+# time-of-day variation, not evidence, and naming it "the primary signal"
+# would send a fitter to inspect a healthy motor. Below this bar the
+# decision trace says so outright: the detection then rests on the
+# COMBINATION of channels the autoencoder saw across the window, which is
+# exactly what a per-channel threshold cannot see.
+PRIMARY_SIGNAL_MIN_SIGMA = 2.0
 
 ARTIFACTS = {}
 SCORED = {}
@@ -87,12 +101,21 @@ def _load_artifacts():
 
         scaler = joblib.load(os.path.join(sc.MODELS_DIR, f"{subsystem_type}_scaler.joblib"))
 
+        # Median reconstruction error across the held-out HEALTHY validation
+        # units. This is the "100 on the Health Index" anchor, and the
+        # denominator behind "x95 the healthy fleet median" -- it has to come
+        # from the same held-out units the thresholds were calibrated on, not
+        # from the whole scored fleet (which includes the faulty units and
+        # would drag the reference point upward).
+        val_errors = np.load(os.path.join(sc.MODELS_DIR, f"{subsystem_type}_val_recon_errors.npy"))
+
         ARTIFACTS[subsystem_type] = {
             "model": model,
             "scaler": scaler,
             "thresholds": meta["thresholds"],
             "window_length": meta["window_length"],
             "signal_cols": meta["signal_cols"],
+            "healthy_median_recon_error": float(np.median(val_errors)),
             "device": device,
         }
 
@@ -186,6 +209,73 @@ class PredictRequest(BaseModel):
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
+
+def _health_fields(subsystem_type, recon_error):
+    """
+    The Health Index block attached to every unit the API returns.
+
+    Always carries the raw reconstruction error, the threshold ladder it was
+    measured against, and the healthy median alongside the index itself, so
+    the bounded number never travels without the model output it was derived
+    from. See pipeline/health_index.py for why the index exists at all.
+    """
+    art = ARTIFACTS[subsystem_type]
+    thresholds = art["thresholds"]
+    median = art["healthy_median_recon_error"]
+    if recon_error is not None and pd.isna(recon_error):
+        recon_error = None
+    value = hi.health_index(recon_error, thresholds, median)
+    return {
+        "health_index": value,
+        "health_band": hi.health_band(value),
+        "error_vs_healthy_median": hi.error_vs_healthy(recon_error, median),
+        "healthy_median_recon_error": round(median, 4),
+        "thresholds": {k: round(float(v), 4) for k, v in thresholds.items()},
+    }
+
+
+def _signal_block(subsystem_type, row, zscores=None):
+    """
+    Per-signal readings with their unit, display label, and which direction
+    is a deterioration -- so a falling brake capacity is never drawn as an
+    improvement just because the number went down.
+    """
+    cfg = sc.SUBSYSTEMS[subsystem_type]
+    out = []
+    for i, sig in enumerate(cfg["signal_cols"]):
+        meta = sc.signal_meta(sig)
+        z = None if zscores is None else float(zscores[i])
+        # Signed "how far from healthy, in the bad direction": a low-is-bad
+        # signal 3 sigma BELOW the healthy mean is +3 deviation here.
+        deviation = None if z is None else (-z if meta["worse"] == "low" else z)
+        out.append({
+            "signal": sig,
+            "label": meta["label"],
+            "unit": meta["unit"],
+            "group": meta["group"],
+            "worse": meta["worse"],
+            "value": float(row[sig]),
+            "zscore_vs_healthy": None if z is None else round(z, 2),
+            "deviation_sigma": None if deviation is None else round(deviation, 2),
+            "modelled": True,
+        })
+    for sig in cfg.get("context_cols", []):
+        if sig not in row:
+            continue
+        meta = sc.signal_meta(sig)
+        out.append({
+            "signal": sig,
+            "label": meta["label"],
+            "unit": meta["unit"],
+            "group": meta["group"],
+            "worse": meta["worse"],
+            "value": float(row[sig]),
+            "zscore_vs_healthy": None,
+            "deviation_sigma": None,
+            "modelled": False,
+        })
+    return out
+
 
 @app.get("/health")
 def health():
@@ -365,12 +455,38 @@ def fleet_status():
     df = pd.read_csv(sc.FLEET_STATUS_PATH, parse_dates=["latest_timestamp"])
     df["latest_timestamp"] = df["latest_timestamp"].astype(str)
     records = df.to_dict(orient="records")
+
+    # Reconstruction error is on a different scale per subsystem (each
+    # autoencoder is trained and calibrated separately), so a fleet-wide
+    # table cannot rank on it directly. The Health Index is the column that
+    # is comparable across subsystems; the raw error rides along with it.
+    for rec in records:
+        st = rec["subsystem_type"]
+        err = rec.get("ae_recon_error")
+        if err is not None and pd.isna(err):
+            err = None
+            rec["ae_recon_error"] = None
+        rec.update(_health_fields(st, err))
+
     counts = df["risk_level"].value_counts().to_dict()
     return {
         "generated_from": "SYNTHETIC placeholder dataset",
         "units": records,
         "status_counts": {lvl: int(counts.get(lvl, 0)) for lvl in RISK_LEVELS},
         "total_units": len(records),
+        "subsystems": {
+            st: {
+                "signal_cols": art["signal_cols"],
+                "thresholds": {k: round(float(v), 4) for k, v in art["thresholds"].items()},
+                "healthy_median_recon_error": round(art["healthy_median_recon_error"], 4),
+            }
+            for st, art in ARTIFACTS.items()
+        },
+        "signal_metadata": {
+            col: sc.signal_meta(col)
+            for cfg in sc.SUBSYSTEMS.values()
+            for col in cfg["signal_cols"] + cfg.get("context_cols", [])
+        },
     }
 
 
@@ -396,6 +512,53 @@ def validation_summary():
         "avg_lead_time_hours": float(detected["lead_time_hours"].mean()) if len(detected) else None,
         "avg_lead_time_days": float(detected["lead_time_days"].mean()) if len(detected) else None,
         "faults": df.to_dict(orient="records"),
+    }
+
+
+@app.get("/fleet-signals")
+def fleet_signals():
+    """
+    Latest per-SIGNAL reading for every unit in the fleet, in one call.
+
+    /fleet-status answers "how is this unit doing" with a single risk level.
+    That is enough to colour a unit, but not enough to colour the individual
+    systems inside it: a car unit carries HVAC, lighting, battery and radio
+    on one model, so a red car says nothing about WHICH of the four is the
+    problem. This endpoint exposes each channel's own deviation from the
+    healthy fleet mean, which is what lets the digital twin light up the air
+    conditioning rather than the whole carriage.
+
+    Deviation is signed so that POSITIVE always means "worse": a brake
+    capacity 4σ below the healthy mean and a bearing temperature 4σ above it
+    both come back as +4.0.
+    """
+    out = {}
+    for subsystem_type, cfg in sc.SUBSYSTEMS.items():
+        art = ARTIFACTS[subsystem_type]
+        scaler = art["scaler"]
+        df = SCORED[subsystem_type]
+        for uid, g in df.groupby(cfg["id_col"]):
+            latest = g.sort_values(cfg["timestamp_col"]).iloc[-1]
+            raw = np.array([latest[sig] for sig in cfg["signal_cols"]])
+            zscores = (raw - scaler.mean_) / scaler.scale_
+            err = None if pd.isna(latest["ae_recon_error"]) else float(latest["ae_recon_error"])
+            out[str(uid)] = {
+                "unit_id": str(uid),
+                "subsystem_type": subsystem_type,
+                "train_id": str(latest[cfg["train_col"]]),
+                "timestamp": str(latest[cfg["timestamp_col"]]),
+                "risk_level": latest["risk_level"] if pd.notna(latest["risk_level"]) else "Normal",
+                "ae_recon_error": err,
+                "signals": _signal_block(subsystem_type, latest, zscores),
+                **_health_fields(subsystem_type, err),
+            }
+    return {
+        "generated_from": "SYNTHETIC placeholder dataset",
+        "units": out,
+        "deviation_note": (
+            "deviation_sigma is signed so positive is always the deteriorating "
+            "direction, whichever way the underlying signal moves."
+        ),
     }
 
 
@@ -434,13 +597,78 @@ def unit_detail(unit_id: str, history_points: int = 400):
     else:
         hist = unit_df
 
+    art = ARTIFACTS[subsystem_type]
+    thresholds = art["thresholds"]
+    healthy_median = art["healthy_median_recon_error"]
+
     history = []
     for _, row in hist.iterrows():
-        entry = {"timestamp": str(row[cfg["timestamp_col"]]), "risk_level": row["risk_level"] if pd.notna(row["risk_level"]) else None,
-                 "ae_recon_error": None if pd.isna(row["ae_recon_error"]) else float(row["ae_recon_error"])}
+        err = None if pd.isna(row["ae_recon_error"]) else float(row["ae_recon_error"])
+        entry = {"timestamp": str(row[cfg["timestamp_col"]]),
+                 "risk_level": row["risk_level"] if pd.notna(row["risk_level"]) else None,
+                 "ae_recon_error": err,
+                 "health_index": hi.health_index(err, thresholds, healthy_median)}
         for sig in cfg["signal_cols"]:
             entry[sig] = float(row[sig])
         history.append(entry)
+
+    latest_error = None if pd.isna(latest["ae_recon_error"]) else float(latest["ae_recon_error"])
+    health = _health_fields(subsystem_type, latest_error)
+    signals = _signal_block(subsystem_type, latest, healthy_zscores)
+
+    # The signal actually driving the detection: largest deviation in the
+    # direction that is bad for that channel, so a brake capacity 4 sigma
+    # BELOW healthy outranks a bearing temperature 1 sigma above it.
+    ranked = sorted(
+        [sg for sg in signals if sg["deviation_sigma"] is not None],
+        key=lambda sg: sg["deviation_sigma"], reverse=True,
+    )
+    primary = ranked[0] if ranked else None
+
+    # Every number below carries what it is measured against. A bare
+    # "reconstruction error = 62.5" is unreadable; the same number as
+    # "x95 the healthy fleet median, Critical cut point 4.18" is not.
+    if latest_error is None:
+        ae_detail = "no score yet — needs a full window of readings"
+    else:
+        # A multiple below 10 needs its decimal to stay meaningful ("x1.1
+        # the healthy median" is a healthy unit; rounding it to "x1" reads
+        # as if the comparison had been dropped).
+        ratio = health["error_vs_healthy_median"]
+        ratio_text = "–" if ratio is None else (f"{ratio:.0f}" if ratio >= 10 else f"{ratio:.1f}")
+        ae_detail = (
+            f"reconstruction error {latest_error:.2f} "
+            f"(healthy fleet median {healthy_median:.2f}, "
+            f"x{ratio_text} that; "
+            f"Critical cut point {float(thresholds['Critical']):.2f}) "
+            f"-> Health Index {health['health_index']}/100"
+        )
+
+    if pd.notna(latest["baseline_max_abs_z"]):
+        baseline_detail = (
+            f"largest single-reading deviation {float(latest['baseline_max_abs_z']):.2f}σ "
+            f"from this unit's own recent rolling mean, across "
+            f"{len(cfg['signal_cols'])} modelled signals (flags above {BASELINE_Z_THRESHOLD:.1f}σ)"
+        )
+    else:
+        baseline_detail = "n/a — not enough readings yet for a rolling baseline"
+
+    if primary is None:
+        primary_detail = "n/a"
+    elif primary["deviation_sigma"] < PRIMARY_SIGNAL_MIN_SIGMA:
+        primary_detail = (
+            f"no single channel stands out — the largest is {primary['label']} at "
+            f"{abs(primary['deviation_sigma']):.1f}σ, within normal duty-cycle variation. "
+            f"This detection rests on the combination across "
+            f"{len(cfg['signal_cols'])} channels, not on any one of them."
+        )
+    else:
+        unit_suffix = f" {primary['unit']}" if primary["unit"] else ""
+        direction = "below" if primary["worse"] == "low" else "above"
+        primary_detail = (
+            f"{primary['label']} at {primary['value']:.2f}{unit_suffix}, "
+            f"{abs(primary['deviation_sigma']):.1f}σ {direction} the healthy fleet mean"
+        )
 
     return {
         "unit_id": unit_id,
@@ -452,24 +680,104 @@ def unit_detail(unit_id: str, history_points: int = 400):
             "signal_zscores": {
                 sig: float(z) for sig, z in zip(cfg["signal_cols"], healthy_zscores)
             },
+            "signal_detail": signals,
+            "primary_signal": primary,
             "baseline_flag": bool(latest["baseline_flag"]),
             "baseline_max_abs_z": None if pd.isna(latest["baseline_max_abs_z"]) else float(latest["baseline_max_abs_z"]),
-            "ae_recon_error": None if pd.isna(latest["ae_recon_error"]) else float(latest["ae_recon_error"]),
+            "baseline_z_threshold": float(BASELINE_Z_THRESHOLD),
+            "ae_recon_error": latest_error,
             "risk_level": risk_level,
+            **health,
         },
-        "thresholds": ARTIFACTS[subsystem_type]["thresholds"],
+        "thresholds": thresholds,
+        "healthy_median_recon_error": round(healthy_median, 4),
         "recommended_action": RECOMMENDED_ACTIONS[risk_level],
         "decision_trace": [
-            {"step": "Baseline check", "detail": f"max |z| across signals = "
-             f"{latest['baseline_max_abs_z']:.2f}" if pd.notna(latest['baseline_max_abs_z']) else "n/a",
+            {"step": "Baseline check (single-reading spike)",
+             "detail": baseline_detail,
              "flagged": bool(latest["baseline_flag"])},
-            {"step": "Autoencoder assessment", "detail": f"reconstruction error = "
-             f"{latest['ae_recon_error']:.3f}" if pd.notna(latest["ae_recon_error"]) else "n/a",
+            {"step": "Autoencoder assessment (window drift)",
+             "detail": ae_detail,
              "flagged": risk_level != "Normal"},
-            {"step": "Combined risk", "detail": risk_level, "flagged": risk_level in ("Warning", "Critical")},
+            {"step": "Primary signal",
+             "detail": primary_detail,
+             "flagged": primary is not None and primary["deviation_sigma"] >= PRIMARY_SIGNAL_MIN_SIGMA},
+            {"step": "Combined risk",
+             "detail": f"{risk_level} — Health Index {health['health_index']}/100 ({health['health_band']})"
+                       if health["health_index"] is not None else risk_level,
+             "flagged": risk_level in ("Warning", "Critical")},
             {"step": "Recommended action", "detail": RECOMMENDED_ACTIONS[risk_level], "flagged": False},
         ],
         "history": history,
+    }
+
+
+@app.post("/upload")
+async def upload(
+    file: UploadFile = File(...),
+    subsystem_type: Optional[str] = Form(None),
+    mapping: Optional[str] = Form(None),
+):
+    """
+    Score a dropped CSV/Parquet with the models already on disk.
+
+    No retraining and no persistence: the upload is scored in-process and
+    the result returned, leaving the synthetic fleet the rest of the
+    dashboard reads completely untouched. `mapping` is an optional JSON
+    object of {schema_column: column_in_your_file} for a file whose headers
+    the aliases in ingest.py do not already cover.
+    """
+    explicit_mapping = None
+    if mapping:
+        try:
+            explicit_mapping = json.loads(mapping)
+        except json.JSONDecodeError as exc:
+            raise HTTPException(400, f"mapping is not valid JSON: {exc}")
+        if not isinstance(explicit_mapping, dict):
+            raise HTTPException(400, "mapping must be a JSON object of {schema_column: file_column}")
+
+    raw = await file.read()
+    try:
+        return ingest.score_upload(
+            raw, file.filename, ARTIFACTS,
+            subsystem_type=subsystem_type or None,
+            explicit_mapping=explicit_mapping,
+        )
+    except ValueError as exc:
+        # Every rejection in ingest.py is a ValueError carrying a message
+        # written for the person who dropped the file, so it is surfaced
+        # verbatim rather than flattened into a generic 400.
+        raise HTTPException(400, str(exc))
+
+
+@app.get("/upload-schema")
+def upload_schema():
+    """
+    What an uploaded file needs to contain, per subsystem -- so the
+    dashboard can show the expected columns before anyone drops a file,
+    instead of only after a rejection.
+    """
+    return {
+        "max_rows": ingest.MAX_ROWS,
+        "max_bytes": ingest.MAX_UPLOAD_BYTES,
+        "formats": ["csv", "parquet"],
+        "subsystems": {
+            st: {
+                "id_col": cfg["id_col"],
+                "timestamp_col": cfg["timestamp_col"],
+                "train_col": cfg["train_col"],
+                "signal_cols": cfg["signal_cols"],
+                "window_length": ARTIFACTS[st]["window_length"],
+                "signal_metadata": {c: sc.signal_meta(c) for c in cfg["signal_cols"]},
+                "aliases": {c: ingest.ALIASES.get(c, []) for c in cfg["signal_cols"]},
+            }
+            for st, cfg in sc.SUBSYSTEMS.items()
+        },
+        "note": (
+            "Files are scored against the frozen trained models — no retraining. "
+            "Column names are matched case- and separator-insensitively against the "
+            "aliases listed here before the file is rejected."
+        ),
     }
 
 

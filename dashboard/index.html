@@ -789,6 +789,207 @@
   .wo-empty { color: var(--text-dim); text-align: center; padding: var(--sp-2) 0; font-size: 12.5px; }
 
   .full-width-panel { grid-column: 1 / -1; }
+
+  /* =====================================================================
+     Engineering readout conventions
+     =====================================================================
+     Every number an engineer might compare against another number is set
+     in tabular figures, so digits line up in a column and a value that
+     changes on a live poll does not make the row jitter. .mono is for
+     values with units attached; .num-col right-aligns a whole table
+     column of them. */
+  .mono {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+    letter-spacing: -0.1px;
+  }
+  .num-col { text-align: right; font-variant-numeric: tabular-nums; }
+  .unit-suffix { color: var(--text-dim); font-size: 0.85em; margin-left: 2px; }
+  .sub-note { color: var(--text-dim); font-size: 10.5px; line-height: 1.45; }
+
+  /* --- Health Index -----------------------------------------------------
+     A bounded 0-100 restatement of reconstruction error (see
+     pipeline/health_index.py). Rendered as a number plus a meter, always
+     with the raw error nearby -- the meter is what makes a fleet scannable,
+     the raw error is what keeps it honest. */
+  .hi-cell { display: flex; align-items: center; gap: 8px; }
+  .hi-value {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+    min-width: 34px;
+    text-align: right;
+  }
+  .hi-meter {
+    position: relative;
+    width: 58px;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(var(--border-rgb), 0.75);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .hi-meter > i { display: block; height: 100%; border-radius: 3px; }
+  .hi-Healthy  { color: var(--normal); }
+  .hi-Watch    { color: var(--caution); }
+  .hi-Degraded { color: var(--warning); }
+  .hi-Critical { color: var(--critical); }
+
+  .hi-big { display: flex; align-items: baseline; gap: 7px; }
+  .hi-big .v { font-family: var(--font-heading); font-size: 30px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+  .hi-big .of { font-size: 12px; color: var(--text-dim); }
+  .hi-big .band { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+
+  /* --- Digital twin -----------------------------------------------------
+     The silhouette is the orientation aid; the chip grid under each car is
+     the actual readout. Chips are per-SYSTEM, not per-unit, because a car
+     unit carries HVAC, lighting, battery and radio on one model and a red
+     carriage would otherwise say nothing about which of the four is sick. */
+  .diagram-scroll { overflow-x: auto; overflow-y: hidden; padding-bottom: 4px; }
+  .diagram-unit { cursor: pointer; }
+  .diagram-chip { cursor: pointer; }
+  .diagram-chip .chip-bg { transition: fill 0.15s ease, stroke 0.15s ease; }
+  .diagram-chip:hover .chip-bg { stroke: #ffffff; stroke-width: 1.4px; }
+  .diagram-chip.selected .chip-bg { stroke: var(--accent); stroke-width: 1.6px; }
+
+  .diagram-legend-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-2);
+    padding-bottom: var(--sp-1);
+    border-bottom: 1px solid var(--border);
+  }
+  .diagram-legend-group { display: flex; align-items: center; gap: 9px; font-size: 10.5px; color: var(--text-dim); }
+  .diagram-legend-group .lg-label { text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; font-size: 9.5px; }
+  .diagram-legend-group span.sw { display: inline-flex; align-items: center; gap: 5px; }
+  .diagram-legend-group .swatch { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+
+  /* --- AI integrations strip -------------------------------------------
+     These three call outside services and each needs its own key, so the
+     dashboard states plainly which are live and where in the UI they
+     surface -- previously all three lived inside the unit detail panel and
+     were invisible until a unit was clicked. */
+  .ai-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-2); }
+  @media (max-width: 900px) { .ai-grid { grid-template-columns: 1fr; } }
+  .ai-card {
+    background: var(--panel-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 13px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .ai-card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .ai-card-name { font-family: var(--font-heading); font-size: 13.5px; font-weight: 600; }
+  .ai-card-provider { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.4px; }
+  .ai-card-desc { font-size: 11.5px; color: var(--text-dim); line-height: 1.45; }
+  .ai-card-where { font-size: 10.5px; color: var(--text-dim); border-top: 1px solid var(--border); padding-top: 7px; margin-top: auto; }
+  .ai-card-where b { color: var(--text); font-weight: 600; }
+  .ai-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10px; font-weight: 600; letter-spacing: 0.3px;
+    padding: 3px 9px; border-radius: var(--radius-pill); white-space: nowrap;
+  }
+  .ai-pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .ai-pill.live { color: var(--normal); background: rgba(var(--normal-rgb), 0.14); border: 1px solid rgba(var(--normal-rgb), 0.35); }
+  .ai-pill.nokey { color: var(--caution); background: rgba(var(--caution-rgb), 0.14); border: 1px solid rgba(var(--caution-rgb), 0.35); }
+  .ai-pill.down { color: var(--critical); background: rgba(var(--critical-rgb), 0.14); border: 1px solid rgba(var(--critical-rgb), 0.35); }
+
+  /* --- CSV upload -------------------------------------------------------
+     Scores a dropped file against the frozen trained models. Deliberately
+     loud about that: the drop zone states it does not retrain, because a
+     file from different equipment will score as a fleet of red units and
+     the reason has to be visible before the results are. */
+  .drop-zone {
+    border: 1.5px dashed rgba(var(--border-rgb), 0.9);
+    border-radius: var(--radius-lg);
+    padding: var(--sp-4) var(--sp-3);
+    text-align: center;
+    background: var(--panel-alt);
+    transition: border-color 0.15s ease, background 0.15s ease;
+    cursor: pointer;
+  }
+  .drop-zone:hover, .drop-zone.dragover { border-color: var(--accent); background: rgba(var(--accent-rgb), 0.07); }
+  .drop-zone.dragover { border-style: solid; }
+  .drop-zone svg { width: 34px; height: 34px; color: var(--accent); opacity: 0.85; }
+  .drop-title { font-family: var(--font-heading); font-size: 15px; font-weight: 600; margin-top: 10px; }
+  .drop-sub { font-size: 12px; color: var(--text-dim); margin-top: 5px; line-height: 1.5; }
+  .drop-formats { font-size: 10.5px; color: var(--text-dim); margin-top: 9px; }
+  .drop-formats code {
+    background: rgba(var(--border-rgb), 0.5); padding: 1px 5px; border-radius: 4px;
+    font-size: 10px; color: var(--text);
+  }
+  .upload-busy { display: flex; align-items: center; justify-content: center; gap: 10px; padding: var(--sp-3); font-size: 12.5px; color: var(--text-dim); }
+  .upload-spinner {
+    width: 15px; height: 15px; border-radius: 50%;
+    border: 2px solid rgba(var(--accent-rgb), 0.25);
+    border-top-color: var(--accent);
+    animation: copilot-spin 0.7s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce) { .upload-spinner { animation: none; } }
+
+  .upload-error {
+    border: 1px solid rgba(var(--critical-rgb), 0.45);
+    background: rgba(var(--critical-rgb), 0.08);
+    border-radius: var(--radius-md);
+    padding: 14px 15px;
+    font-size: 12.5px;
+    line-height: 1.55;
+  }
+  .upload-error .t { font-weight: 700; color: var(--critical); margin-bottom: 5px; }
+
+  .upload-warn {
+    border-left: 3px solid var(--caution);
+    background: rgba(var(--caution-rgb), 0.07);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    padding: 9px 12px;
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: var(--text-dim);
+    margin-bottom: 7px;
+  }
+  .upload-summary-row { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-bottom: var(--sp-2); }
+  .upload-stat {
+    background: var(--panel-alt); border: 1px solid var(--border);
+    border-radius: var(--radius-md); padding: 9px 14px; min-width: 110px;
+  }
+  .upload-stat .v { font-family: var(--font-heading); font-size: 19px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .upload-stat .k { font-size: 9.5px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
+  .upload-reset {
+    background: var(--panel-alt); border: 1px solid var(--border); color: var(--text);
+    border-radius: var(--radius-md); padding: 7px 14px; font-size: 11.5px; cursor: pointer;
+  }
+  .upload-reset:hover { border-color: var(--accent); color: var(--accent); }
+  .upload-table-wrap { max-height: 380px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius-md); }
+  .upload-table-wrap table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .upload-table-wrap th {
+    position: sticky; top: 0; background: var(--panel-alt); z-index: 1;
+    text-align: left; padding: 8px 10px; font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.4px; color: var(--text-dim); border-bottom: 1px solid var(--border);
+  }
+  .upload-table-wrap td { padding: 7px 10px; border-bottom: 1px solid rgba(var(--border-rgb), 0.35); }
+  .upload-table-wrap tr:last-child td { border-bottom: none; }
+
+  /* --- Unit detail: per-signal readout ---------------------------------- */
+  .sig-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 4px; }
+  .sig-table td { padding: 5px 0; border-bottom: 1px solid rgba(var(--border-rgb), 0.3); vertical-align: middle; }
+  .sig-table tr:last-child td { border-bottom: none; }
+  .sig-table .s-label { color: var(--text-dim); }
+  .sig-table .s-val { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+  .sig-table .s-dev { text-align: right; font-variant-numeric: tabular-nums; width: 62px; white-space: nowrap; font-size: 11px; }
+  .sig-group-head {
+    font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.5px;
+    color: var(--text-dim); font-weight: 700; padding-top: 10px !important;
+  }
+  .sig-context { opacity: 0.6; }
+  .dev-ok { color: var(--text-dim); }
+  .dev-caution { color: var(--caution); }
+  .dev-warning { color: var(--warning); }
+  .dev-critical { color: var(--critical); }
 </style>
 </head>
 <body>
@@ -865,15 +1066,35 @@
       <h2>
         <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="13" rx="3"/><path d="M5 11h14M9 4v7M15 4v7"/><circle cx="8.5" cy="19.5" r="1.3"/><circle cx="15.5" cy="19.5" r="1.3"/><path d="M7 17l-1.5 3M17 17l1.5 3"/></svg>
         Rolling Stock Digital Twin
-        <span class="diagram-legend">
-          <span><span class="swatch" style="background:#5FAE7A"></span>Normal</span>
-          <span><span class="swatch" style="background:#D4A73D"></span>Caution</span>
-          <span><span class="swatch" style="background:#D18A4A"></span>Warning</span>
-          <span><span class="swatch" style="background:#C24B4B"></span>Critical</span>
-        </span>
       </h2>
-      <div id="trainDiagramSvgWrap"><div class="placeholder" style="color:var(--text-dim); font-size:12.5px; padding:20px 0;">Loading fleet layout…</div></div>
-      <div class="diagram-caption">Schematic side view, not to scale — each train consist's door and bogie subsystems are colored live by current risk level. Hover a shape for its unit ID and score; click to open its decision trace on the right.</div>
+
+      <div class="diagram-legend-row">
+        <div class="diagram-legend-group">
+          <span class="lg-label">Unit risk</span>
+          <span class="sw"><span class="swatch" style="background:#5FAE7A"></span>Normal</span>
+          <span class="sw"><span class="swatch" style="background:#D4A73D"></span>Caution</span>
+          <span class="sw"><span class="swatch" style="background:#D18A4A"></span>Warning</span>
+          <span class="sw"><span class="swatch" style="background:#C24B4B"></span>Critical</span>
+        </div>
+        <div class="diagram-legend-group">
+          <span class="lg-label">System deviation</span>
+          <span class="sw"><span class="swatch" style="background:#5FAE7A"></span>&lt;1σ</span>
+          <span class="sw"><span class="swatch" style="background:#D4A73D"></span>1–2σ</span>
+          <span class="sw"><span class="swatch" style="background:#D18A4A"></span>2–3.5σ</span>
+          <span class="sw"><span class="swatch" style="background:#C24B4B"></span>&gt;3.5σ</span>
+        </div>
+      </div>
+
+      <div class="diagram-scroll">
+        <div id="trainDiagramSvgWrap"><div class="placeholder" style="color:var(--text-dim); font-size:12.5px; padding:20px 0;">Loading fleet layout…</div></div>
+      </div>
+      <div class="diagram-caption">
+        Schematic side view, not to scale. The silhouette is for orientation; the chip grid under each car is the readout.
+        <b>Unit chips</b> (Door, Bogie) are coloured by that unit's fused risk level. <b>System chips</b> (A/C, Light, Batt, Radio,
+        Traction, Brake) are coloured by how far that individual sensor channel sits from the healthy fleet mean, signed so that
+        a brake capacity 4σ <i>below</i> healthy and a bearing temperature 4σ <i>above</i> it both read as severe.
+        Hover any chip for its reading; click to open that unit's decision trace.
+      </div>
     </div>
 
     <div class="panel" id="unitDetail">
@@ -889,6 +1110,41 @@
           <div class="ud-empty-hint">Click a row in the fleet table, or a door/bogie shape in the digital twin.</div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <div class="panel full-width-panel" id="uploadPanel">
+    <h2>
+      <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M12 4L8 8M12 4l4 4"/><path d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
+      Score Your Own Data
+    </h2>
+
+    <div id="uploadZoneWrap">
+      <div class="drop-zone" id="dropZone" tabindex="0" role="button" aria-label="Upload a telemetry file to score">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16.5V4.5M12 4.5L7.5 9M12 4.5L16.5 9"/><path d="M3.5 14.5v3.5a2.5 2.5 0 002.5 2.5h12a2.5 2.5 0 002.5-2.5v-3.5"/></svg>
+        <div class="drop-title">Drop a telemetry file here</div>
+        <div class="drop-sub">or click to browse — every unit in it is scored by the models already trained on this fleet</div>
+        <div class="drop-formats">
+          <code>.csv</code> <code>.parquet</code> &nbsp;·&nbsp; needs a unit id, a timestamp, and the signal columns for one subsystem
+        </div>
+      </div>
+      <input type="file" id="uploadInput" accept=".csv,.parquet,text/csv" hidden />
+      <div class="diagram-caption" id="uploadSchemaHint">Loading expected columns…</div>
+    </div>
+
+    <div id="uploadResult"></div>
+  </div>
+
+  <div class="panel full-width-panel" id="aiPanel">
+    <h2>
+      <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.2 2.2M16.9 16.9l2.2 2.2M19.1 4.9l-2.2 2.2M7.1 16.9l-2.2 2.2"/></svg>
+      External Services
+    </h2>
+    <div class="ai-grid" id="aiGrid"></div>
+    <div class="diagram-caption">
+      None of these produce a risk level, and none of them can change one. Every score, threshold and decision trace on this page is
+      computed locally by <code>pipeline/</code> and stands on its own if all three are switched off. API keys are read server-side
+      from the API process's environment — the browser never holds a key and never calls these providers directly.
     </div>
   </div>
 
@@ -950,7 +1206,9 @@
             <th data-col="subsystem_type">Subsystem</th>
             <th data-col="train_id">Train</th>
             <th data-col="risk">Risk</th>
+            <th data-col="health">Health Index</th>
             <th data-col="recon_err">Recon Err</th>
+            <th data-col="primary">Primary signal</th>
           </tr>
         </thead>
         <tbody id="fleetTableBody"></tbody>
@@ -1006,6 +1264,12 @@ const RISK_ORDER = ["Normal", "Caution", "Warning", "Critical"];
 let riskBarChart, statusDonut, unitLineChart;
 let selectedUnit = null;
 let fleetCache = [];
+// unit_id -> latest per-signal readings from /fleet-signals. /fleet-status
+// gives one risk level per unit, which is enough to colour a unit but not
+// enough to colour the individual systems inside it -- a car unit carries
+// HVAC, lighting, battery and radio on one model.
+let signalsCache = {};
+let subsystemMeta = {};
 let validationCache = null;
 const SYNTHETIC_WINDOW_DAYS = 42; // 6-week synthetic generation window (data_gen/config.py: DURATION_WEEKS=6)
 const DAYS_PER_YEAR = 365;
@@ -1016,6 +1280,91 @@ const DAYS_PER_YEAR = 365;
 let workOrders = [];
 let workOrderByUnit = {}; // unit_id -> work order object, for dedup (one open work order per unit)
 let workOrderSeq = 1001;
+
+// --- Number formatting ---------------------------------------------------
+//
+// Engineering readouts, so: a unit is always attached, the number of
+// decimals follows the magnitude rather than being fixed, and anything
+// that might be compared against a neighbouring value is set in tabular
+// figures by the .mono class in the stylesheet.
+
+function fmtUnit(u) {
+  if (!u) return "";
+  if (u === "degC") return "°C";
+  return u;
+}
+
+function fmtNum(v, digits) {
+  if (v == null || !isFinite(v)) return "–";
+  if (digits == null) {
+    const a = Math.abs(v);
+    digits = a >= 1000 ? 0 : a >= 100 ? 1 : a >= 10 ? 1 : 2;
+  }
+  return v.toFixed(digits);
+}
+
+function fmtWithUnit(v, unit, digits) {
+  const u = fmtUnit(unit);
+  const n = fmtNum(v, digits);
+  if (!u) return n;
+  // Degree and percent signs sit tight against the number; word-like units
+  // (rpm, kg, dBm) take a space, the way they are written on a datasheet.
+  return (u === "°C" || u === "%") ? n + u : n + " " + u;
+}
+
+// Deviation is already signed by the API so that positive always means
+// "deteriorating", whichever way the underlying signal moves. These bands
+// are a presentation choice, not a model threshold -- the actual risk level
+// still comes from fusion.py.
+const DEV_BANDS = [[3.5, "critical", "Critical"], [2, "warning", "Warning"], [1, "caution", "Caution"]];
+
+function devClass(dev) {
+  if (dev == null) return "ok";
+  for (const [cut, cls] of DEV_BANDS) if (dev >= cut) return cls;
+  return "ok";
+}
+
+function devColor(dev) {
+  if (dev == null) return TEXT_DIM_HEX;
+  for (const [cut, , level] of DEV_BANDS) if (dev >= cut) return RISK_COLORS[level];
+  return RISK_COLORS.Normal;
+}
+
+const HEALTH_BAND_COLORS = { Healthy: RISK_COLORS.Normal, Watch: RISK_COLORS.Caution, Degraded: RISK_COLORS.Warning, Critical: RISK_COLORS.Critical };
+
+function healthColor(band) {
+  return HEALTH_BAND_COLORS[band] || TEXT_DIM_HEX;
+}
+
+// Health Index cell: the number, a meter, and the band colour. The raw
+// reconstruction error always travels with it (see the Recon Err column and
+// the unit detail header) -- the index is a readable restatement of that
+// number, never a replacement for it.
+function healthCell(u) {
+  if (u.health_index == null) return `<span class="sub-note">not yet scored</span>`;
+  const color = healthColor(u.health_band);
+  return `<span class="hi-cell" title="${u.health_band} — ${u.health_index}/100">
+      <span class="hi-value" style="color:${color}">${u.health_index.toFixed(0)}</span>
+      <span class="hi-meter"><i style="width:${Math.max(2, u.health_index)}%; background:${color}"></i></span>
+    </span>`;
+}
+
+function unitSignals(unitId) {
+  const entry = signalsCache[unitId];
+  return entry ? entry.signals : [];
+}
+
+// The channel actually driving a detection: the largest deviation in the
+// direction that is bad for that specific channel.
+function primarySignal(unitId) {
+  const sigs = unitSignals(unitId).filter(sg => sg.deviation_sigma != null);
+  if (!sigs.length) return null;
+  return sigs.reduce((a, b) => (b.deviation_sigma > a.deviation_sigma ? b : a));
+}
+
+function signalOf(unitId, name) {
+  return unitSignals(unitId).find(sg => sg.signal === name) || null;
+}
 
 async function apiGet(path) {
   const res = await fetch(API_BASE + path);
@@ -1030,9 +1379,17 @@ function setApiStatus(ok) {
 
 async function refreshFleet() {
   try {
-    const data = await apiGet("/fleet-status");
+    // Both in one round trip: the diagram needs per-signal detail, and
+    // rendering it from stale signal data while the risk colours are fresh
+    // would put the chip grid and the unit colours out of step.
+    const [data, signals] = await Promise.all([
+      apiGet("/fleet-status"),
+      apiGet("/fleet-signals"),
+    ]);
     setApiStatus(true);
     fleetCache = data.units;
+    signalsCache = signals.units;
+    subsystemMeta = data.subsystems || {};
     renderStats(data.status_counts, data.total_units);
     renderFleetTable(data.units);
     renderRiskBarChart(data.units);
@@ -1073,11 +1430,14 @@ function renderSensitivity(data) {
   document.getElementById("sensLeadTime").textContent =
     data.avg_lead_time_days != null ? `${data.avg_lead_time_days.toFixed(1)}d` : "–";
 
-  const doorT = data.thresholds_used.door?.toFixed(3);
-  const bogieT = data.thresholds_used.bogie?.toFixed(3);
+  // Every subsystem in schema_config gets its own calibrated threshold, so
+  // this reads them off the response rather than naming two by hand.
+  const thresholdList = Object.entries(data.thresholds_used || {})
+    .map(([st, v]) => `${st} ${v != null ? v.toFixed(3) : "–"}`)
+    .join(", ");
   document.getElementById("sensitivityCaption").innerHTML =
-    `Recomputed live from precomputed reconstruction-error arrays (door threshold ${doorT}, bogie threshold ${bogieT} ` +
-    `at this percentile) — no retraining. Lower percentile = more sensitive = more alerts fire, generally earlier.`;
+    `Recomputed live from precomputed reconstruction-error arrays (thresholds at this percentile — ${thresholdList}) ` +
+    `— no retraining. Lower percentile = more sensitive = more alerts fire, generally earlier.`;
 }
 
 async function loadSensitivityScan(percentile) {
@@ -1229,7 +1589,14 @@ const FLEET_COL_GETTERS = {
   subsystem_type: u => u.subsystem_type,
   train_id: u => u.train_id,
   risk: u => RISK_ORDER.indexOf(u.risk_level),
+  // Sorted so that "descending" puts the WORST units on top, matching every
+  // other column: a low Health Index is bad, so it is negated here.
+  health: u => (u.health_index != null ? -u.health_index : -Infinity),
   recon_err: u => (u.ae_recon_error != null ? u.ae_recon_error : -Infinity),
+  primary: u => {
+    const sig = primarySignal(u.unit_id);
+    return sig && sig.deviation_sigma != null ? sig.deviation_sigma : -Infinity;
+  },
 };
 
 function compareFleetUnits(a, b) {
@@ -1260,18 +1627,37 @@ function renderFleetTable(units) {
   const body = document.getElementById("fleetTableBody");
   body.innerHTML = "";
   if (sorted.length === 0) {
-    body.innerHTML = `<tr><td colspan="5" class="fleet-table-empty">No flagged units right now — fleet is healthy.</td></tr>`;
+    body.innerHTML = `<tr><td colspan="7" class="fleet-table-empty">No flagged units right now — fleet is healthy.</td></tr>`;
   } else {
     for (const u of sorted) {
       const tr = document.createElement("tr");
       tr.className = "unit-row" + (selectedUnit === u.unit_id ? " selected" : "");
       tr.onclick = () => selectUnit(u.unit_id);
+
+      const sig = primarySignal(u.unit_id);
+      const primaryCell = sig
+        ? `<span class="sub-note">${sig.label}</span> <span class="mono dev-${devClass(sig.deviation_sigma)}">${sig.deviation_sigma >= 0 ? "+" : ""}${sig.deviation_sigma.toFixed(1)}σ</span>`
+        : `<span class="sub-note">–</span>`;
+
+      // Reconstruction error is on a different scale per subsystem, so the
+      // raw figure is shown with the multiple of that subsystem's own
+      // healthy median next to it -- 62.5 means nothing, "×95 healthy" does.
+      const err = u.ae_recon_error;
+      const errCell = err != null
+        ? `<span class="mono">${err.toFixed(2)}</span>` +
+          (u.error_vs_healthy_median != null
+            ? ` <span class="sub-note">×${u.error_vs_healthy_median >= 10 ? u.error_vs_healthy_median.toFixed(0) : u.error_vs_healthy_median.toFixed(1)}</span>`
+            : "")
+        : "–";
+
       tr.innerHTML = `
-        <td>${u.unit_id}</td>
+        <td class="mono">${u.unit_id}</td>
         <td>${u.subsystem_type}</td>
-        <td>${u.train_id}</td>
+        <td class="mono">${u.train_id}</td>
         <td><span class="badge ${u.risk_level}">${u.risk_level}</span></td>
-        <td>${u.ae_recon_error != null ? u.ae_recon_error.toFixed(2) : "–"}</td>
+        <td>${healthCell(u)}</td>
+        <td class="num-col">${errCell}</td>
+        <td>${primaryCell}</td>
       `;
       body.appendChild(tr);
     }
@@ -1346,99 +1732,280 @@ function renderStatusDonut(counts) {
 }
 
 // --- Train diagram (digital twin) --------------------------------------
+//
+// Two layers, and the split is deliberate:
+//
+//   The SILHOUETTE (car body, roof HVAC pack, door leaf, bogie, rail) is
+//   for orientation only. It answers "which physical thing am I looking
+//   at", and is drawn to be recognisable, not to scale.
+//
+//   The CHIP GRID under each car is the actual instrument. Eight chips per
+//   car, each one a system a depot engineer would be dispatched against,
+//   with its current reading and a colour.
+//
+// Two different colour rules run here, which is why the legend names them
+// separately:
+//
+//   * A UNIT chip (Door, Bogie) is coloured by that unit's fused risk level
+//     -- the same Normal/Caution/Warning/Critical the fleet table shows,
+//     straight from the pipeline.
+//   * A SYSTEM chip (A/C, Light, Batt, Radio, Traction, Brake) is coloured
+//     by how far that one sensor channel sits from the healthy fleet mean.
+//     It has to work this way because the car unit carries HVAC, lighting,
+//     battery and radio on ONE model: a red carriage tells you the car is
+//     unwell but not which of the four systems is responsible, and "which
+//     one" is the entire question a maintainer is asking.
+//
+// Deviation arrives from /fleet-signals already signed so positive is
+// always the deteriorating direction, so brake capacity falling and bearing
+// temperature rising both drive their chip toward red without this code
+// needing to know which way is bad for which channel.
+
 let trainDiagramBuilt = false;
+let diagramSignature = "";
+const chipIndex = {};   // chip element id -> {unitId, signal, label, kind}
+
+// Geometry. Pulled out because several of these are load-bearing for each
+// other (the chip grid starts below the rail, the rail below the wheels).
+const DG = {
+  startX: 118, carW: 372, carH: 62, carGap: 26,
+  rowH: 186, topPad: 10,
+  chipH: 21, chipGap: 6, chipCols: 4,
+};
+
+// One chip per system a work order could be raised against. `kind: "unit"`
+// reads the fused risk level of a whole modelled unit; `kind: "signal"`
+// reads one channel inside a unit.
+const CAR_CHIPS = [
+  { key: "door",     label: "DOOR",  kind: "unit",   subsystem: "door" },
+  { key: "bogie",    label: "BOGIE", kind: "unit",   subsystem: "bogie" },
+  { key: "traction", label: "TRACT", kind: "signal", subsystem: "bogie", signal: "traction_motor_temp_c" },
+  { key: "brake",    label: "BRAKE", kind: "signal", subsystem: "bogie", signal: "brake_capacity_pct" },
+  { key: "hvac",     label: "A/C",   kind: "signal", subsystem: "car",   signal: "hvac_supply_temp_c" },
+  { key: "light",    label: "LIGHT", kind: "signal", subsystem: "car",   signal: "lighting_load_pct" },
+  { key: "batt",     label: "BATT",  kind: "signal", subsystem: "car",   signal: "battery_soc_pct" },
+  { key: "radio",    label: "RADIO", kind: "signal", subsystem: "car",   signal: "comms_rssi_dbm" },
+];
 
 function groupUnitsByTrain(units) {
   const byTrain = {};
   for (const u of units) {
-    if (!byTrain[u.train_id]) byTrain[u.train_id] = { doors: [], bogies: [] };
-    byTrain[u.train_id][u.subsystem_type === "door" ? "doors" : "bogies"].push(u);
+    if (!byTrain[u.train_id]) byTrain[u.train_id] = { door: [], bogie: [], car: [] };
+    const bucket = byTrain[u.train_id][u.subsystem_type];
+    if (bucket) bucket.push(u);
   }
   for (const t in byTrain) {
-    byTrain[t].doors.sort((a, b) => a.unit_id.localeCompare(b.unit_id));
-    byTrain[t].bogies.sort((a, b) => a.unit_id.localeCompare(b.unit_id));
+    for (const st in byTrain[t]) {
+      byTrain[t][st].sort((a, b) => a.unit_id.localeCompare(b.unit_id));
+    }
   }
   return byTrain;
+}
+
+function chipUnitId(byTrainEntry, chip, carIdx) {
+  const list = byTrainEntry[chip.subsystem] || [];
+  const unit = list[carIdx];
+  return unit ? unit.unit_id : null;
+}
+
+// Current colour + readout for one chip, recomputed from the live caches
+// on every poll so the same function serves both the initial build and the
+// in-place update.
+function chipState(unitId, chip) {
+  if (!unitId) return { color: TEXT_DIM_HEX, text: "–", opacity: 0.1 };
+
+  if (chip.kind === "unit") {
+    const info = fleetCache.find(u => u.unit_id === unitId);
+    if (!info) return { color: TEXT_DIM_HEX, text: "–", opacity: 0.1 };
+    const color = RISK_COLORS[info.risk_level] || TEXT_DIM_HEX;
+    const text = info.health_index != null ? String(Math.round(info.health_index)) : "–";
+    return { color, text, opacity: info.risk_level === "Normal" ? 0.12 : 0.2 };
+  }
+
+  const sig = signalOf(unitId, chip.signal);
+  if (!sig) return { color: TEXT_DIM_HEX, text: "–", opacity: 0.1 };
+  const color = devColor(sig.deviation_sigma);
+  return {
+    color,
+    text: fmtWithUnit(sig.value, sig.unit),
+    opacity: (sig.deviation_sigma != null && sig.deviation_sigma >= 1) ? 0.2 : 0.12,
+  };
+}
+
+function chipSvg(id, x, y, w, h, label, state) {
+  return `<g class="diagram-chip" id="${id}">
+      <rect class="chip-bg" x="${x}" y="${y}" width="${w}" height="${h}" rx="4"
+            fill="${state.color}" fill-opacity="${state.opacity}" stroke="${BORDER_HEX}" stroke-width="1"/>
+      <rect class="chip-bar" x="${x}" y="${y}" width="3" height="${h}" rx="1.5" fill="${state.color}"/>
+      <text x="${x + 9}" y="${y + h / 2 + 3.5}" fill="${TEXT_DIM_HEX}" font-size="8.5"
+            font-family="'Inter', sans-serif" font-weight="700" letter-spacing="0.4">${label}</text>
+      <text class="chip-val" x="${x + w - 7}" y="${y + h / 2 + 3.5}" text-anchor="end"
+            fill="${state.color}" font-size="9.5" font-family="'Inter', sans-serif"
+            font-weight="600">${state.text}</text>
+    </g>`;
 }
 
 function buildTrainDiagram(units) {
   const byTrain = groupUnitsByTrain(units);
   const trainIds = Object.keys(byTrain).sort();
-  const rowHeight = 100;
-  const topPad = 16;
-  const width = 1000;
-  const height = topPad + trainIds.length * rowHeight + 6;
-  const carW = 300, carH = 46, gap = 18, startX = 130;
+  const maxCars = Math.max(1, ...trainIds.map(t => Math.max(
+    byTrain[t].door.length, byTrain[t].bogie.length, byTrain[t].car.length)));
 
-  let svg = `<svg viewBox="0 0 ${width} ${height}" width="100%" height="${height}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">`;
+  const width = DG.startX + maxCars * (DG.carW + DG.carGap) + 8;
+  const height = DG.topPad + trainIds.length * DG.rowH + 8;
+  const chipW = (DG.carW - (DG.chipCols - 1) * DG.chipGap) / DG.chipCols;
+
+  for (const k in chipIndex) delete chipIndex[k];
+
+  let svg = `<svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">`;
 
   trainIds.forEach((trainId, rowIdx) => {
-    const { doors, bogies } = byTrain[trainId];
-    const nCars = Math.max(doors.length, bogies.length, 1);
-    const rowTop = topPad + rowIdx * rowHeight;
-    const carY = rowTop + 10;
+    const entry = byTrain[trainId];
+    const nCars = Math.max(entry.door.length, entry.bogie.length, entry.car.length, 1);
+    const rowTop = DG.topPad + rowIdx * DG.rowH;
+    const carY = rowTop + 6;
 
-    svg += `<text x="12" y="${carY + carH / 2 + 4}" fill="${TEXT_DIM_HEX}" font-size="12" font-family="'Inter', sans-serif" font-weight="600">${trainId}</text>`;
+    // Worst Health Index anywhere in this consist, so a train can be
+    // triaged without reading every chip in its row.
+    const consistUnits = [...entry.door, ...entry.bogie, ...entry.car];
+    const indices = consistUnits.map(u => u.health_index).filter(v => v != null);
+    const worst = indices.length ? Math.min(...indices) : null;
+    const worstUnit = worst != null ? consistUnits.find(u => u.health_index === worst) : null;
+    const worstColor = worstUnit ? healthColor(worstUnit.health_band) : TEXT_DIM_HEX;
+
+    svg += `<text x="10" y="${carY + 20}" fill="${"#E9EEF3"}" font-size="12.5"
+              font-family="'Inter', sans-serif" font-weight="700">${trainId}</text>`;
+    svg += `<text x="10" y="${carY + 36}" fill="${TEXT_DIM_HEX}" font-size="9.5"
+              font-family="'Inter', sans-serif">worst health</text>`;
+    svg += `<text x="10" y="${carY + 52}" fill="${worstColor}" font-size="15"
+              font-family="'Inter', sans-serif" font-weight="700">${worst != null ? Math.round(worst) : "–"}</text>`;
 
     for (let c = 0; c < nCars; c++) {
-      const carX = startX + c * (carW + gap);
+      const carX = DG.startX + c * (DG.carW + DG.carGap);
+      const carUnit = entry.car[c];
+      const doorUnit = entry.door[c];
+      const bogieUnit = entry.bogie[c];
 
+      // Coupling to the next car
       if (c < nCars - 1) {
-        svg += `<rect x="${carX + carW}" y="${carY + carH / 2 - 4}" width="${gap}" height="8" fill="${BORDER_HEX}"/>`;
-      }
-      // car body + decorative windows
-      svg += `<rect x="${carX}" y="${carY}" width="${carW}" height="${carH}" rx="9" fill="${PANEL_ALT_HEX}" stroke="${BORDER_HEX}" stroke-width="1.5"/>`;
-      svg += `<rect x="${carX + 16}" y="${carY + 8}" width="26" height="16" rx="3" fill="${BG_HEX}" stroke="${BORDER_HEX}"/>`;
-      svg += `<rect x="${carX + carW - 42}" y="${carY + 8}" width="26" height="16" rx="3" fill="${BG_HEX}" stroke="${BORDER_HEX}"/>`;
-
-      const door = doors[c];
-      if (door) {
-        const doorW = 20, doorH = carH - 8;
-        const doorX = carX + carW * 0.6, doorY = carY + 4;
-        svg += `<g class="diagram-unit" data-unit-id="${door.unit_id}" id="diagram-unit-${door.unit_id}">`;
-        svg += `<rect class="diagram-shape" x="${doorX}" y="${doorY}" width="${doorW}" height="${doorH}" rx="3" fill="${RISK_COLORS[door.risk_level] || TEXT_DIM_HEX}" stroke="${BG_HEX}" stroke-width="1.5"/>`;
-        svg += `<line x1="${doorX + doorW / 2}" y1="${doorY + 2}" x2="${doorX + doorW / 2}" y2="${doorY + doorH - 2}" stroke="${BG_HEX}" stroke-width="1"/>`;
-        svg += `</g>`;
+        svg += `<rect x="${carX + DG.carW}" y="${carY + DG.carH / 2 - 3}" width="${DG.carGap}" height="6" fill="${BORDER_HEX}"/>`;
       }
 
-      const bogie = bogies[c];
-      if (bogie) {
-        const frameW = 64, frameH = 12, wheelR = 7;
-        const bogieCX = carX + carW / 2, bogieY = carY + carH + 6;
-        const wheelCY = bogieY + frameH + wheelR;
-        svg += `<g class="diagram-unit" data-unit-id="${bogie.unit_id}" id="diagram-unit-${bogie.unit_id}">`;
-        svg += `<rect class="diagram-shape" x="${bogieCX - frameW / 2}" y="${bogieY}" width="${frameW}" height="${frameH}" rx="3" fill="${RISK_COLORS[bogie.risk_level] || TEXT_DIM_HEX}" stroke="${BG_HEX}" stroke-width="1.5"/>`;
-        svg += `<circle cx="${bogieCX - frameW / 2 + 12}" cy="${wheelCY}" r="${wheelR}" fill="${BG_HEX}" stroke="${BORDER_HEX}"/>`;
-        svg += `<circle cx="${bogieCX + frameW / 2 - 12}" cy="${wheelCY}" r="${wheelR}" fill="${BG_HEX}" stroke="${BORDER_HEX}"/>`;
-        svg += `</g>`;
-        svg += `<line x1="${carX - 6}" y1="${wheelCY + wheelR + 5}" x2="${carX + carW + 6}" y2="${wheelCY + wheelR + 5}" stroke="${BORDER_HEX}" stroke-width="2"/>`;
+      // Roof-mounted HVAC pack -- part of the car unit, and the one piece
+      // of the silhouette that is itself a monitored system.
+      const hvacState = chipState(carUnit ? carUnit.unit_id : null, CAR_CHIPS.find(ch => ch.key === "hvac"));
+      svg += `<g class="diagram-unit" data-unit-id="${carUnit ? carUnit.unit_id : ""}">
+          <rect class="diagram-shape" x="${carX + DG.carW * 0.30}" y="${carY - 10}" width="${DG.carW * 0.40}" height="10" rx="3"
+                fill="${hvacState.color}" fill-opacity="0.5" stroke="${BORDER_HEX}" stroke-width="1"/>
+        </g>`;
+
+      // Car body + windows
+      svg += `<rect x="${carX}" y="${carY}" width="${DG.carW}" height="${DG.carH}" rx="10"
+                fill="${PANEL_ALT_HEX}" stroke="${BORDER_HEX}" stroke-width="1.5"/>`;
+      // Saloon lighting glow behind the windows, so a lighting fault is
+      // visible on the silhouette and not only in its chip.
+      const lightState = chipState(carUnit ? carUnit.unit_id : null, CAR_CHIPS.find(ch => ch.key === "light"));
+      for (let w = 0; w < 4; w++) {
+        const wx = carX + 22 + w * 54;
+        if (wx + 38 > carX + DG.carW * 0.58) break;
+        svg += `<rect x="${wx}" y="${carY + 12}" width="38" height="20" rx="3"
+                  fill="${lightState.color}" fill-opacity="0.16" stroke="${BORDER_HEX}" stroke-width="1"/>`;
       }
+      svg += `<text x="${carX + 14}" y="${carY + DG.carH - 9}" fill="${TEXT_DIM_HEX}" font-size="9"
+                font-family="'Inter', sans-serif" font-weight="600">${carUnit ? carUnit.unit_id : "CAR " + (c + 1)}</text>`;
+
+      // Door leaf
+      if (doorUnit) {
+        const doorW = 26, doorH = DG.carH - 14;
+        const doorX = carX + DG.carW * 0.68, doorY = carY + 7;
+        const risk = RISK_COLORS[doorUnit.risk_level] || TEXT_DIM_HEX;
+        svg += `<g class="diagram-unit" data-unit-id="${doorUnit.unit_id}" id="diagram-unit-${doorUnit.unit_id}">
+            <rect class="diagram-shape" x="${doorX}" y="${doorY}" width="${doorW}" height="${doorH}" rx="3"
+                  fill="${risk}" stroke="${BG_HEX}" stroke-width="1.5"/>
+            <line x1="${doorX + doorW / 2}" y1="${doorY + 3}" x2="${doorX + doorW / 2}" y2="${doorY + doorH - 3}"
+                  stroke="${BG_HEX}" stroke-width="1"/>
+          </g>`;
+      }
+
+      // Bogie + wheelset
+      const bogieY = carY + DG.carH + 5;
+      const wheelCY = bogieY + 13 + 8;
+      if (bogieUnit) {
+        const frameW = 96, frameH = 13, wheelR = 8;
+        const cx = carX + DG.carW / 2;
+        const risk = RISK_COLORS[bogieUnit.risk_level] || TEXT_DIM_HEX;
+        svg += `<g class="diagram-unit" data-unit-id="${bogieUnit.unit_id}" id="diagram-unit-${bogieUnit.unit_id}">
+            <rect class="diagram-shape" x="${cx - frameW / 2}" y="${bogieY}" width="${frameW}" height="${frameH}" rx="3"
+                  fill="${risk}" stroke="${BG_HEX}" stroke-width="1.5"/>
+            <circle cx="${cx - frameW / 2 + 16}" cy="${wheelCY}" r="${wheelR}" fill="${BG_HEX}" stroke="${BORDER_HEX}" stroke-width="1.5"/>
+            <circle cx="${cx + frameW / 2 - 16}" cy="${wheelCY}" r="${wheelR}" fill="${BG_HEX}" stroke="${BORDER_HEX}" stroke-width="1.5"/>
+          </g>`;
+      }
+      const railY = wheelCY + 8 + 4;
+      svg += `<line x1="${carX - 10}" y1="${railY}" x2="${carX + DG.carW + 10}" y2="${railY}"
+                stroke="${BORDER_HEX}" stroke-width="2"/>`;
+
+      // Chip grid: 2 rows of 4, aligned to the car it belongs to.
+      const chipsTop = railY + 12;
+      CAR_CHIPS.forEach((chip, idx) => {
+        const col = idx % DG.chipCols;
+        const row = Math.floor(idx / DG.chipCols);
+        const x = carX + col * (chipW + DG.chipGap);
+        const y = chipsTop + row * (DG.chipH + DG.chipGap);
+        const unitId = chipUnitId(entry, chip, c);
+        const id = `chip-${trainId}-${c}-${chip.key}`;
+        chipIndex[id] = { unitId, signal: chip.signal || null, label: chip.label, kind: chip.kind };
+        svg += chipSvg(id, x, y, chipW, DG.chipH, chip.label, chipState(unitId, chip));
+      });
     }
   });
 
   svg += `</svg>`;
-  document.getElementById("trainDiagramSvgWrap").innerHTML = svg;
-
   const wrap = document.getElementById("trainDiagramSvgWrap");
-  wrap.addEventListener("mousemove", onDiagramMouseMove);
-  wrap.addEventListener("mouseleave", () => { document.getElementById("diagramTooltip").hidden = true; });
-  wrap.addEventListener("click", onDiagramClick);
+  wrap.innerHTML = svg;
+
+  if (!wrap.dataset.bound) {
+    wrap.addEventListener("mousemove", onDiagramMouseMove);
+    wrap.addEventListener("mouseleave", () => { document.getElementById("diagramTooltip").hidden = true; });
+    wrap.addEventListener("click", onDiagramClick);
+    wrap.dataset.bound = "1";
+  }
 
   trainDiagramBuilt = true;
 }
 
+// In-place refresh. The SVG is only rebuilt when the fleet's shape changes
+// (a unit appears or disappears); an ordinary poll just repaints fills and
+// readouts, so hovering a chip while the page refreshes does not tear the
+// tooltip out from under the cursor.
 function updateTrainDiagramColors(units) {
   for (const u of units) {
     const g = document.getElementById(`diagram-unit-${u.unit_id}`);
     if (!g) continue;
     const shape = g.querySelector(".diagram-shape");
-    if (shape) shape.setAttribute("fill", RISK_COLORS[u.risk_level] || "#555");
+    if (shape) shape.setAttribute("fill", RISK_COLORS[u.risk_level] || TEXT_DIM_HEX);
+  }
+
+  for (const [id, def] of Object.entries(chipIndex)) {
+    const g = document.getElementById(id);
+    if (!g) continue;
+    const chip = CAR_CHIPS.find(ch => ch.label === def.label);
+    if (!chip) continue;
+    const state = chipState(def.unitId, chip);
+    const bg = g.querySelector(".chip-bg");
+    const bar = g.querySelector(".chip-bar");
+    const val = g.querySelector(".chip-val");
+    if (bg) { bg.setAttribute("fill", state.color); bg.setAttribute("fill-opacity", state.opacity); }
+    if (bar) bar.setAttribute("fill", state.color);
+    if (val) { val.setAttribute("fill", state.color); val.textContent = state.text; }
   }
   updateDiagramSelection();
 }
 
 function renderTrainDiagram(units) {
-  if (!trainDiagramBuilt) {
+  const signature = units.map(u => u.unit_id).sort().join(",");
+  if (!trainDiagramBuilt || signature !== diagramSignature) {
+    diagramSignature = signature;
     buildTrainDiagram(units);
   } else {
     updateTrainDiagramColors(units);
@@ -1446,31 +2013,62 @@ function renderTrainDiagram(units) {
 }
 
 function updateDiagramSelection() {
-  document.querySelectorAll("#trainDiagramSvgWrap .diagram-unit.selected").forEach(el => el.classList.remove("selected"));
-  if (selectedUnit) {
-    const g = document.getElementById(`diagram-unit-${selectedUnit}`);
-    if (g) g.classList.add("selected");
+  document.querySelectorAll("#trainDiagramSvgWrap .diagram-unit.selected, #trainDiagramSvgWrap .diagram-chip.selected")
+    .forEach(el => el.classList.remove("selected"));
+  if (!selectedUnit) return;
+  document.querySelectorAll(`#trainDiagramSvgWrap .diagram-unit[data-unit-id="${selectedUnit}"]`)
+    .forEach(el => el.classList.add("selected"));
+  for (const [id, def] of Object.entries(chipIndex)) {
+    if (def.unitId === selectedUnit) {
+      const g = document.getElementById(id);
+      if (g) g.classList.add("selected");
+    }
   }
 }
 
+function diagramTargetFrom(e) {
+  const chipEl = e.target.closest(".diagram-chip");
+  if (chipEl && chipIndex[chipEl.id]) return { unitId: chipIndex[chipEl.id].unitId, def: chipIndex[chipEl.id] };
+  const unitEl = e.target.closest(".diagram-unit");
+  if (unitEl && unitEl.dataset.unitId) return { unitId: unitEl.dataset.unitId, def: null };
+  return null;
+}
+
 function onDiagramMouseMove(e) {
-  const g = e.target.closest(".diagram-unit");
   const tooltip = document.getElementById("diagramTooltip");
-  if (!g) { tooltip.hidden = true; return; }
-  const uid = g.dataset.unitId;
-  const info = fleetCache.find(u => u.unit_id === uid);
+  const target = diagramTargetFrom(e);
+  if (!target || !target.unitId) { tooltip.hidden = true; return; }
+
+  const info = fleetCache.find(u => u.unit_id === target.unitId);
   if (!info) { tooltip.hidden = true; return; }
-  tooltip.hidden = false;
+
+  // A chip hover leads with the channel you are pointing at; the unit it
+  // belongs to follows underneath, so the reading is never shown without
+  // the unit whose model produced it.
+  let head = `<b>${info.unit_id}</b>`;
+  if (target.def && target.def.signal) {
+    const sig = signalOf(target.unitId, target.def.signal);
+    if (sig) {
+      const dev = sig.deviation_sigma;
+      head = `<b>${sig.label}</b> — ${fmtWithUnit(sig.value, sig.unit)}`
+        + (dev != null ? `<br><span style="color:${devColor(dev)}">${dev >= 0 ? "+" : ""}${dev.toFixed(1)}σ from healthy fleet mean</span>` : "")
+        + `<br><span style="opacity:0.75">${info.unit_id}</span>`;
+    }
+  }
+
   const err = info.ae_recon_error != null ? info.ae_recon_error.toFixed(2) : "–";
-  tooltip.innerHTML = `<b>${uid}</b><br><span class="badge ${info.risk_level}">${info.risk_level}</span> &nbsp;recon error ${err}`;
+  const health = info.health_index != null ? `${Math.round(info.health_index)}/100` : "–";
+  tooltip.hidden = false;
+  tooltip.innerHTML = `${head}<br><span class="badge ${info.risk_level}">${info.risk_level}</span>
+      &nbsp;Health ${health} &nbsp;·&nbsp; recon err ${err}`;
   tooltip.style.left = (e.clientX + 14) + "px";
   tooltip.style.top = (e.clientY + 14) + "px";
 }
 
 function onDiagramClick(e) {
-  const g = e.target.closest(".diagram-unit");
-  if (!g) return;
-  selectUnit(g.dataset.unitId);
+  const target = diagramTargetFrom(e);
+  if (!target || !target.unitId) return;
+  selectUnit(target.unitId);
   document.getElementById("unitDetail").scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
@@ -1570,15 +2168,76 @@ async function selectUnit(unitId) {
   }
 }
 
+// Per-signal readout, grouped by the physical system each channel belongs
+// to. Modelled channels (the ones the autoencoder actually sees) are shown
+// with their deviation from the healthy fleet; context channels are shown
+// dimmed and without one, because nothing is comparing them to anything.
+function renderSignalTable(signalDetail) {
+  if (!signalDetail || !signalDetail.length) return "";
+  const groups = [];
+  for (const sg of signalDetail) {
+    let g = groups.find(x => x.name === sg.group);
+    if (!g) { g = { name: sg.group, rows: [] }; groups.push(g); }
+    g.rows.push(sg);
+  }
+
+  let html = `<table class="sig-table">`;
+  for (const g of groups) {
+    if (groups.length > 1) {
+      html += `<tr><td class="sig-group-head" colspan="3">${g.name}</td></tr>`;
+    }
+    for (const sg of g.rows) {
+      const dev = sg.deviation_sigma;
+      const devCell = dev != null
+        ? `<span class="dev-${devClass(dev)}">${dev >= 0 ? "+" : ""}${dev.toFixed(1)}σ</span>`
+        : `<span class="sub-note">context</span>`;
+      const arrow = sg.worse === "low" ? "↓ worse" : "↑ worse";
+      html += `<tr class="${sg.modelled ? "" : "sig-context"}">
+          <td class="s-label" title="${sg.label} — ${arrow}">${sg.label}</td>
+          <td class="s-val mono">${fmtWithUnit(sg.value, sg.unit)}</td>
+          <td class="s-dev mono">${devCell}</td>
+        </tr>`;
+    }
+  }
+  html += `</table>
+    <div class="sub-note" style="margin-top:7px;">
+      σ is measured against the healthy fleet's pooled distribution for that channel, signed so positive is always
+      the deteriorating direction. That pool spans every duty state, so ±1–2σ is ordinary time-of-day variation —
+      a stabled train really does show low traction motor speed and a cool motor. The detection comes from the
+      combination the autoencoder saw across the window, not from any single channel crossing a line.
+    </div>`;
+  return html;
+}
+
 function renderUnitDetail(d) {
   const body = document.getElementById("unitDetailBody");
-  const sigEntries = Object.entries(d.latest.signals).map(([k, v]) => `${k}: <b>${v}</b>`).join(" &nbsp;|&nbsp; ");
+  const L = d.latest;
+
+  // Headline: the bounded index first because it is scannable, then the raw
+  // reconstruction error it was derived from, with the healthy median and
+  // the Critical cut point it is being measured against. The index never
+  // appears on its own -- it is a restatement of the number below it, and
+  // showing one without the other is how "71" came to mean nothing.
+  const hiColor = healthColor(L.health_band);
+  const headline = L.health_index != null
+    ? `<div class="hi-big">
+         <span class="v" style="color:${hiColor}">${L.health_index.toFixed(0)}</span>
+         <span class="of">/ 100 Health Index</span>
+         <span class="band" style="color:${hiColor}">${L.health_band}</span>
+       </div>
+       <div class="sub-note" style="margin-top:5px;">
+         Reconstruction error <b class="mono">${L.ae_recon_error != null ? L.ae_recon_error.toFixed(2) : "–"}</b>
+         ${L.error_vs_healthy_median != null ? `· <b class="mono">×${L.error_vs_healthy_median >= 10 ? L.error_vs_healthy_median.toFixed(0) : L.error_vs_healthy_median.toFixed(1)}</b> the healthy fleet median (<span class="mono">${L.healthy_median_recon_error}</span>)` : ""}
+         · Critical cut point <span class="mono">${L.thresholds ? L.thresholds.Critical : "–"}</span>
+       </div>`
+    : `<div class="sub-note">Not yet scored — this unit needs a full window of readings.</div>`;
 
   body.innerHTML = `
     <div style="margin-bottom:14px;">
       <div class="ud-unit-title">${d.unit_id} <span class="badge ${d.latest.risk_level}" style="margin-left:6px; vertical-align:middle;">${d.latest.risk_level}</span></div>
       <div style="color:var(--text-dim); font-size:11.5px; margin-top:4px;">${d.subsystem_type} · ${d.train_id} · as of ${d.latest.timestamp}</div>
-      <div style="font-size:12px; margin-top:10px;">${sigEntries}</div>
+      <div style="margin-top:12px;">${headline}</div>
+      <div style="margin-top:12px;">${renderSignalTable(L.signal_detail)}</div>
     </div>
     <div id="traceSteps"></div>
     <div class="action-box">
@@ -2119,6 +2778,262 @@ async function pollLiveFeed() {
   }
 }
 
+// --- External services strip ---------------------------------------------
+//
+// These three call outside providers, each needs its own server-side key,
+// and each was previously invisible until a unit was clicked -- there was
+// no way to tell from the dashboard whether Claude and Exa were even
+// configured, or what they were for. This panel answers both, and says
+// where in the UI each one actually appears.
+//
+// None of them can change a risk level. Every score on this page is
+// computed locally by pipeline/ and survives all three being switched off.
+
+const AI_SERVICES = [
+  {
+    key: "copilot",
+    name: "Maintenance Copilot",
+    provider: "Anthropic — Claude",
+    endpoint: "/copilot-status",
+    desc: "Rewrites a unit's existing decision trace in plain English: why it was flagged, a hypothesised mechanical cause, and a suggested inspection. One structured API call per unit — not an agent, no tools, no loop. It only ever sees numbers the pipeline already computed.",
+    where: "Unit Detail panel — appears automatically when you select any unit.",
+  },
+  {
+    key: "research",
+    name: "Investigate Fault",
+    provider: "Exa — web search",
+    endpoint: "/research-status",
+    desc: "Searches published engineering literature for documented failures with a similar signal signature. Deliberately non-generative: the bullets are extracted from result titles and highlights, so no model can invent a claim about this unit.",
+    where: "Unit Detail panel — click the <b>Investigate Fault</b> button.",
+  },
+  {
+    key: "logistics",
+    name: "Depot Logistics",
+    provider: "Google — Routes API",
+    endpoint: "/logistics-status",
+    desc: "Works out which depot a flagged train should be routed to, using real driving distances and travel times between demo coordinates. The train positions themselves are fabricated — the synthetic dataset carries no geolocation.",
+    where: "Unit Detail panel — shown for Warning and Critical units only.",
+  },
+];
+
+async function loadAiStatus() {
+  const grid = document.getElementById("aiGrid");
+  const cards = await Promise.all(AI_SERVICES.map(async svc => {
+    let status, detail;
+    try {
+      const data = await apiGet(svc.endpoint);
+      if (data.api_key_configured) {
+        status = { cls: "live", text: "Live" };
+        const cached = Object.keys(data.cached_units || {}).length;
+        detail = data.model ? `Model ${data.model}` : (data.search_type ? `Search mode: ${data.search_type}` : "");
+        if (cached) detail += `${detail ? " · " : ""}${cached} unit${cached === 1 ? "" : "s"} cached`;
+      } else {
+        status = { cls: "nokey", text: "No API key" };
+        detail = "Set its key in api/.env and restart the API — everything else on this page works without it.";
+      }
+    } catch (e) {
+      status = { cls: "down", text: "Unreachable" };
+      detail = "The API did not answer this status check.";
+    }
+    return `<div class="ai-card">
+        <div class="ai-card-head">
+          <div>
+            <div class="ai-card-name">${svc.name}</div>
+            <div class="ai-card-provider">${svc.provider}</div>
+          </div>
+          <span class="ai-pill ${status.cls}">${status.text}</span>
+        </div>
+        <div class="ai-card-desc">${svc.desc}</div>
+        ${detail ? `<div class="sub-note">${detail}</div>` : ""}
+        <div class="ai-card-where">Where: ${svc.where}</div>
+      </div>`;
+  }));
+  grid.innerHTML = cards.join("");
+}
+
+// --- CSV upload ----------------------------------------------------------
+//
+// Posts the file to /upload, which scores it with the models already on
+// disk. No retraining, and nothing is persisted: the synthetic fleet the
+// rest of this page reads is untouched by an upload.
+//
+// The one thing this flow must never do is show a tidy table of red units
+// without saying why they might be red. If the uploaded data comes from
+// different equipment (or the same signals in different units), the
+// scaler's healthy mean/std do not apply to it and everything will score as
+// anomalous. The API returns that as an explicit warning, and the warnings
+// render ABOVE the results, not below them.
+
+async function loadUploadSchema() {
+  const el = document.getElementById("uploadSchemaHint");
+  try {
+    const data = await apiGet("/upload-schema");
+    const parts = Object.entries(data.subsystems).map(([st, cfg]) =>
+      `<b>${st}</b>: <code>${cfg.signal_cols.join("</code> <code>")}</code>`
+    );
+    el.innerHTML = `Expected signal columns — ${parts.join(" &nbsp;·&nbsp; ")}.
+      Plus a unit id and a timestamp. Column names are matched
+      case- and separator-insensitively against a list of common aliases, so
+      <code>Motor Current (A)</code> and <code>motor_current_amps</code> both resolve.
+      Each unit needs at least ${Object.values(data.subsystems)[0].window_length} readings to be scored.`;
+  } catch (e) {
+    el.textContent = "Could not load the expected column list — the API may be down.";
+  }
+}
+
+function uploadBusy(filename) {
+  document.getElementById("uploadResult").innerHTML =
+    `<div class="upload-busy"><span class="upload-spinner"></span>Scoring ${filename}…</div>`;
+}
+
+function uploadError(message) {
+  document.getElementById("uploadResult").innerHTML =
+    `<div class="upload-error">
+       <div class="t">Could not score this file</div>
+       <div>${message}</div>
+     </div>
+     <div style="margin-top:12px;"><button class="upload-reset" onclick="resetUpload()">Try another file</button></div>`;
+}
+
+function resetUpload() {
+  document.getElementById("uploadResult").innerHTML = "";
+  document.getElementById("uploadInput").value = "";
+  document.getElementById("uploadZoneWrap").hidden = false;
+}
+
+function renderUploadResult(r) {
+  const warnings = (r.warnings || []).map(w => `<div class="upload-warn">${w}</div>`).join("");
+
+  const rows = r.units.map(u => {
+    if (!u.scored) {
+      return `<tr>
+          <td class="mono">${u.unit_id}</td>
+          <td class="mono">${u.train_id}</td>
+          <td colspan="4"><span class="sub-note">${u.note}</span></td>
+        </tr>`;
+    }
+    const color = healthColor(u.health_band);
+    const sigs = Object.entries(u.signals)
+      .map(([k, v]) => `${k}=${fmtNum(v)}`).join(", ");
+    return `<tr>
+        <td class="mono">${u.unit_id}</td>
+        <td class="mono">${u.train_id}</td>
+        <td><span class="badge ${u.risk_level}">${u.risk_level}</span></td>
+        <td>
+          <span class="hi-cell">
+            <span class="hi-value" style="color:${color}">${u.health_index.toFixed(0)}</span>
+            <span class="hi-meter"><i style="width:${Math.max(2, u.health_index)}%; background:${color}"></i></span>
+          </span>
+        </td>
+        <td class="num-col mono">${u.ae_recon_error.toFixed(2)}
+          <span class="sub-note">×${u.error_vs_healthy_median >= 10 ? u.error_vs_healthy_median.toFixed(0) : u.error_vs_healthy_median.toFixed(1)}</span></td>
+        <td class="sub-note mono">${sigs}</td>
+      </tr>`;
+  }).join("");
+
+  const counts = RISK_ORDER.map(l => r.status_counts[l] || 0);
+  const flagged = (r.status_counts.Warning || 0) + (r.status_counts.Critical || 0);
+
+  // The distribution check is the honest part of this panel: it says, per
+  // signal, how far the uploaded data sits from the population the model was
+  // calibrated on. A big number here means the risk levels above are not
+  // trustworthy, however confident the table looks.
+  const distRows = r.distribution_check.map(d => `<tr>
+      <td class="s-label">${d.label}</td>
+      <td class="s-val mono">${fmtWithUnit(d.upload_mean, d.unit)}</td>
+      <td class="s-val mono">${fmtWithUnit(d.training_healthy_mean, d.unit)}</td>
+      <td class="s-dev mono dev-${devClass(Math.abs(d.shift_sigma))}">${d.shift_sigma >= 0 ? "+" : ""}${d.shift_sigma.toFixed(1)}σ</td>
+    </tr>`).join("");
+
+  document.getElementById("uploadZoneWrap").hidden = true;
+  document.getElementById("uploadResult").innerHTML = `
+    ${warnings}
+    <div class="upload-summary-row">
+      <div class="upload-stat"><div class="v">${r.scored_unit_count}<span class="sub-note"> / ${r.unit_count}</span></div><div class="k">Units scored</div></div>
+      <div class="upload-stat"><div class="v">${r.rows_scored.toLocaleString("en-US")}</div><div class="k">Rows</div></div>
+      <div class="upload-stat"><div class="v" style="color:${flagged ? RISK_COLORS.Critical : RISK_COLORS.Normal}">${flagged}</div><div class="k">Warning + Critical</div></div>
+      <div class="upload-stat"><div class="v">${r.subsystem_type}</div><div class="k">Model used${r.subsystem_was_detected ? " (detected)" : ""}</div></div>
+      <div class="upload-stat" style="flex:1; min-width:200px;">
+        <div class="v" style="font-size:12px; font-family:var(--font-body); font-weight:500;">${r.time_range.start} → ${r.time_range.end}</div>
+        <div class="k">Time range in file</div>
+      </div>
+    </div>
+
+    <div class="sub-note" style="margin-bottom:10px;">
+      ${r.model_note} Counts by level — ${RISK_ORDER.map((l, i) => `${l}: <b>${counts[i]}</b>`).join(" · ")}.
+    </div>
+
+    <div class="upload-table-wrap">
+      <table>
+        <thead><tr>
+          <th>Unit</th><th>Train</th><th>Risk</th><th>Health Index</th><th class="num-col">Recon Err</th><th>Latest signals</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+
+    <div class="fleet-table-title" style="margin-top:18px;">Sanity check — is this the same equipment the model was trained on?</div>
+    <div class="sub-note" style="margin:4px 0 8px 0;">
+      Each signal's mean in your file against the healthy population the scaler was fitted on. Anything past ±3σ means the
+      model is being asked about equipment (or units of measurement) it was never calibrated for, and the risk levels above
+      should not be trusted until the pipeline is retrained on this data.
+    </div>
+    <div class="upload-table-wrap" style="max-height:none;">
+      <table>
+        <thead><tr><th>Signal</th><th>Your file (mean)</th><th>Training healthy (mean)</th><th class="num-col">Shift</th></tr></thead>
+        <tbody>${distRows}</tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:14px;"><button class="upload-reset" onclick="resetUpload()">Score another file</button></div>
+  `;
+}
+
+async function handleUploadFile(file) {
+  if (!file) return;
+  uploadBusy(file.name);
+  const form = new FormData();
+  form.append("file", file);
+  try {
+    const res = await fetch(API_BASE + "/upload", { method: "POST", body: form });
+    const data = await res.json();
+    if (!res.ok) {
+      uploadError(data.detail || `Upload failed (${res.status}).`);
+      return;
+    }
+    renderUploadResult(data);
+  } catch (e) {
+    console.error(e);
+    uploadError("Could not reach the API. Is it running on " + API_BASE + "?");
+  }
+}
+
+function initUpload() {
+  const zone = document.getElementById("dropZone");
+  const input = document.getElementById("uploadInput");
+
+  zone.addEventListener("click", () => input.click());
+  zone.addEventListener("keydown", e => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); input.click(); }
+  });
+  input.addEventListener("change", () => handleUploadFile(input.files[0]));
+
+  // dragover has to be cancelled on every event or the browser navigates to
+  // the dropped file instead of handing it to us.
+  ["dragenter", "dragover"].forEach(ev =>
+    zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.add("dragover"); }));
+  ["dragleave", "drop"].forEach(ev =>
+    zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.remove("dragover"); }));
+  zone.addEventListener("drop", e => {
+    const file = e.dataTransfer.files && e.dataTransfer.files[0];
+    handleUploadFile(file);
+  });
+
+  // Dropping anywhere else on the page must not navigate away either.
+  ["dragover", "drop"].forEach(ev =>
+    window.addEventListener(ev, e => { if (e.target.closest("#dropZone") === null) e.preventDefault(); }));
+}
+
 ["costFailure", "costMaintenance", "fleetMultiplier"].forEach(id => {
   document.getElementById(id).addEventListener("input", recalcImpact);
 });
@@ -2139,6 +3054,10 @@ document.querySelectorAll("th[data-col]").forEach(th => {
   });
 });
 updateFleetFilterButtons();
+
+initUpload();
+loadUploadSchema();
+loadAiStatus();
 
 refreshFleet();
 pollLiveFeed();

@@ -1,9 +1,12 @@
 timestamp,subsystem_id,subsystem_type,fault_type,severity
-2026-08-12 01:02:30.671013718,DOOR_04_2,door,motor_wear,4
-2026-08-13 07:45:23.320651343,BOGIE_06_2,bogie,wheel_flat,4
-2026-08-17 10:15:04.282844726,DOOR_03_2,door,seal_degradation,3
-2026-08-17 13:13:09.872920194,BOGIE_01_2,bogie,wheel_flat,4
-2026-08-19 03:09:12.244117788,DOOR_06_1,door,seal_degradation,4
-2026-08-21 19:47:53.479570924,BOGIE_04_1,bogie,bearing_failure,3
-2026-08-28 14:15:38.977031873,DOOR_01_1,door,seal_degradation,5
-2026-09-02 10:40:02.686019398,BOGIE_02_1,bogie,suspension_wear,5
+2026-08-07 23:34:19.834986153,CAR_05_1,car,hvac_compressor_wear,5
+2026-08-11 00:05:40.949154778,BOGIE_04_1,bogie,brake_pad_wear,4
+2026-08-14 23:39:10.759584786,DOOR_06_1,door,track_misalignment,4
+2026-08-17 09:21:30.358717753,CAR_04_1,car,comms_antenna_fault,4
+2026-08-21 02:40:45.538894961,DOOR_01_1,door,seal_degradation,4
+2026-08-21 19:06:55.424931950,BOGIE_06_2,bogie,bearing_failure,3
+2026-08-24 03:28:49.569006547,DOOR_04_2,door,seal_degradation,4
+2026-08-25 08:32:36.255127765,DOOR_03_2,door,track_misalignment,4
+2026-08-27 00:47:17.738161508,BOGIE_02_1,bogie,wheel_flat,4
+2026-09-02 09:27:37.864492414,CAR_04_2,car,lighting_driver_failure,5
+2026-09-03 21:43:44.694172932,BOGIE_01_2,bogie,wheel_flat,4

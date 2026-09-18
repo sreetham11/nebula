@@ -73,10 +73,25 @@ EXCLUDE_DOMAINS = [
 # column names (pipeline/schema_config.py). Adding a signal to a subsystem
 # means adding a row here, not editing any per-unit logic.
 SIGNAL_PROFILE = {
+    # Running gear
     "vibration_rms": {"term": "vibration", "mechanism": "bearing wear"},
     "temperature_c": {"term": "axle bearing temperature", "mechanism": "bearing overheating"},
+    # Door mechanism
     "cycle_time_sec": {"term": "door cycle time", "mechanism": "mechanism binding and obstruction"},
     "motor_current_amps": {"term": "door motor current", "mechanism": "motor and seal wear"},
+    "motor_temp_c": {"term": "door motor winding temperature", "mechanism": "motor overheating and insulation wear"},
+    "motor_rpm": {"term": "door motor speed loss under load", "mechanism": "mechanism binding and motor torque loss"},
+    # Traction and braking
+    "traction_motor_temp_c": {"term": "traction motor temperature", "mechanism": "traction motor overheating"},
+    "traction_motor_rpm": {"term": "traction motor speed deviation", "mechanism": "traction drive fault"},
+    "brake_capacity_pct": {"term": "brake performance degradation", "mechanism": "friction brake pad and disc wear"},
+    # Car auxiliary systems
+    "hvac_supply_temp_c": {"term": "HVAC supply air temperature", "mechanism": "refrigerant loss and compressor capacity loss"},
+    "hvac_current_amps": {"term": "HVAC compressor current", "mechanism": "compressor wear and condenser fouling"},
+    "lighting_load_pct": {"term": "saloon lighting load loss", "mechanism": "LED driver failure"},
+    "battery_soc_pct": {"term": "auxiliary battery state of charge", "mechanism": "battery cell degradation"},
+    "battery_voltage_v": {"term": "auxiliary battery terminal voltage", "mechanism": "battery cell degradation and internal resistance rise"},
+    "comms_rssi_dbm": {"term": "train radio received signal strength", "mechanism": "antenna and feeder degradation"},
 }
 
 # Fallback when a signal isn't in the table above (e.g. a real LTA feed adds
@@ -84,6 +99,7 @@ SIGNAL_PROFILE = {
 SUBSYSTEM_PROFILE = {
     "bogie": {"noun": "train bogie", "mechanism": "bearing wear"},
     "door": {"noun": "train door", "mechanism": "motor and seal wear"},
+    "car": {"noun": "rail vehicle auxiliary systems", "mechanism": "auxiliary equipment degradation"},
 }
 
 

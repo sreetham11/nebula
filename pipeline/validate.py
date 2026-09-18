@@ -78,26 +78,35 @@ def _plot_unit(unit_df, subsystem_type, subsystem_id, fault_row, thresholds, out
         lead_time_hours = None
 
     plt.style.use("dark_background")
-    fig, axes = plt.subplots(3, 1, figsize=(13, 9), sharex=True,
-                              gridspec_kw={"height_ratios": [1.2, 1, 0.5]})
 
-    # --- Panel 1: raw signals ---
-    ax1 = axes[0]
-    ax1b = ax1.twinx()
-    colors = ["#3498db", "#e84393"]
-    lines = []
+    # One row per modelled signal, then the reconstruction error, then the
+    # risk strip. A row each rather than twinned y-axes: subsystems now
+    # carry four to six channels, and the informative pattern is often two
+    # of them moving in OPPOSITE directions (current up while rpm falls),
+    # which is unreadable when several are squeezed onto shared axes.
+    n_sig = len(signal_cols)
+    height_ratios = [0.75] * n_sig + [1.0, 0.45]
+    fig, axes = plt.subplots(
+        n_sig + 2, 1, figsize=(13, 3.2 + 1.5 * n_sig), sharex=True,
+        gridspec_kw={"height_ratios": height_ratios},
+    )
+
+    # --- Panels 1..n: raw signals, one per row ---
+    signal_palette = ["#3498db", "#e84393", "#f9ca24", "#6ab04c", "#e17055", "#a29bfe"]
     for i, sig in enumerate(signal_cols):
-        ax = ax1 if i == 0 else ax1b
-        (line,) = ax.plot(unit_df[ts_col], unit_df[sig], color=colors[i], linewidth=0.8, label=sig)
-        ax.set_ylabel(sig, color=colors[i])
-        ax.tick_params(axis="y", colors=colors[i])
-        lines.append(line)
-    ax1.set_title(f"{subsystem_id}  ({subsystem_type})  --  fault: {fault_row['fault_type']}, "
-                   f"severity {fault_row['severity']}")
-    ax1.legend(lines, [l.get_label() for l in lines], loc="upper left", fontsize=8)
+        ax = axes[i]
+        color = signal_palette[i % len(signal_palette)]
+        ax.plot(unit_df[ts_col], unit_df[sig], color=color, linewidth=0.8, label=sig)
+        meta = sc.signal_meta(sig)
+        ylabel = f"{meta['label']}\n({meta['unit']})" if meta["unit"] else meta["label"]
+        ax.set_ylabel(ylabel, color=color, fontsize=8)
+        ax.tick_params(axis="y", colors=color, labelsize=7)
 
-    # --- Panel 2: reconstruction error + risk background ---
-    ax2 = axes[1]
+    axes[0].set_title(f"{subsystem_id}  ({subsystem_type})  --  fault: {fault_row['fault_type']}, "
+                       f"severity {fault_row['severity']}")
+
+    # --- Reconstruction error + threshold lines ---
+    ax2 = axes[n_sig]
     ax2.plot(unit_df[ts_col], unit_df["ae_recon_error"], color="#00cec9", linewidth=0.9,
               label="AE reconstruction error")
     for level, y in thresholds.items():
@@ -106,8 +115,8 @@ def _plot_unit(unit_df, subsystem_type, subsystem_id, fault_row, thresholds, out
     ax2.set_ylabel("recon error")
     ax2.legend(loc="upper left", fontsize=7, ncol=2)
 
-    # --- Panel 3: risk level over time as a colored strip ---
-    ax3 = axes[2]
+    # --- Risk level over time as a colored strip ---
+    ax3 = axes[n_sig + 1]
     for lvl in RISK_LEVELS:
         mask = unit_df["risk_level"] == lvl
         ax3.scatter(unit_df.loc[mask, ts_col], [1] * mask.sum(), color=RISK_COLORS[lvl],
@@ -138,9 +147,15 @@ def _plot_unit(unit_df, subsystem_type, subsystem_id, fault_row, thresholds, out
     return lead_time_hours, first_warning_ts
 
 
-def run_validation(door_df, bogie_df, fault_log):
+def run_validation(scored_by_type, fault_log):
+    """
+    scored_by_type: {subsystem_type: scored DataFrame}, one entry per
+    subsystem in schema_config.SUBSYSTEMS. Taking a dict rather than one
+    positional argument per subsystem is what lets a new subsystem (the
+    car auxiliary systems, say) be added in schema_config alone.
+    """
     os.makedirs(sc.VALIDATION_OUTPUT_DIR, exist_ok=True)
-    dfs = {"door": door_df, "bogie": bogie_df}
+    dfs = scored_by_type
     thresholds_cache = {st: _load_thresholds(st) for st in sc.SUBSYSTEM_TYPES}
 
     summary_rows = []
@@ -194,6 +209,9 @@ def run_validation(door_df, bogie_df, fault_log):
 if __name__ == "__main__":
     import data_loader
     fault_log = data_loader.load_fault_log()
-    door_df = pd.read_csv(sc.SCORED_DOOR_PATH, parse_dates=["timestamp"])
-    bogie_df = pd.read_csv(sc.SCORED_BOGIE_PATH, parse_dates=["timestamp"])
-    run_validation(door_df, bogie_df, fault_log)
+    scored_by_type = {
+        st: pd.read_csv(sc.SUBSYSTEMS[st]["scored_path"],
+                        parse_dates=[sc.SUBSYSTEMS[st]["timestamp_col"]])
+        for st in sc.SUBSYSTEM_TYPES
+    }
+    run_validation(scored_by_type, fault_log)
