@@ -1,0 +1,92 @@
+{
+  "BOGIE_01_2": {
+    "fingerprint": "6eaa9db28c59d17a",
+    "model": "claude-opus-5",
+    "generated_at": "2026-09-18T11:04:55+00:00",
+    "response": {
+      "unit_id": "BOGIE_01_2",
+      "status": "ok",
+      "model": "claude-opus-5",
+      "generated_at": "2026-09-18T11:04:55+00:00",
+      "why_flagged": "The autoencoder reconstruction error for BOGIE_01_2 is 62.5179, far above the Critical threshold of 0.9385 (the highest band crossed). The dominant contributor is temperature_c at 60.827 C, sitting 12.33 sigma above the healthy-fleet mean of 38.0032 C (std 1.8515). Vibration_rms is 0.2331, 2.91 sigma below the healthy mean of 0.3496, so the pattern is high heat paired with unusually low vibration rather than the two rising together. Rolling-baseline drift was not flagged (max_abs_rolling_baseline_z 1.54).",
+      "predicted_issue": "One plausible explanation consistent with this signal pattern is added frictional drag in the bogie \u2014 for example a binding or partially dragging brake, or a bearing running tight \u2014 which can generate substantial heat while damping rather than increasing measured vibration. An alternative hypothesis is a temperature sensor or mounting fault reporting high, with the low vibration reading unrelated. Neither is confirmed; this is a statistical deviation, not a physical finding.",
+      "recommended_inspection": "Have a technician take a direct temperature check across the bogie at the bearing housings and brake components to see whether a localised hot spot matches the 60.827 C reading or whether the sensor is reading high. It is also worth checking brake release and wheel/axle free rotation by hand, and confirming the vibration sensor is securely mounted and reporting, given its unusually low output.",
+      "disclaimer": "AI-assisted suggestion generated from this unit's pipeline output -- not a confirmed diagnosis."
+    }
+  },
+  "DOOR_03_2": {
+    "fingerprint": "3a70483af93ffce9",
+    "model": "claude-opus-5",
+    "generated_at": "2026-09-18T11:18:50+00:00",
+    "response": {
+      "unit_id": "DOOR_03_2",
+      "status": "ok",
+      "model": "claude-opus-5",
+      "generated_at": "2026-09-18T11:18:50+00:00",
+      "why_flagged": "The autoencoder reconstruction error is 405.1777, far above the Critical threshold of 1.3337 (and the lower Caution 1.0986 and Warning 1.2187 thresholds), so the unit is at Critical risk. Both monitored signals sit well above the healthy-fleet means: motor_current_amps at 7.106 A versus a baseline mean of 3.0528 A (29.01 sigma) and cycle_time_sec at 5.157 s versus 4.2005 s (6.34 sigma). The rolling baseline check did not flag (max_abs_rolling_baseline_z 1.52, baseline_deviation_flagged false), so the detection rests on the reconstruction error and these two large population deviations.",
+      "predicted_issue": "One plausible explanation consistent with high motor current combined with a longer cycle time is increased mechanical resistance in the door travel path - for example added friction or partial obstruction in the guide/track or linkage, forcing the motor to draw more current and take longer to complete a cycle. This is a hypothesis drawn from the signal pattern only and is not a confirmed fault; a motor or drive-side issue could produce a similar signature.",
+      "recommended_inspection": "With the door isolated and safe to handle, have a technician manually cycle the leaf through its full travel to feel for binding, stiff spots, or uneven resistance, and visually check the guide rails, rollers and linkage for debris, damage, or contamination. Comparing measured motor current and cycle time during a few powered cycles against the other doors on TRAIN_03 would help confirm or rule out a local mechanical resistance issue.",
+      "disclaimer": "AI-assisted suggestion generated from this unit's pipeline output -- not a confirmed diagnosis."
+    }
+  },
+  "BOGIE_06_2": {
+    "fingerprint": "32f978c6b075844e",
+    "model": "claude-opus-5",
+    "generated_at": "2026-09-18T11:19:03+00:00",
+    "response": {
+      "unit_id": "BOGIE_06_2",
+      "status": "ok",
+      "model": "claude-opus-5",
+      "generated_at": "2026-09-18T11:19:03+00:00",
+      "why_flagged": "The autoencoder reconstruction error of 103.5936 is far above the Critical threshold of 0.9385, the highest band crossed. The dominant contributor is temperature_c at 66.65 C, sitting 15.47 sigma above the healthy-fleet mean of 38.0032 C (std 1.8515). Vibration_rms is only mildly elevated at 0.4049 versus a healthy mean of 0.3496 (1.38 sigma), and the rolling baseline check did not flag (max_abs_rolling_baseline_z 0.79).",
+      "predicted_issue": "One plausible explanation is increased friction or restricted heat dissipation in a bogie rotating or sliding element \u2014 for example a bearing or brake component running hot \u2014 since a large temperature rise with only modest vibration change is consistent with that pattern. This is a hypothesis drawn from the signal statistics only and is not a confirmed fault.",
+      "recommended_inspection": "On the next depot stop, have a technician take a handheld thermal/contact temperature reading across the bogie axlebox, bearing housings and brake assemblies to see whether the heat is localised to one component or spread across the bogie. A manual check for brake binding or dragging and for free wheel rotation would help confirm or rule out a friction source.",
+      "disclaimer": "AI-assisted suggestion generated from this unit's pipeline output -- not a confirmed diagnosis."
+    }
+  },
+  "DOOR_04_2": {
+    "fingerprint": "e3b6d036590347e2",
+    "model": "claude-opus-5",
+    "generated_at": "2026-09-18T11:19:16+00:00",
+    "response": {
+      "unit_id": "DOOR_04_2",
+      "status": "ok",
+      "model": "claude-opus-5",
+      "generated_at": "2026-09-18T11:19:16+00:00",
+      "why_flagged": "The autoencoder reconstruction error is 276.117, far above the Critical threshold of 1.3337 (the highest band crossed). Both monitored signals sit well above the healthy-fleet means: cycle_time_sec is 7.35 against a baseline mean of 4.2005 (+20.88 sigma) and motor_current_amps is 4.929 against a baseline mean of 3.0528 (+13.43 sigma). The rolling baseline check did not flag (max_abs_rolling_baseline_z 0.99), so the deviation is against the healthy-fleet population rather than a short-term trend shift.",
+      "predicted_issue": "One plausible explanation is increased mechanical resistance in the door travel path, since a longer cycle time combined with higher motor current is consistent with the drive working harder to complete the same movement. This is a hypothesis drawn from the signal pattern only and is not a confirmed fault; other causes, including sensor or drive-control issues, could produce similar readings.",
+      "recommended_inspection": "Have a technician manually cycle the door with the drive de-energised and note any binding, stiffness or uneven travel along the track and rollers. Comparing observed door cycle duration and drive current during a powered test cycle against the other doors on TRAIN_04 would help confirm or rule out the added-resistance hypothesis.",
+      "disclaimer": "AI-assisted suggestion generated from this unit's pipeline output -- not a confirmed diagnosis."
+    }
+  },
+  "DOOR_06_1": {
+    "fingerprint": "0a9f82dbab936656",
+    "model": "claude-opus-5",
+    "generated_at": "2026-09-18T11:19:29+00:00",
+    "response": {
+      "unit_id": "DOOR_06_1",
+      "status": "ok",
+      "model": "claude-opus-5",
+      "generated_at": "2026-09-18T11:19:29+00:00",
+      "why_flagged": "The autoencoder reconstruction error is 250.3978, far above the Critical threshold of 1.3337 (and the lower Caution 1.0986 and Warning 1.2187 thresholds), so the unit is at Critical risk. Both monitored signals sit well above the healthy-fleet means: cycle_time_sec at 6.594 vs a baseline mean of 4.2005 (+15.87 sigma) and motor_current_amps at 5.076 vs a baseline mean of 3.0528 (+14.48 sigma). Note that baseline_deviation_flagged is false and max_abs_rolling_baseline_z is 1.6, so the rolling-baseline check did not itself trigger.",
+      "predicted_issue": "One plausible explanation is increased mechanical resistance in the door travel path, since longer cycle time together with higher motor current is consistent with the motor working harder to complete each movement. This is a hypothesis drawn from the signal pattern only, not a confirmed fault; obstruction, binding in the guides or track, or drive-train friction could all produce a similar signature.",
+      "recommended_inspection": "Have a technician cycle the door manually and under power to feel for binding, drag or uneven travel, and visually check the track, rollers, guides and seals for debris, wear or misalignment. Comparing measured cycle time and motor current on-site against the 4.2005 s and 3.0528 A healthy means would confirm whether the elevated readings reproduce.",
+      "disclaimer": "AI-assisted suggestion generated from this unit's pipeline output -- not a confirmed diagnosis."
+    }
+  },
+  "DOOR_01_1": {
+    "fingerprint": "bc506ab7af4ae176",
+    "model": "claude-opus-5",
+    "generated_at": "2026-09-18T11:19:41+00:00",
+    "response": {
+      "unit_id": "DOOR_01_1",
+      "status": "ok",
+      "model": "claude-opus-5",
+      "generated_at": "2026-09-18T11:19:41+00:00",
+      "why_flagged": "The autoencoder reconstruction error for DOOR_01_1 is 148.782, far above the Critical threshold of 1.3337 (and the lower Caution 1.0986 and Warning 1.2187 thresholds). Two signals sit well above the healthy-fleet means: motor_current_amps at 5.082 A versus a healthy mean of 3.0528 A (+14.52 sigma), and cycle_time_sec at 5.87 s versus a healthy mean of 4.2005 s (+11.07 sigma). The rolling baseline check was not flagged (max_abs_rolling_baseline_z 0.43), so the detection rests on the reconstruction error and these healthy-baseline deviations.",
+      "predicted_issue": "One plausible explanation is increased mechanical resistance in the door travel path \" for example binding or added friction in the guides, rollers, or linkage \" which would be consistent with the door drawing more motor current while also taking longer to complete a cycle. This is a hypothesis drawn from the signal pattern only and is not a confirmed fault; drive or transmission degradation could produce a similar current-and-time signature.",
+      "recommended_inspection": "Have a technician run the door through several manual open/close cycles and check for binding, uneven travel, or stiffness along the track, rollers, and linkage. Observing where in the cycle the resistance occurs would help confirm or rule out a mechanical drag source versus a drive-side issue.",
+      "disclaimer": "AI-assisted suggestion generated from this unit's pipeline output -- not a confirmed diagnosis."
+    }
+  }
+}

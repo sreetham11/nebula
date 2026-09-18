@@ -385,6 +385,227 @@
   }
   .action-box .lbl { color: var(--text-dim); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px; }
 
+  /* Maintenance Copilot -- AI-assisted reading of an existing detection.
+     Deliberately styled as a subordinate card inside the unit detail panel,
+     below the deterministic decision trace: the trace is the system's
+     answer, this is commentary on it. */
+  .copilot {
+    margin-top: var(--sp-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--panel-alt);
+    overflow: hidden;
+  }
+  .copilot-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(var(--accent-rgb), 0.07);
+  }
+  .copilot-head .ttl {
+    font-family: var(--font-heading);
+    font-size: 12.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text);
+  }
+  .copilot-chip {
+    margin-left: auto;
+    font-size: 9.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-dim);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-pill);
+    padding: 2px 8px;
+    white-space: nowrap;
+  }
+  .copilot-body { padding: 2px 14px; }
+  .copilot-section { padding: 11px 0; border-bottom: 1px solid var(--border); }
+  .copilot-section:last-child { border-bottom: none; }
+  .copilot-section .sec-ttl {
+    font-family: var(--font-heading);
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .copilot-section .sec-body { font-size: 12.5px; line-height: 1.55; }
+  .copilot-foot {
+    padding: 9px 14px;
+    border-top: 1px solid var(--border);
+    font-size: 10.5px;
+    color: var(--text-dim);
+    line-height: 1.45;
+  }
+  .copilot-loading {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 18px 14px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .copilot-spinner {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 2px solid rgba(var(--accent-rgb), 0.25);
+    border-top-color: var(--accent);
+    animation: copilot-spin 0.7s linear infinite;
+  }
+  @keyframes copilot-spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .copilot-spinner { animation: none; } }
+  .copilot-fallback { padding: 15px 14px; font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+  .copilot-fallback .reason { display: block; margin-top: 5px; font-size: 10.5px; opacity: 0.75; }
+
+  /* Investigate Fault -- Exa literature lookup. Same subordinate-card
+     treatment as the copilot: this is corroborating reading, not a finding
+     about this unit, and the caption under the results says so. */
+  .research-launch {
+    margin-top: var(--sp-2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .research-btn {
+    background: var(--panel-alt);
+    border: 1px solid var(--border-strong);
+    color: var(--text);
+    border-radius: var(--radius-md);
+    padding: 8px 14px;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .research-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .research-btn:disabled { opacity: 0.55; cursor: default; }
+  .research-btn .rb-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); flex-shrink: 0;
+  }
+  .research-hint { font-size: 10.5px; color: var(--text-dim); }
+
+  .research { margin-top: var(--sp-1); border: 1px solid var(--border);
+    border-radius: var(--radius-md); background: var(--panel-alt); overflow: hidden; }
+  .research-head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    background: rgba(var(--accent-rgb), 0.07);
+  }
+  .research-head .ttl {
+    font-family: var(--font-heading); font-size: 12.5px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .research-head .chip {
+    margin-left: auto; font-size: 9.5px; text-transform: uppercase;
+    letter-spacing: 0.5px; color: var(--text-dim);
+    border: 1px solid var(--border-strong); border-radius: var(--radius-pill);
+    padding: 2px 8px; white-space: nowrap;
+  }
+  .research-sec { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+  .research-sec:last-child { border-bottom: none; }
+  .research-sec .sec-ttl {
+    font-family: var(--font-heading); font-size: 10.5px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.6px; color: var(--accent);
+    margin-bottom: 7px;
+  }
+  .mech-list { margin: 0; padding-left: 17px; }
+  .mech-list li { font-size: 12px; line-height: 1.5; margin-bottom: 6px; }
+  .mech-list li:last-child { margin-bottom: 0; }
+  .mech-list .mech-src { color: var(--text-dim); font-size: 10.5px; }
+
+  .src-item { padding: 9px 0; border-bottom: 1px solid var(--border); }
+  .src-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .src-item:first-child { padding-top: 0; }
+  .src-item a { color: var(--accent); text-decoration: none; font-size: 12px; font-weight: 600; }
+  .src-item a:hover { text-decoration: underline; }
+  .src-item .src-domain { font-size: 10.5px; color: var(--text-dim); margin-top: 2px; }
+  .src-item .src-snip { font-size: 11.5px; color: var(--text-dim); margin-top: 4px; line-height: 1.45; }
+
+  .research-caption {
+    padding: 10px 14px; border-top: 1px solid var(--border);
+    font-size: 10.5px; color: var(--text-dim); line-height: 1.45;
+    background: rgba(var(--caution-rgb), 0.06);
+  }
+  .research-loading {
+    display: flex; align-items: center; gap: 9px; padding: 18px 14px;
+    font-size: 12px; color: var(--text-dim);
+  }
+  .research-fallback { padding: 15px 14px; font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+  .research-fallback .reason { display: block; margin-top: 5px; font-size: 10.5px; opacity: 0.75; }
+
+  /* Maintenance Logistics -- depot routing for flagged units.
+     The data-notice banner is deliberately loud: the coordinates behind
+     this panel are fabricated (api/locations_config.py), and that must not
+     be mistakable for something the pipeline knows. */
+  .logistics { margin-top: var(--sp-2); border: 1px solid var(--border);
+    border-radius: var(--radius-md); background: var(--panel-alt); overflow: hidden; }
+  .logistics-head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    background: rgba(var(--accent-rgb), 0.07);
+  }
+  .logistics-head .ttl {
+    font-family: var(--font-heading); font-size: 12.5px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .logistics-head .chip {
+    margin-left: auto; font-size: 9.5px; text-transform: uppercase;
+    letter-spacing: 0.5px; color: var(--text-dim);
+    border: 1px solid var(--border-strong); border-radius: var(--radius-pill);
+    padding: 2px 8px; white-space: nowrap;
+  }
+
+  /* Unmissable by design -- full-width caution bar, not a footnote. */
+  .demo-banner {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 11px 14px;
+    background: rgba(var(--caution-rgb), 0.16);
+    border-bottom: 2px solid var(--caution);
+  }
+  .demo-banner .demo-tag {
+    flex-shrink: 0;
+    font-family: var(--font-heading); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.8px; text-transform: uppercase;
+    color: var(--bg); background: var(--caution);
+    padding: 3px 7px; border-radius: 4px; line-height: 1.3;
+  }
+  .demo-banner .demo-text { font-size: 11px; color: var(--text); line-height: 1.45; }
+
+  .logi-route { display: flex; align-items: center; gap: 10px; padding: 13px 14px;
+    border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .logi-node { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .logi-node .nd-lbl { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); }
+  .logi-node .nd-val { font-size: 13px; font-weight: 600; }
+  .logi-node .nd-sub { font-size: 10.5px; color: var(--text-dim); }
+  .logi-arrow { color: var(--accent); font-size: 17px; line-height: 1; }
+
+  .logi-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+    background: var(--border); border-bottom: 1px solid var(--border); }
+  .logi-stat { background: var(--panel-alt); padding: 12px 14px; }
+  .logi-stat .num { font-family: var(--font-heading); font-size: 21px; font-weight: 600; color: var(--accent); }
+  .logi-stat .lbl { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); margin-top: 2px; }
+
+  .logi-map { display: block; width: 100%; height: auto; border-bottom: 1px solid var(--border); }
+  .logi-alts { padding: 11px 14px; font-size: 11px; color: var(--text-dim); line-height: 1.55; }
+  .logi-alts .alt-ttl { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .logistics-loading { display: flex; align-items: center; gap: 9px; padding: 18px 14px;
+    font-size: 12px; color: var(--text-dim); }
+  .logistics-fallback { padding: 15px 14px; font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+  .logistics-fallback .reason { display: block; margin-top: 5px; font-size: 10.5px; opacity: 0.75; }
+
   #unitChartBox { height: 200px; margin-top: var(--sp-1); }
 
   footer { text-align: center; color: var(--text-dim); font-size: 11px; padding: var(--sp-3); }
@@ -1364,8 +1585,26 @@ function renderUnitDetail(d) {
       <div class="lbl">Recommended Action</div>
       ${d.recommended_action}
     </div>
+    <div id="copilotPanel"></div>
+    <div class="research-launch">
+      <button class="research-btn" id="researchBtn" onclick="investigateFault('${d.unit_id}')">
+        <span class="rb-dot"></span>Investigate Fault
+      </button>
+      <span class="research-hint">Search published engineering literature for similar signatures</span>
+    </div>
+    <div id="researchPanel"></div>
+    <div id="logisticsPanel"></div>
     <div id="unitChartBox"><canvas id="unitLineChart"></canvas></div>
   `;
+
+  // Fire-and-forget: the trace, action box and chart above are already
+  // rendered and stay rendered regardless of what these do.
+  loadCopilot(d.unit_id);
+  // Logistics is only meaningful for a unit the pipeline actually escalated;
+  // the panel is absent entirely for Normal/Caution rather than empty.
+  if (LOGISTICS_RISK_LEVELS.includes(d.latest.risk_level)) {
+    loadLogistics(d.unit_id);
+  }
 
   const traceEl = document.getElementById("traceSteps");
   traceEl.innerHTML = "";
@@ -1408,6 +1647,454 @@ function renderUnitDetail(d) {
       },
     },
   });
+}
+
+// --- Maintenance Copilot -------------------------------------------------
+//
+// Calls this project's own /copilot/{unit_id} route, which makes one
+// structured Claude request server-side. The Anthropic key lives in the API
+// process's environment and is never sent to the browser.
+//
+// Everything here is strictly additive to the decision trace above it: on a
+// timeout, a network failure, a missing key or any server-side error, the
+// panel shows a fallback line and the deterministic trace is unaffected.
+
+const COPILOT_TIMEOUT_MS = 8000;
+
+// Session cache -- re-selecting a unit re-renders from memory with no
+// second API call. Cleared on page reload, which is what we want: the
+// server's own cache is the durable one.
+const copilotCache = {};
+
+function copilotEl() { return document.getElementById("copilotPanel"); }
+
+function copilotShell(inner) {
+  return `<div class="copilot">
+      <div class="copilot-head">
+        <span class="ttl">Maintenance Copilot</span>
+        <span class="copilot-chip">AI-assisted</span>
+      </div>
+      ${inner}
+    </div>`;
+}
+
+function renderCopilotLoading(unitId) {
+  const el = copilotEl();
+  if (!el) return;
+  el.innerHTML = copilotShell(
+    `<div class="copilot-loading"><div class="copilot-spinner"></div>
+       <span>Reading ${unitId}'s detection…</span></div>`
+  );
+}
+
+function renderCopilotFallback(reason) {
+  const el = copilotEl();
+  if (!el) return;
+  const reasonLine = reason ? `<span class="reason">${reason}</span>` : "";
+  el.innerHTML = copilotShell(
+    `<div class="copilot-fallback">AI explanation unavailable — see decision trace above.${reasonLine}</div>`
+  );
+}
+
+function renderCopilot(data) {
+  const el = copilotEl();
+  if (!el) return;
+
+  el.innerHTML = copilotShell(`<div class="copilot-body"></div>
+      <div class="copilot-foot"></div>`);
+
+  const sections = [
+    ["Why was this flagged", data.why_flagged],
+    ["Predicted issue (hypothesis)", data.predicted_issue],
+    ["Recommended inspection", data.recommended_inspection],
+  ];
+  const body = el.querySelector(".copilot-body");
+  for (const [title, text] of sections) {
+    const sec = document.createElement("div");
+    sec.className = "copilot-section";
+    const t = document.createElement("div");
+    t.className = "sec-ttl";
+    t.textContent = title;
+    const b = document.createElement("div");
+    b.className = "sec-body";
+    // textContent, not innerHTML -- model output is never parsed as markup.
+    b.textContent = text;
+    sec.append(t, b);
+    body.appendChild(sec);
+  }
+
+  const foot = el.querySelector(".copilot-foot");
+  const meta = [data.model, data.cached ? "cached" : "live"].filter(Boolean).join(" · ");
+  foot.textContent = `${data.disclaimer}${meta ? "  (" + meta + ")" : ""}`;
+}
+
+async function loadCopilot(unitId) {
+  if (copilotCache[unitId]) {
+    renderCopilot(copilotCache[unitId]);
+    return;
+  }
+  renderCopilotLoading(unitId);
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), COPILOT_TIMEOUT_MS);
+
+  let data;
+  try {
+    const res = await fetch(`${API_BASE}/copilot/${encodeURIComponent(unitId)}`, {
+      signal: controller.signal,
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    data = await res.json();
+  } catch (e) {
+    // The user may have clicked another unit while this was in flight --
+    // don't overwrite that unit's panel with this one's failure.
+    if (selectedUnit === unitId) {
+      renderCopilotFallback(
+        e.name === "AbortError" ? "Timed out after 8s." : "Could not reach the copilot service."
+      );
+    }
+    return;
+  } finally {
+    clearTimeout(timer);
+  }
+
+  if (selectedUnit !== unitId) return;
+
+  if (data.status !== "ok") {
+    renderCopilotFallback(data.reason ? `Reason: ${data.reason}` : null);
+    return;
+  }
+  copilotCache[unitId] = data;
+  renderCopilot(data);
+}
+
+// --- Investigate Fault (Exa literature search) ---------------------------
+//
+// Calls this project's own /research/{unit_id}; the Exa key stays in the API
+// process. On-demand rather than automatic: it's a deliberate action a
+// planner takes, and it costs a search credit.
+//
+// The "does not confirm this unit's fault" caption comes from the server as
+// a fixed constant and is rendered unconditionally with any result set --
+// it is never omitted and never supplied by the search API.
+
+const RESEARCH_TIMEOUT_MS = 12000;
+
+// Session cache -- clicking back onto a unit re-renders from memory.
+const researchCache = {};
+
+function researchEl() { return document.getElementById("researchPanel"); }
+
+function researchShell(inner, chip) {
+  return `<div class="research">
+      <div class="research-head">
+        <span class="ttl">Fault Research</span>
+        <span class="chip">${chip || "via Exa"}</span>
+      </div>
+      ${inner}
+    </div>`;
+}
+
+function setResearchBtn(disabled, label) {
+  const b = document.getElementById("researchBtn");
+  if (!b) return;
+  b.disabled = disabled;
+  b.innerHTML = `<span class="rb-dot"></span>${label}`;
+}
+
+function renderResearchFallback(reason) {
+  const el = researchEl();
+  if (!el) return;
+  const r = reason ? `<span class="reason">${reason}</span>` : "";
+  el.innerHTML = researchShell(
+    `<div class="research-fallback">Research unavailable — try again.${r}</div>`
+  );
+  setResearchBtn(false, "Retry research");
+}
+
+function renderResearch(data) {
+  const el = researchEl();
+  if (!el) return;
+
+  el.innerHTML = researchShell(
+    `<div class="research-sec" id="mechSec" hidden>
+       <div class="sec-ttl">Possible failure mechanisms</div>
+       <ul class="mech-list"></ul>
+     </div>
+     <div class="research-sec">
+       <div class="sec-ttl">Research sources</div>
+       <div class="src-list"></div>
+     </div>
+     <div class="research-caption"></div>`,
+    data.cached ? "via Exa · cached" : "via Exa"
+  );
+
+  const mechs = data.mechanisms || [];
+  if (mechs.length) {
+    const sec = el.querySelector("#mechSec");
+    sec.hidden = false;
+    const ul = sec.querySelector(".mech-list");
+    for (const m of mechs) {
+      const li = document.createElement("li");
+      // textContent -- source text is never parsed as markup.
+      li.textContent = m.text + " ";
+      const src = document.createElement("span");
+      src.className = "mech-src";
+      src.textContent = `(${m.domain})`;
+      li.appendChild(src);
+      ul.appendChild(li);
+    }
+  }
+
+  const list = el.querySelector(".src-list");
+  for (const s of data.sources || []) {
+    const item = document.createElement("div");
+    item.className = "src-item";
+
+    const a = document.createElement("a");
+    a.href = s.url;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.textContent = s.title;
+
+    const dom = document.createElement("div");
+    dom.className = "src-domain";
+    dom.textContent = s.domain + (s.published ? " · " + String(s.published).slice(0, 10) : "");
+
+    const snip = document.createElement("div");
+    snip.className = "src-snip";
+    snip.textContent = s.snippet;
+
+    item.append(a, dom, snip);
+    list.appendChild(item);
+  }
+
+  // Fixed framing, straight from the server constant.
+  el.querySelector(".research-caption").textContent = data.caption;
+  setResearchBtn(false, "Refresh research");
+}
+
+async function investigateFault(unitId) {
+  if (researchCache[unitId]) {
+    renderResearch(researchCache[unitId]);
+    return;
+  }
+  setResearchBtn(true, "Searching…");
+  const el = researchEl();
+  if (el) {
+    el.innerHTML = researchShell(
+      `<div class="research-loading"><div class="copilot-spinner"></div>
+         <span>Searching engineering literature…</span></div>`
+    );
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), RESEARCH_TIMEOUT_MS);
+
+  let data;
+  try {
+    const res = await fetch(`${API_BASE}/research/${encodeURIComponent(unitId)}`, {
+      signal: controller.signal,
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    data = await res.json();
+  } catch (e) {
+    if (selectedUnit === unitId) {
+      renderResearchFallback(
+        e.name === "AbortError" ? "Timed out after 12s." : "Could not reach the research service."
+      );
+    }
+    return;
+  } finally {
+    clearTimeout(timer);
+  }
+
+  if (selectedUnit !== unitId) return;
+
+  if (data.status !== "ok" || !(data.sources || []).length) {
+    renderResearchFallback(data.reason ? `Reason: ${data.reason}` : null);
+    return;
+  }
+  researchCache[unitId] = data;
+  renderResearch(data);
+}
+
+// --- Maintenance Logistics (Google Routes) -------------------------------
+//
+// Shown ONLY for Warning/Critical units -- the server enforces this too, so
+// the panel can't be summoned for a healthy unit by calling the route
+// directly.
+//
+// *** The coordinates behind this are fabricated. *** The synthetic dataset
+// has no geolocation; api/locations_config.py invents train positions and
+// depot sites. The distances and ETAs are real Google Routes results between
+// invented points, and the banner at the top of the panel says exactly that
+// -- rendered from the server's own constant, always, never suppressed.
+//
+// The map <img> points at our own /logistics/{id}/map proxy, never at a
+// Google URL, so the Maps key is never published to the page.
+
+const LOGISTICS_RISK_LEVELS = ["Warning", "Critical"];
+const LOGISTICS_TIMEOUT_MS = 12000;
+
+// Session cache -- the inputs are static constants, so re-selecting a unit
+// must never re-call a billable routing API.
+const logisticsCache = {};
+
+function logisticsEl() { return document.getElementById("logisticsPanel"); }
+
+function logisticsShell(inner, chip) {
+  return `<div class="logistics">
+      <div class="logistics-head">
+        <span class="ttl">Maintenance Logistics</span>
+        <span class="chip">${chip || "demo routing"}</span>
+      </div>
+      ${inner}
+    </div>`;
+}
+
+function demoBanner(noticeText) {
+  const wrap = document.createElement("div");
+  wrap.className = "demo-banner";
+  const tag = document.createElement("span");
+  tag.className = "demo-tag";
+  tag.textContent = "Demo / Simulated";
+  const txt = document.createElement("span");
+  txt.className = "demo-text";
+  txt.textContent = noticeText;
+  wrap.append(tag, txt);
+  return wrap;
+}
+
+function renderLogisticsFallback(reason, notice) {
+  const el = logisticsEl();
+  if (!el) return;
+  const r = reason ? `<span class="reason">${reason}</span>` : "";
+  el.innerHTML = logisticsShell(
+    `<div class="demo-banner-slot"></div>
+     <div class="logistics-fallback">Logistics unavailable.${r}</div>`
+  );
+  // The notice belongs on the failure path too -- it describes the whole
+  // feature, not just a successful result.
+  const slot = el.querySelector(".demo-banner-slot");
+  if (slot && notice) slot.replaceWith(demoBanner(notice));
+}
+
+function renderLogistics(data) {
+  const el = logisticsEl();
+  if (!el) return;
+  const d = data.recommended_depot;
+
+  el.innerHTML = logisticsShell(
+    `<div class="demo-banner-slot"></div>
+     <div class="logi-route">
+       <div class="logi-node">
+         <span class="nd-lbl">Unit position</span>
+         <span class="nd-val js-origin"></span>
+         <span class="nd-sub js-origin-sub"></span>
+       </div>
+       <span class="logi-arrow">&rarr;</span>
+       <div class="logi-node">
+         <span class="nd-lbl">Recommended depot</span>
+         <span class="nd-val js-depot"></span>
+         <span class="nd-sub js-depot-sub"></span>
+       </div>
+     </div>
+     <div class="logi-stats">
+       <div class="logi-stat"><div class="num js-dist"></div><div class="lbl">Road distance</div></div>
+       <div class="logi-stat"><div class="num js-eta"></div><div class="lbl">Estimated travel time</div></div>
+     </div>
+     <div class="js-map-slot"></div>
+     <div class="logi-alts js-alts" hidden></div>`,
+    data.cached ? "demo routing \u00b7 cached" : "demo routing"
+  );
+
+  el.querySelector(".demo-banner-slot").replaceWith(demoBanner(data.data_notice));
+
+  el.querySelector(".js-origin").textContent = data.train_id;
+  el.querySelector(".js-origin-sub").textContent =
+    data.origin.place + (data.origin.assigned ? "" : " (unlisted train \u2014 default position)");
+  el.querySelector(".js-depot").textContent = d.name;
+  el.querySelector(".js-depot-sub").textContent = d.note || "";
+  el.querySelector(".js-dist").textContent = d.distance_text;
+  el.querySelector(".js-eta").textContent = d.duration_text;
+
+  if (data.has_map) {
+    const img = document.createElement("img");
+    img.className = "logi-map";
+    img.alt = `Simulated route from ${data.train_id} to ${d.name}`;
+    img.loading = "lazy";
+    // Our own proxy -- the Maps key stays on the server.
+    img.src = `${API_BASE}/logistics/${encodeURIComponent(data.unit_id)}/map`;
+    img.onerror = () => img.remove();
+    el.querySelector(".js-map-slot").replaceWith(img);
+  }
+
+  const alts = data.alternatives || [];
+  if (alts.length) {
+    const box = el.querySelector(".js-alts");
+    box.hidden = false;
+    const t = document.createElement("div");
+    t.className = "alt-ttl";
+    t.textContent = "Other depots considered";
+    box.appendChild(t);
+    for (const a of alts) {
+      const line = document.createElement("div");
+      line.textContent = `${a.depot_name} \u2014 ${a.distance_text}, ${a.duration_text}`;
+      box.appendChild(line);
+    }
+  }
+}
+
+async function loadLogistics(unitId) {
+  if (logisticsCache[unitId]) {
+    renderLogistics(logisticsCache[unitId]);
+    return;
+  }
+  const el = logisticsEl();
+  if (el) {
+    el.innerHTML = logisticsShell(
+      `<div class="logistics-loading"><div class="copilot-spinner"></div>
+         <span>Planning depot routing\u2026</span></div>`
+    );
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), LOGISTICS_TIMEOUT_MS);
+
+  let data;
+  try {
+    const res = await fetch(`${API_BASE}/logistics/${encodeURIComponent(unitId)}`, {
+      signal: controller.signal,
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    data = await res.json();
+  } catch (e) {
+    if (selectedUnit === unitId) {
+      renderLogisticsFallback(
+        e.name === "AbortError" ? "Timed out after 12s." : "Could not reach the logistics service.",
+        null
+      );
+    }
+    return;
+  } finally {
+    clearTimeout(timer);
+  }
+
+  if (selectedUnit !== unitId) return;
+
+  if (data.status === "not_applicable") {
+    // Shouldn't happen (we gate on risk level before calling), but if the
+    // server disagrees, show nothing rather than an empty shell.
+    if (el) el.innerHTML = "";
+    return;
+  }
+  if (data.status !== "ok") {
+    renderLogisticsFallback(data.reason ? `Reason: ${data.reason}` : null, data.data_notice);
+    return;
+  }
+  logisticsCache[unitId] = data;
+  renderLogistics(data);
 }
 
 function renderLiveFeed(events) {

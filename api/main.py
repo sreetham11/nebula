@@ -14,6 +14,13 @@ Run: uvicorn main:app --reload --port 8000   (from the api/ directory, with
 the venv active)
 """
 
+# On Windows, torch must be imported before pandas/numpy: both ship their own
+# Intel OpenMP runtime (libiomp5md.dll), and if pandas' loads first, torch's
+# c10.dll fails to initialise with "WinError 1114". Importing torch first is
+# the documented ordering workaround; it is a no-op on Linux/macOS.
+import torch  # noqa: F401,E402  -- must precede pandas/numpy imports
+
+
 import json
 import os
 import sys
@@ -23,7 +30,7 @@ import joblib
 import numpy as np
 import pandas as pd
 import torch
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, List, Optional
@@ -34,6 +41,11 @@ from model_config import BASELINE_Z_THRESHOLD, RISK_LEVELS, RECON_ERROR_WARNING_
 from autoencoder import SequenceAutoencoder, get_device  # noqa: E402
 from fusion import _base_level_from_recon_error, _escalate  # noqa: E402
 from ablation import _first_alert_crossing  # noqa: E402 -- reuse the same sustained-vs-fallback detection logic used in the ablation report
+
+import copilot  # noqa: E402 -- Maintenance Copilot (server-side Anthropic API call; key never leaves the server)
+import research  # noqa: E402 -- Investigate Fault (server-side Exa search; key never leaves the server)
+import logistics  # noqa: E402 -- Maintenance Logistics (server-side Google Routes; key never leaves the server)
+import locations_config  # noqa: E402 -- the single place the fabricated demo coordinates live
 
 app = FastAPI(title="NEBULA X Fault Detection API", version="0.1.0")
 app.add_middleware(
@@ -149,6 +161,11 @@ def startup():
     _build_baseline_stats()
     _load_sensitivity_data()
     _build_live_feed()
+    # Picks up any pre-generated demo explanations written by
+    # api/prefetch_copilot.py so they survive a restart.
+    copilot.load_cache()
+    research.load_cache()
+    logistics.load_cache()
 
 
 # ---------------------------------------------------------------------------
@@ -481,3 +498,128 @@ def live_feed(batch_size: int = 6):
             "signals": {sig: float(row[sig]) for sig in row["signal_cols"]},
         })
     return {"events": events, "note": "Simulated live feed replaying synthetic historical data, sped up for demo."}
+
+
+# ---------------------------------------------------------------------------
+# Maintenance Copilot (AI-assisted explanation layer)
+# ---------------------------------------------------------------------------
+#
+# The browser never holds an Anthropic API key and never calls
+# api.anthropic.com -- it calls this route, and this process reads
+# ANTHROPIC_API_KEY from its own environment. See api/copilot.py.
+#
+# Everything Claude sees is assembled from unit_detail()'s own return value
+# plus the fitted scaler's healthy-population statistics, so the copilot can
+# only ever restate numbers the pipeline already computed. This route is
+# strictly additive: /unit/{unit_id} and its decision trace are untouched and
+# keep working whether or not a key is configured.
+
+def _healthy_baseline(subsystem_type: str) -> Dict[str, Dict[str, float]]:
+    """
+    Per-signal mean/std of the healthy training population, read off the
+    StandardScaler the autoencoder was fit with -- the same reference
+    unit_detail()'s signal_zscores are measured against.
+    """
+    cfg = sc.SUBSYSTEMS[subsystem_type]
+    scaler = ARTIFACTS[subsystem_type]["scaler"]
+    return {
+        sig: {"mean": float(mean), "std": float(scale)}
+        for sig, mean, scale in zip(cfg["signal_cols"], scaler.mean_, scaler.scale_)
+    }
+
+
+@app.get("/copilot/{unit_id}")
+def copilot_explain(unit_id: str, refresh: bool = False):
+    """
+    One structured Claude call explaining an existing detection. Returns
+    {"status": "unavailable", "reason": ...} rather than an error status on
+    any failure, so the dashboard can show its fallback message without the
+    request looking like a dashboard bug.
+    """
+    unit = unit_detail(unit_id, history_points=1)  # 404s here for an unknown unit
+    context = copilot.build_context(unit, _healthy_baseline(unit["subsystem_type"]))
+    return copilot.explain_unit(unit_id, context, force_refresh=refresh)
+
+
+@app.get("/copilot-status")
+def copilot_status():
+    """Which units already have a cached explanation -- used by the pre-fetch script."""
+    return {
+        "api_key_configured": copilot.api_key_present(),
+        "model": copilot.MODEL,
+        "cached_units": copilot.cache_entries(),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Investigate Fault (Exa literature search)
+# ---------------------------------------------------------------------------
+#
+# Same containment as the copilot: EXA_API_KEY lives in this process's
+# environment, the browser only ever calls /research/{unit_id}. The search
+# query is derived from the unit's own pipeline output (see
+# research.build_query) rather than hardcoded per unit, and the "does not
+# confirm this unit's fault" caption is a fixed server-side constant that
+# no API response can override.
+
+@app.get("/research/{unit_id}")
+def research_unit(unit_id: str, refresh: bool = False):
+    unit = unit_detail(unit_id, history_points=1)  # 404s for an unknown unit
+    context = copilot.build_context(unit, _healthy_baseline(unit["subsystem_type"]))
+    return research.investigate(unit_id, context, force_refresh=refresh)
+
+
+@app.get("/research-status")
+def research_status():
+    return {
+        "api_key_configured": research.api_key_present(),
+        "search_type": research.EXA_SEARCH_TYPE,
+        "cached_units": research.cache_entries(),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Maintenance Logistics (Google Routes)
+# ---------------------------------------------------------------------------
+#
+# *** Routes between FABRICATED coordinates. *** The synthetic dataset has no
+# geolocation at all; api/locations_config.py invents train positions and
+# depot sites, and is the only place that does. Every response carries its
+# DATA_NOTICE, which the dashboard renders as a banner, not a footnote.
+#
+# Shown only for units the pipeline escalated to Warning/Critical --
+# dispatching a healthy unit to a depot would be a recommendation the
+# detection system never made.
+#
+# The map image is proxied through /logistics/{unit_id}/map so the Static
+# Maps URL (and the API key in it) never reaches the browser.
+
+@app.get("/logistics/{unit_id}")
+def logistics_plan(unit_id: str, refresh: bool = False):
+    unit = unit_detail(unit_id, history_points=1)  # 404s for an unknown unit
+    return logistics.plan(
+        unit_id,
+        train_id=unit["train_id"],
+        risk_level=unit["latest"]["risk_level"],
+        force_refresh=refresh,
+    )
+
+
+@app.get("/logistics/{unit_id}/map")
+def logistics_map(unit_id: str):
+    """Static route image, fetched server-side so the key stays off the page."""
+    png = logistics.map_image(unit_id)
+    if png is None:
+        raise HTTPException(404, "no route map available for this unit")
+    return Response(content=png, media_type="image/png",
+                    headers={"Cache-Control": "public, max-age=86400"})
+
+
+@app.get("/logistics-status")
+def logistics_status():
+    return {
+        "api_key_configured": logistics.api_key_present(),
+        "depots": [{"id": d["id"], "name": d["name"]} for d in locations_config.DEPOTS],
+        "data_notice": locations_config.DATA_NOTICE,
+        "cached_units": logistics.cache_entries(),
+    }

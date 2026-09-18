@@ -1,0 +1,380 @@
+{
+  "BOGIE_01_2": {
+    "fingerprint": "ed17c1ccb4e53042",
+    "query": "train bogie bearing overheating axle bearing temperature elevated signature predictive maintenance condition monitoring",
+    "response": {
+      "unit_id": "BOGIE_01_2",
+      "status": "ok",
+      "query": "train bogie bearing overheating axle bearing temperature elevated signature predictive maintenance condition monitoring",
+      "driving_signal": "temperature_c",
+      "implied_mechanism": "bearing overheating",
+      "mechanisms": [
+        {
+          "text": "Driven by this motivation, in this paper, based on a hybridized physical-and-data-driven temperature model a fault detection system for axle bearings mounted in the bogie axle boxes of currently servicing high-speed trains in China is built. To optimize\u2026",
+          "domain": "sciencedirect.com"
+        },
+        {
+          "text": "Moreover, most of these methods adopt point predictions and are unable to provide an engineering-applicable safe service interval for on-site maintenance. To solve the above limitations, this paper designs a dual-mechanism collaborative prognostic\u2026",
+          "domain": "google.iopscience.iop.org"
+        },
+        {
+          "text": "A real-time prediction model of high-speed train bearing temperature anomalies based on Bi-directional Long Short-Term Memory (BILSTM) was proposed. Finally, the D-S evidence theory was used to combine the anomaly detection model based on the AHP entropy\u2026",
+          "domain": "journals.sagepub.com"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Fault detection of high-speed train axle bearings based on a hybridized physical and data-driven temperature model - ScienceDirect",
+          "url": "https://www.sciencedirect.com/science/article/abs/pii/S0888327023009457",
+          "domain": "sciencedirect.com",
+          "snippet": "Driven by this motivation, in this paper, based on a hybridized physical-and-data-driven temperature model a fault detection system for axle bearings mounted in the bogie axle boxes of currently servicing high-speed\u2026",
+          "published": "2024-02-15T06:33:28.000Z"
+        },
+        {
+          "title": "Dual-mechanism collaborative prognostic framework for axle box bearings: short-term fault early warning and long-term safe service interval prediction - IOPscience",
+          "url": "https://google.iopscience.iop.org/article/10.1088/1361-6501/ae7ea4",
+          "domain": "google.iopscience.iop.org",
+          "snippet": "Moreover, most of these methods adopt point predictions and are unable to provide an engineering-applicable safe service interval for on-site maintenance. To solve the above limitations, this paper designs a\u2026",
+          "published": "2026-07-02T09:36:49.000Z"
+        },
+        {
+          "title": "A novel abnormal detection method for bearing temperature based on spatiotemporal fusion",
+          "url": "https://journals.sagepub.com/doi/10.1177/09544097211022105",
+          "domain": "journals.sagepub.com",
+          "snippet": "A real-time prediction model of high-speed train bearing temperature anomalies based on Bi-directional Long Short-Term Memory (BILSTM) was proposed. Finally, the D-S evidence theory was used to combine the anomaly\u2026",
+          "published": null
+        },
+        {
+          "title": "Transformer-Based High-Speed Train Axle Temperature Monitoring and Alarm System for Enhanced Safety and Performance",
+          "url": "https://www.mdpi.com/2076-3417/14/19/8643",
+          "domain": "mdpi.com",
+          "snippet": "on optimizing the network\u2019s objective functions and distinctions to bolster the efficiency and diversity of the generated data. Finally, an integrated model with an optimized transformer module is established to\u2026",
+          "published": "2024-09-25T07:21:36.000Z"
+        },
+        {
+          "title": "Early Warnings for failing Train Axle Bearings based on Temperature",
+          "url": "https://papers.phmsociety.org/index.php/phmconf/article/download/2451/1415",
+          "domain": "papers.phmsociety.org",
+          "snippet": "large for the reasons mentioned before, the first limit is set to a rather high side-difference of 30\u2070C. Depending on the frequency of occurrence, exceeding this limit generates alarms of level 1, 2 or 3. When the\u2026",
+          "published": null
+        }
+      ],
+      "caption": "Similar failure behaviour has been documented in the sources below. These describe comparable signal signatures on other equipment -- they do not confirm, prove, or diagnose a fault on this unit."
+    }
+  },
+  "DOOR_03_2": {
+    "fingerprint": "b72555035d2b75e4",
+    "query": "train door motor and seal wear door motor current elevated signature predictive maintenance condition monitoring",
+    "response": {
+      "unit_id": "DOOR_03_2",
+      "status": "ok",
+      "query": "train door motor and seal wear door motor current elevated signature predictive maintenance condition monitoring",
+      "driving_signal": "motor_current_amps",
+      "implied_mechanism": "motor and seal wear",
+      "mechanisms": [
+        {
+          "text": "into healthy, emergency, and fault-tolerant modes, forming a unified mechanism throughout the door\u2019s life cycle. During door motion, the 3-sigma rule combined with long short-term memory network enables real-time detection of sudden faults in emergency\u2026",
+          "domain": "iopscience.iop.org"
+        },
+        {
+          "text": "Motor current signals were analyzed using the Discrete Wavelet Transform with a Daubechies (db10) mother wavelet to extract diagnostic features based on the L1-norms of wavelet coefficients at levels W8 and W9 along with the motor starting current peak.\u2026",
+          "domain": "mdpi.com"
+        },
+        {
+          "text": "ant Ratio and Pearson correlation. Classifications are then performed by the k-Nearest Neighbor (k-NN) method for the door-open and door-close operations, respectively.BRResults: Overall, the fault modes are identified quite well except for the artificial\u2026",
+          "domain": "doi.org"
+        }
+      ],
+      "sources": [
+        {
+          "title": "A self-consistent method for fault diagnosis and health assessment of urban rail train doors - IOPscience",
+          "url": "https://iopscience.iop.org/article/10.1088/2631-8695/ae724c",
+          "domain": "iopscience.iop.org",
+          "snippet": "into healthy, emergency, and fault-tolerant modes, forming a unified mechanism throughout the door\u2019s life cycle. During door motion, the 3-sigma rule combined with long short-term memory network enables real-time\u2026",
+          "published": "2026-06-03T12:24:50.000Z"
+        },
+        {
+          "title": "Wavelet-Based Health Monitoring Approach for Train Door Actuation Using Motor Current Analysis",
+          "url": "https://www.mdpi.com/1424-8220/26/9/2898",
+          "domain": "mdpi.com",
+          "snippet": "Motor current signals were analyzed using the Discrete Wavelet Transform with a Daubechies (db10) mother wavelet to extract diagnostic features based on the L1-norms of wavelet coefficients at levels W8 and W9 along\u2026",
+          "published": "2026-05-06T07:00:30.000Z"
+        },
+        {
+          "title": "Fault Diagnosis Study of Train Door Using Motor Current Signal",
+          "url": "https://doi.org/10.33162/jar.2019.12.19.4.353",
+          "domain": "doi.org",
+          "snippet": "ant Ratio and Pearson correlation. Classifications are then performed by the k-Nearest Neighbor (k-NN) method for the door-open and door-close operations, respectively.BRResults: Overall, the fault modes are\u2026",
+          "published": "2019-12-31T00:00:00.000Z"
+        },
+        {
+          "title": "Wavelet-Based Health Monitoring Approach for Train Door Actuation Using Motor Current Analysis",
+          "url": "https://doi.org/10.3390/s26092898",
+          "domain": "doi.org",
+          "snippet": "Motor current signals were analyzed using the Discrete Wavelet Transform with a Daubechies (db10) mother wavelet to extract diagnostic features based on the L1-norms of wavelet coefficients at levels W8 and W9 along\u2026",
+          "published": "2026-05-06T00:00:00.000Z"
+        },
+        {
+          "title": "A Comparative Study of Fault Diagnosis for Train Door System: Traditional versus Deep Learning Approaches",
+          "url": "https://www.mdpi.com/1424-8220/19/23/5160",
+          "domain": "mdpi.com",
+          "snippet": "the extraction of time-domain features, selection by Fisher\u2019s discrimination, and K-nearest neighbor. The other is the deep learning approach by employing the convolutional neural network (CNN) to skip the\u2026",
+          "published": "2019-11-25T02:11:45.000Z"
+        }
+      ],
+      "caption": "Similar failure behaviour has been documented in the sources below. These describe comparable signal signatures on other equipment -- they do not confirm, prove, or diagnose a fault on this unit."
+    }
+  },
+  "BOGIE_06_2": {
+    "fingerprint": "ed17c1ccb4e53042",
+    "query": "train bogie bearing overheating axle bearing temperature elevated signature predictive maintenance condition monitoring",
+    "response": {
+      "unit_id": "BOGIE_06_2",
+      "status": "ok",
+      "query": "train bogie bearing overheating axle bearing temperature elevated signature predictive maintenance condition monitoring",
+      "driving_signal": "temperature_c",
+      "implied_mechanism": "bearing overheating",
+      "mechanisms": [
+        {
+          "text": "Driven by this motivation, in this paper, based on a hybridized physical-and-data-driven temperature model a fault detection system for axle bearings mounted in the bogie axle boxes of currently servicing high-speed trains in China is built. To optimize\u2026",
+          "domain": "sciencedirect.com"
+        },
+        {
+          "text": "Moreover, most of these methods adopt point predictions and are unable to provide an engineering-applicable safe service interval for on-site maintenance. To solve the above limitations, this paper designs a dual-mechanism collaborative prognostic\u2026",
+          "domain": "google.iopscience.iop.org"
+        },
+        {
+          "text": "A real-time prediction model of high-speed train bearing temperature anomalies based on Bi-directional Long Short-Term Memory (BILSTM) was proposed. Finally, the D-S evidence theory was used to combine the anomaly detection model based on the AHP entropy\u2026",
+          "domain": "journals.sagepub.com"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Fault detection of high-speed train axle bearings based on a hybridized physical and data-driven temperature model - ScienceDirect",
+          "url": "https://www.sciencedirect.com/science/article/abs/pii/S0888327023009457",
+          "domain": "sciencedirect.com",
+          "snippet": "Driven by this motivation, in this paper, based on a hybridized physical-and-data-driven temperature model a fault detection system for axle bearings mounted in the bogie axle boxes of currently servicing high-speed\u2026",
+          "published": "2024-02-15T06:33:28.000Z"
+        },
+        {
+          "title": "Dual-mechanism collaborative prognostic framework for axle box bearings: short-term fault early warning and long-term safe service interval prediction - IOPscience",
+          "url": "https://google.iopscience.iop.org/article/10.1088/1361-6501/ae7ea4",
+          "domain": "google.iopscience.iop.org",
+          "snippet": "Moreover, most of these methods adopt point predictions and are unable to provide an engineering-applicable safe service interval for on-site maintenance. To solve the above limitations, this paper designs a\u2026",
+          "published": "2026-07-02T09:36:49.000Z"
+        },
+        {
+          "title": "A novel abnormal detection method for bearing temperature based on spatiotemporal fusion",
+          "url": "https://journals.sagepub.com/doi/10.1177/09544097211022105",
+          "domain": "journals.sagepub.com",
+          "snippet": "A real-time prediction model of high-speed train bearing temperature anomalies based on Bi-directional Long Short-Term Memory (BILSTM) was proposed. Finally, the D-S evidence theory was used to combine the anomaly\u2026",
+          "published": null
+        },
+        {
+          "title": "Transformer-Based High-Speed Train Axle Temperature Monitoring and Alarm System for Enhanced Safety and Performance",
+          "url": "https://www.mdpi.com/2076-3417/14/19/8643",
+          "domain": "mdpi.com",
+          "snippet": "on optimizing the network\u2019s objective functions and distinctions to bolster the efficiency and diversity of the generated data. Finally, an integrated model with an optimized transformer module is established to\u2026",
+          "published": "2024-09-25T07:21:36.000Z"
+        },
+        {
+          "title": "Early Warnings for failing Train Axle Bearings based on Temperature",
+          "url": "https://papers.phmsociety.org/index.php/phmconf/article/download/2451/1415",
+          "domain": "papers.phmsociety.org",
+          "snippet": "large for the reasons mentioned before, the first limit is set to a rather high side-difference of 30\u2070C. Depending on the frequency of occurrence, exceeding this limit generates alarms of level 1, 2 or 3. When the\u2026",
+          "published": null
+        }
+      ],
+      "caption": "Similar failure behaviour has been documented in the sources below. These describe comparable signal signatures on other equipment -- they do not confirm, prove, or diagnose a fault on this unit."
+    }
+  },
+  "DOOR_04_2": {
+    "fingerprint": "94866e9db5c13124",
+    "query": "train door mechanism binding and obstruction door cycle time elevated signature predictive maintenance condition monitoring",
+    "response": {
+      "unit_id": "DOOR_04_2",
+      "status": "ok",
+      "query": "train door mechanism binding and obstruction door cycle time elevated signature predictive maintenance condition monitoring",
+      "driving_signal": "cycle_time_sec",
+      "implied_mechanism": "mechanism binding and obstruction",
+      "mechanisms": [
+        {
+          "text": "into healthy, emergency, and fault-tolerant modes, forming a unified mechanism throughout the door\u2019s life cycle. During door motion, the 3-sigma rule combined with long short-term memory network enables real-time detection of sudden faults in emergency\u2026",
+          "domain": "iopscience.iop.org"
+        },
+        {
+          "text": "Motor current signals were analyzed using the Discrete Wavelet Transform with a Daubechies (db10) mother wavelet to extract diagnostic features based on the L1-norms of wavelet coefficients at levels W8 and W9 along with the motor starting current peak.\u2026",
+          "domain": "mdpi.com"
+        },
+        {
+          "text": "The next step was to feed DiagFit\u2018s Blind Mode detection engine with this reference data. The model learns the Green Zone \u2014 the behavioral space of healthy operation \u2014 and then computes a Health Indicator score for each new cycle, from each door, on each\u2026",
+          "domain": "amiraltechnologies.com"
+        }
+      ],
+      "sources": [
+        {
+          "title": "A self-consistent method for fault diagnosis and health assessment of urban rail train doors - IOPscience",
+          "url": "https://iopscience.iop.org/article/10.1088/2631-8695/ae724c",
+          "domain": "iopscience.iop.org",
+          "snippet": "into healthy, emergency, and fault-tolerant modes, forming a unified mechanism throughout the door\u2019s life cycle. During door motion, the 3-sigma rule combined with long short-term memory network enables real-time\u2026",
+          "published": "2026-06-03T12:24:50.000Z"
+        },
+        {
+          "title": "Wavelet-Based Health Monitoring Approach for Train Door Actuation Using Motor Current Analysis",
+          "url": "https://www.mdpi.com/1424-8220/26/9/2898",
+          "domain": "mdpi.com",
+          "snippet": "Motor current signals were analyzed using the Discrete Wavelet Transform with a Daubechies (db10) mother wavelet to extract diagnostic features based on the L1-norms of wavelet coefficients at levels W8 and W9 along\u2026",
+          "published": "2026-05-06T07:00:30.000Z"
+        },
+        {
+          "title": "Predictive Maintenance for Rolling Stock: Monitoring 75,000 High-Speed Train Door Cycles",
+          "url": "https://www.amiraltechnologies.com/en/use-cases/transport/predictive-maintenance-train-doors/",
+          "domain": "amiraltechnologies.com",
+          "snippet": "The next step was to feed DiagFit\u2018s Blind Mode detection engine with this reference data. The model learns the Green Zone \u2014 the behavioral space of healthy operation \u2014 and then computes a Health Indicator score for\u2026",
+          "published": "2026-04-23T09:11:28.000Z"
+        },
+        {
+          "title": "A Comparative Study of Fault Diagnosis for Train Door System: Traditional versus Deep Learning Approaches",
+          "url": "https://www.mdpi.com/1424-8220/19/23/5160",
+          "domain": "mdpi.com",
+          "snippet": "The two features can be applied to monitor the development of each fault mode over time in the real operation. Toward this objective, a health index (HI) is established by a linear regression model for each fault\u2026",
+          "published": "2019-11-25T02:11:45.000Z"
+        },
+        {
+          "title": "Information Value-Based Fault Diagnosis of Train Door System under Multiple Operating Conditions",
+          "url": "https://www.mdpi.com/1424-8220/20/14/3952",
+          "domain": "mdpi.com",
+          "snippet": "6. Table 6 describes the example of IV calculation. Let H be the normal state, with its negation H \u00af being the other two fault states. Evidence E represents the variables that are directly connected with door state\u2026",
+          "published": "2020-07-16T16:27:47.000Z"
+        }
+      ],
+      "caption": "Similar failure behaviour has been documented in the sources below. These describe comparable signal signatures on other equipment -- they do not confirm, prove, or diagnose a fault on this unit."
+    }
+  },
+  "DOOR_06_1": {
+    "fingerprint": "94866e9db5c13124",
+    "query": "train door mechanism binding and obstruction door cycle time elevated signature predictive maintenance condition monitoring",
+    "response": {
+      "unit_id": "DOOR_06_1",
+      "status": "ok",
+      "query": "train door mechanism binding and obstruction door cycle time elevated signature predictive maintenance condition monitoring",
+      "driving_signal": "cycle_time_sec",
+      "implied_mechanism": "mechanism binding and obstruction",
+      "mechanisms": [
+        {
+          "text": "into healthy, emergency, and fault-tolerant modes, forming a unified mechanism throughout the door\u2019s life cycle. During door motion, the 3-sigma rule combined with long short-term memory network enables real-time detection of sudden faults in emergency\u2026",
+          "domain": "iopscience.iop.org"
+        },
+        {
+          "text": "Motor current signals were analyzed using the Discrete Wavelet Transform with a Daubechies (db10) mother wavelet to extract diagnostic features based on the L1-norms of wavelet coefficients at levels W8 and W9 along with the motor starting current peak.\u2026",
+          "domain": "mdpi.com"
+        },
+        {
+          "text": "The next step was to feed DiagFit\u2018s Blind Mode detection engine with this reference data. The model learns the Green Zone \u2014 the behavioral space of healthy operation \u2014 and then computes a Health Indicator score for each new cycle, from each door, on each\u2026",
+          "domain": "amiraltechnologies.com"
+        }
+      ],
+      "sources": [
+        {
+          "title": "A self-consistent method for fault diagnosis and health assessment of urban rail train doors - IOPscience",
+          "url": "https://iopscience.iop.org/article/10.1088/2631-8695/ae724c",
+          "domain": "iopscience.iop.org",
+          "snippet": "into healthy, emergency, and fault-tolerant modes, forming a unified mechanism throughout the door\u2019s life cycle. During door motion, the 3-sigma rule combined with long short-term memory network enables real-time\u2026",
+          "published": "2026-06-03T12:24:50.000Z"
+        },
+        {
+          "title": "Wavelet-Based Health Monitoring Approach for Train Door Actuation Using Motor Current Analysis",
+          "url": "https://www.mdpi.com/1424-8220/26/9/2898",
+          "domain": "mdpi.com",
+          "snippet": "Motor current signals were analyzed using the Discrete Wavelet Transform with a Daubechies (db10) mother wavelet to extract diagnostic features based on the L1-norms of wavelet coefficients at levels W8 and W9 along\u2026",
+          "published": "2026-05-06T07:00:30.000Z"
+        },
+        {
+          "title": "Predictive Maintenance for Rolling Stock: Monitoring 75,000 High-Speed Train Door Cycles",
+          "url": "https://www.amiraltechnologies.com/en/use-cases/transport/predictive-maintenance-train-doors/",
+          "domain": "amiraltechnologies.com",
+          "snippet": "The next step was to feed DiagFit\u2018s Blind Mode detection engine with this reference data. The model learns the Green Zone \u2014 the behavioral space of healthy operation \u2014 and then computes a Health Indicator score for\u2026",
+          "published": "2026-04-23T09:11:28.000Z"
+        },
+        {
+          "title": "A Comparative Study of Fault Diagnosis for Train Door System: Traditional versus Deep Learning Approaches",
+          "url": "https://www.mdpi.com/1424-8220/19/23/5160",
+          "domain": "mdpi.com",
+          "snippet": "The two features can be applied to monitor the development of each fault mode over time in the real operation. Toward this objective, a health index (HI) is established by a linear regression model for each fault\u2026",
+          "published": "2019-11-25T02:11:45.000Z"
+        },
+        {
+          "title": "Information Value-Based Fault Diagnosis of Train Door System under Multiple Operating Conditions",
+          "url": "https://www.mdpi.com/1424-8220/20/14/3952",
+          "domain": "mdpi.com",
+          "snippet": "6. Table 6 describes the example of IV calculation. Let H be the normal state, with its negation H \u00af being the other two fault states. Evidence E represents the variables that are directly connected with door state\u2026",
+          "published": "2020-07-16T16:27:47.000Z"
+        }
+      ],
+      "caption": "Similar failure behaviour has been documented in the sources below. These describe comparable signal signatures on other equipment -- they do not confirm, prove, or diagnose a fault on this unit."
+    }
+  },
+  "DOOR_01_1": {
+    "fingerprint": "b72555035d2b75e4",
+    "query": "train door motor and seal wear door motor current elevated signature predictive maintenance condition monitoring",
+    "response": {
+      "unit_id": "DOOR_01_1",
+      "status": "ok",
+      "query": "train door motor and seal wear door motor current elevated signature predictive maintenance condition monitoring",
+      "driving_signal": "motor_current_amps",
+      "implied_mechanism": "motor and seal wear",
+      "mechanisms": [
+        {
+          "text": "into healthy, emergency, and fault-tolerant modes, forming a unified mechanism throughout the door\u2019s life cycle. During door motion, the 3-sigma rule combined with long short-term memory network enables real-time detection of sudden faults in emergency\u2026",
+          "domain": "iopscience.iop.org"
+        },
+        {
+          "text": "Motor current signals were analyzed using the Discrete Wavelet Transform with a Daubechies (db10) mother wavelet to extract diagnostic features based on the L1-norms of wavelet coefficients at levels W8 and W9 along with the motor starting current peak.\u2026",
+          "domain": "mdpi.com"
+        },
+        {
+          "text": "ant Ratio and Pearson correlation. Classifications are then performed by the k-Nearest Neighbor (k-NN) method for the door-open and door-close operations, respectively.BRResults: Overall, the fault modes are identified quite well except for the artificial\u2026",
+          "domain": "doi.org"
+        }
+      ],
+      "sources": [
+        {
+          "title": "A self-consistent method for fault diagnosis and health assessment of urban rail train doors - IOPscience",
+          "url": "https://iopscience.iop.org/article/10.1088/2631-8695/ae724c",
+          "domain": "iopscience.iop.org",
+          "snippet": "into healthy, emergency, and fault-tolerant modes, forming a unified mechanism throughout the door\u2019s life cycle. During door motion, the 3-sigma rule combined with long short-term memory network enables real-time\u2026",
+          "published": "2026-06-03T12:24:50.000Z"
+        },
+        {
+          "title": "Wavelet-Based Health Monitoring Approach for Train Door Actuation Using Motor Current Analysis",
+          "url": "https://www.mdpi.com/1424-8220/26/9/2898",
+          "domain": "mdpi.com",
+          "snippet": "Motor current signals were analyzed using the Discrete Wavelet Transform with a Daubechies (db10) mother wavelet to extract diagnostic features based on the L1-norms of wavelet coefficients at levels W8 and W9 along\u2026",
+          "published": "2026-05-06T07:00:30.000Z"
+        },
+        {
+          "title": "Fault Diagnosis Study of Train Door Using Motor Current Signal",
+          "url": "https://doi.org/10.33162/jar.2019.12.19.4.353",
+          "domain": "doi.org",
+          "snippet": "ant Ratio and Pearson correlation. Classifications are then performed by the k-Nearest Neighbor (k-NN) method for the door-open and door-close operations, respectively.BRResults: Overall, the fault modes are\u2026",
+          "published": "2019-12-31T00:00:00.000Z"
+        },
+        {
+          "title": "Wavelet-Based Health Monitoring Approach for Train Door Actuation Using Motor Current Analysis",
+          "url": "https://doi.org/10.3390/s26092898",
+          "domain": "doi.org",
+          "snippet": "Motor current signals were analyzed using the Discrete Wavelet Transform with a Daubechies (db10) mother wavelet to extract diagnostic features based on the L1-norms of wavelet coefficients at levels W8 and W9 along\u2026",
+          "published": "2026-05-06T00:00:00.000Z"
+        },
+        {
+          "title": "A Comparative Study of Fault Diagnosis for Train Door System: Traditional versus Deep Learning Approaches",
+          "url": "https://www.mdpi.com/1424-8220/19/23/5160",
+          "domain": "mdpi.com",
+          "snippet": "the extraction of time-domain features, selection by Fisher\u2019s discrimination, and K-nearest neighbor. The other is the deep learning approach by employing the convolutional neural network (CNN) to skip the\u2026",
+          "published": "2019-11-25T02:11:45.000Z"
+        }
+      ],
+      "caption": "Similar failure behaviour has been documented in the sources below. These describe comparable signal signatures on other equipment -- they do not confirm, prove, or diagnose a fault on this unit."
+    }
+  }
+}

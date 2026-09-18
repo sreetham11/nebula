@@ -16,6 +16,13 @@ End-to-end pipeline runner: for each subsystem (door, bogie) --
 Run: python pipeline/run_pipeline.py
 """
 
+# On Windows, torch must be imported before pandas/numpy: both ship their own
+# Intel OpenMP runtime (libiomp5md.dll), and if pandas' loads first, torch's
+# c10.dll fails to initialise with "WinError 1114". Importing torch first is
+# the documented ordering workaround; it is a no-op on Linux/macOS.
+import torch  # noqa: F401,E402  -- must precede pandas/numpy imports
+
+
 import json
 import os
 

@@ -10,6 +10,13 @@ how much." Plots are saved to validation_outputs/, one PNG per faulty unit,
 plus a lead_time_summary.csv/md across all of them.
 """
 
+# On Windows, torch must be imported before pandas/numpy: both ship their own
+# Intel OpenMP runtime (libiomp5md.dll), and if pandas' loads first, torch's
+# c10.dll fails to initialise with "WinError 1114". Importing torch first is
+# the documented ordering workaround; it is a no-op on Linux/macOS.
+import torch  # noqa: F401,E402  -- must precede pandas/numpy imports
+
+
 import json
 import os
 
