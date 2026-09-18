@@ -22,14 +22,26 @@ import threading
 import joblib
 import numpy as np
 import pandas as pd
+
+# xgboost MUST be imported before torch: on macOS, importing torch first
+# loads a second OpenMP runtime and the first xgboost predict() then
+# segfaults (exit 139). Optional so the synthetic-model endpoints still
+# start if xgboost isn't installed; /predict-rail-real just returns 503.
+try:
+    import xgboost  # noqa: F401
+except ImportError:
+    pass
+
 import torch
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, List, Optional
 
 sys.path.insert(0, os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "pipeline")))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import schema_config as sc  # noqa: E402
+import real_inference  # noqa: E402
 from model_config import BASELINE_Z_THRESHOLD, RISK_LEVELS, RECON_ERROR_WARNING_PERCENTILE  # noqa: E402
 from autoencoder import SequenceAutoencoder, get_device  # noqa: E402
 from fusion import _base_level_from_recon_error, _escalate  # noqa: E402
@@ -56,6 +68,8 @@ VALIDATION_FAULTS_BY_UNIT = {}
 LIVE_FEED_DF = None
 LIVE_CURSOR_LOCK = threading.Lock()
 LIVE_CURSOR = {"pos": 0}
+REAL_MODELS = None
+REAL_MODELS_ERROR = None
 
 
 def _load_artifacts():
@@ -162,6 +176,23 @@ def _build_live_feed():
     LIVE_FEED_DF = combined
 
 
+def _load_real_models():
+    """
+    Loads the real_* models (trained on the real PS3 Door / Rail_Corrugation
+    data) once at startup. Fail-soft: if any file is missing or unreadable
+    the server still starts and the synthetic endpoints are unaffected --
+    the two *-real endpoints just return 503 with the reason.
+    """
+    global REAL_MODELS, REAL_MODELS_ERROR
+    try:
+        REAL_MODELS = real_inference.load_real_models(sc.MODELS_DIR)
+    except Exception as e:  # noqa: BLE001
+        REAL_MODELS = None
+        REAL_MODELS_ERROR = f"{type(e).__name__}: {e}"
+        print(f"WARNING: real models not loaded ({REAL_MODELS_ERROR}); "
+              "/predict-door-real and /predict-rail-real will return 503")
+
+
 @app.on_event("startup")
 def startup():
     _load_artifacts()
@@ -169,6 +200,7 @@ def startup():
     _load_sensitivity_data()
     _load_validation_faults()
     _build_live_feed()
+    _load_real_models()
 
 
 # ---------------------------------------------------------------------------
@@ -581,3 +613,55 @@ def live_feed(batch_size: int = 6):
             "signals": {sig: float(row[sig]) for sig in row["signal_cols"]},
         })
     return {"events": events, "note": "Simulated live feed replaying synthetic historical data, sped up for demo."}
+
+
+# ---------------------------------------------------------------------------
+# Real-data models (trained on the actual PS3 Door / Rail_Corrugation data)
+# ---------------------------------------------------------------------------
+
+def _require_real_models():
+    if REAL_MODELS is None:
+        raise HTTPException(503, f"real models not loaded: {REAL_MODELS_ERROR or 'startup did not run'}")
+    return REAL_MODELS
+
+
+def _read_uploaded_csv(file: UploadFile):
+    try:
+        df = pd.read_csv(file.file)
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(400, f"could not parse uploaded file as CSV: {e}")
+    return df
+
+
+@app.post("/predict-door-real")
+def predict_door_real(file: UploadFile = File(...)):
+    """
+    Upload a real-schema Door CSV (Datetime + Motor current(mA), Motor
+    Voltage(10mV), ...). The stream is split into door cycles at time gaps
+    > 0.1s, each cycle is summarised as 24 features (mean/std/max/min of six
+    signals), and the real-data autoencoder flags cycles whose reconstruction
+    error exceeds the calibrated threshold as "Abnormal resistance".
+    """
+    models = _require_real_models()
+    df = _read_uploaded_csv(file)
+    try:
+        return real_inference.predict_door(df, models)
+    except real_inference.InputError as e:
+        raise HTTPException(422, str(e))
+
+
+@app.post("/predict-rail-real")
+def predict_rail_real(file: UploadFile = File(...)):
+    """
+    Upload a real-schema Rail_Corrugation CSV (129 columns: Rotating speed +
+    8 cars x 8 positions x vibration/shock). Extracts rms/std/max per column
+    (387 features) and classifies the recording Normal / Side I / Side II
+    with the real-data XGBoost classifier.
+    """
+    models = _require_real_models()
+    df = _read_uploaded_csv(file)
+    try:
+        result = real_inference.predict_rail(df, models)
+    except real_inference.InputError as e:
+        raise HTTPException(422, str(e))
+    return {"file_id": file.filename, **result}
