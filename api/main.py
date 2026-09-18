@@ -293,7 +293,22 @@ def sensitivity_scan(percentile: float = RECON_ERROR_WARNING_PERCENTILE):
         thresholds_used[subsystem_type] = threshold
 
         df = SCORED[subsystem_type]
-        total_alerts += int((df["ae_recon_error"] >= threshold).sum())
+        window_length = ARTIFACTS[subsystem_type]["window_length"]
+
+        # ae_recon_error is scored densely (stride=1 -- one window per
+        # reading, each overlapping the last by window_length-1 readings;
+        # see run_pipeline.py's AE_SCORING_STRIDE). Counting every reading
+        # above threshold therefore re-counts the SAME underlying anomaly
+        # up to window_length (48) times over -- a unit that degrades once
+        # and stays elevated for its remaining ~4,000 readings would report
+        # ~4,000 "alerts" for one real event. Sample one reading per
+        # non-overlapping window instead (stride = window_length, per unit,
+        # in that unit's own time order) so each ~8-hour window of data
+        # contributes at most one alert, matching how a real polling-based
+        # alert system would fire.
+        for _, g in df.groupby(cfg["id_col"]):
+            sampled = g.sort_values(cfg["timestamp_col"])["ae_recon_error"].iloc[::window_length]
+            total_alerts += int((sampled >= threshold).sum())
 
         st_faults = FAULT_LOG[FAULT_LOG["subsystem_type"] == subsystem_type]
         for _, fr in st_faults.iterrows():
@@ -383,6 +398,19 @@ def unit_detail(unit_id: str, history_points: int = 400):
     latest = unit_df.iloc[-1]
     risk_level = latest["risk_level"] if pd.notna(latest["risk_level"]) else "Normal"
 
+    # Per-signal deviation from the HEALTHY-POPULATION baseline (the
+    # autoencoder's own training scaler: healthy units' mean/std), not the
+    # unit's own short rolling-window z-score -- a unit that has been
+    # degraded for weeks has a rolling baseline that has already drifted
+    # upward with it, so its rolling z-score can look small or even
+    # negative despite being grossly abnormal. Comparing against the fixed
+    # healthy-population mean/std instead gives a stable answer to "how far
+    # from healthy is this signal right now," which is what "primary
+    # signal" on the dashboard's Priority Alert cards needs.
+    scaler = ARTIFACTS[subsystem_type]["scaler"]
+    raw_values = np.array([latest[sig] for sig in cfg["signal_cols"]])
+    healthy_zscores = (raw_values - scaler.mean_) / scaler.scale_
+
     if len(unit_df) > history_points:
         step = len(unit_df) // history_points
         hist = unit_df.iloc[::step]
@@ -404,6 +432,9 @@ def unit_detail(unit_id: str, history_points: int = 400):
         "latest": {
             "timestamp": str(latest[cfg["timestamp_col"]]),
             "signals": {sig: float(latest[sig]) for sig in cfg["signal_cols"]},
+            "signal_zscores": {
+                sig: float(z) for sig, z in zip(cfg["signal_cols"], healthy_zscores)
+            },
             "baseline_flag": bool(latest["baseline_flag"]),
             "baseline_max_abs_z": None if pd.isna(latest["baseline_max_abs_z"]) else float(latest["baseline_max_abs_z"]),
             "ae_recon_error": None if pd.isna(latest["ae_recon_error"]) else float(latest["ae_recon_error"]),

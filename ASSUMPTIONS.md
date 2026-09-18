@@ -201,10 +201,37 @@ and override anything before the real dataset lands. Grouped by phase.
   faults are caught across the entire 90-99.5 range (degradation drift is
   large enough relative to noise that even the most conservative threshold
   still catches everything) — so the visible tradeoff here is alert volume
-  (32,531 at 99.5th vs 42,945 at 90th) and lead time (5.8d vs 6.8d) rather
-  than catch-rate; a "faults missed" case would need a much more
-  conservative percentile than the brief's suggested range, or a dataset
-  with subtler degradation.
+  and lead time rather than catch-rate; a "faults missed" case would need a
+  much more conservative percentile than the brief's suggested range, or a
+  dataset with subtler degradation.
+- **Bug fixed after initial review: "Total Alerts" was wildly inflated**
+  (34,603 at the 97.5th-percentile default, reported as implausible given
+  ~145k total readings across 24 units). Root cause was NOT the threshold
+  calibration or the comparison direction — both checked out correctly
+  (verified per-unit: healthy units landed at 1-5% of readings above the
+  97.5th-percentile threshold, exactly as a 97.5th percentile should
+  produce; `>=` was never reversed). The actual bug: `ae_recon_error` is
+  scored *densely* (`AE_SCORING_STRIDE=1` in `run_pipeline.py` — one
+  overlapping window per reading, each sharing 47 of its 48 readings with
+  its neighbor), and the endpoint was summing every reading above
+  threshold. Since this synthetic data's injected degradation never
+  recovers once it starts, a degraded unit stays above threshold for
+  ~4,000+ consecutive readings — one real anomaly was being counted ~4,000
+  times over via overlapping windows, not ~48 times as a naive
+  "overlap correction" might suggest, because the elevated condition
+  persists far longer than one window length. Fixed by sampling one
+  reading per **non-overlapping** window per unit (stride = that
+  subsystem's `window_length`, in the unit's own time order) before
+  comparing to threshold — the same window granularity the autoencoder
+  itself operates at, so each ~8-hour window of real time contributes at
+  most one alert, matching how a real polling-based alerting system would
+  fire rather than re-alerting every 5-15 minutes indefinitely.
+  **Corrected totals**: 90th pct = 892, 97.5th pct (default) = 724, 99.5th
+  pct = 674 — all "order of hundreds" as expected. Verified degraded units
+  supply the bulk at every setting: 78% of alerts at 90th (most
+  aggressive/noisiest), rising to 93% at 97.5th and 98% at 99.5th (most
+  conservative) — healthy false-positives shrink as the threshold
+  tightens, exactly the tradeoff the slider is meant to demonstrate.
 - **Fleet Digital Twin diagram** (centerpiece panel, full width, between
   Business Impact and the two-column layout): purely client-side, no new
   API endpoint — built from the same `fleetCache` array `/fleet-status`

@@ -3,51 +3,134 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>NEBULA X — Predictive Fault Detection</title>
+<title>RAILPULSE — Predictive Fault Detection</title>
+<link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png" />
+<link rel="apple-touch-icon" sizes="512x512" href="assets/favicon_square_512.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"></script>
 <style>
   :root {
-    --bg: #0b0f14;
-    --panel: #121821;
-    --panel-alt: #161e29;
-    --border: #232d3a;
-    --text: #e6edf3;
-    --text-dim: #8b98a5;
-    --accent: #3ea6ff;
-    --normal: #2ecc71;
-    --caution: #f1c40f;
-    --warning: #e67e22;
-    --critical: #e74c3c;
+    --bg: #0B0F14;
+    --panel: #1A2230;
+    --panel-alt: #212B3D;
+    --border-rgb: 46, 61, 79;
+    --border: rgba(var(--border-rgb), 0.5);
+    --border-strong: rgba(var(--border-rgb), 0.85);
+    --text: #E9EEF3;
+    --text-dim: #92A0B3;
+    --accent: #4FA3D1;
+    --accent-rgb: 79, 163, 209;
+    --normal: #5FAE7A;
+    --normal-rgb: 95, 174, 122;
+    --caution: #D4A73D;
+    --caution-rgb: 212, 167, 61;
+    --warning: #D18A4A;
+    --warning-rgb: 209, 138, 74;
+    --critical: #C24B4B;
+    --critical-rgb: 194, 75, 75;
+
+    --font-heading: "Fraunces", Georgia, "Times New Roman", serif;
+    --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+    --sp-1: 8px;
+    --sp-2: 16px;
+    --sp-3: 24px;
+    --sp-4: 32px;
+
+    --radius-lg: 14px;
+    --radius-md: 10px;
+    --radius-pill: 999px;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
     background: var(--bg);
     color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: var(--font-body);
     font-size: 14px;
+    line-height: 1.5;
   }
   header {
-    padding: 14px 20px;
+    padding: var(--sp-2) 0;
     border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    position: relative;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .header-inner {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 var(--sp-3);
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: var(--sp-1);
+    position: relative;
   }
-  header h1 { font-size: 18px; margin: 0; font-weight: 600; }
-  header h1 span { color: var(--accent); }
+  /* Sized to fully fit within the header bar's own height (no top/bottom
+     crop) and positioned in the gap between the tagline and the badges --
+     clipping happens on the outer <header> (full bar height, bounded by
+     the border-bottom) rather than .header-inner's shorter content row, so
+     it can never bleed past the divider line. */
+  .header-watermark {
+    position: absolute;
+    top: 50%;
+    right: 470px;
+    transform: translateY(-50%);
+    height: 60px;
+    width: auto;
+    opacity: 0.16;
+    z-index: -1;
+    pointer-events: none;
+  }
+  @media (max-width: 1100px) {
+    .header-watermark { display: none; }
+  }
+  .brand { display: flex; flex-direction: column; gap: 2px; }
+  .brand-top { display: flex; align-items: center; gap: var(--sp-1); }
+  .brand-logo { height: 30px; width: auto; display: block; }
+  .wordmark {
+    font-family: var(--font-heading);
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    margin: 0;
+    color: var(--accent);
+    line-height: 1.1;
+  }
+  .brand-subtitle {
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.2px;
+  }
+  .header-tagline {
+    font-family: var(--font-heading);
+    font-size: 13.5px;
+    font-style: italic;
+    font-weight: 500;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
   .synthetic-badge {
-    background: #3d2b00;
-    color: #f1c40f;
-    border: 1px solid #6b4e00;
-    padding: 5px 10px;
-    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(var(--caution-rgb), 0.14);
+    color: var(--caution);
+    border: 1px solid rgba(var(--caution-rgb), 0.4);
+    padding: 6px 12px;
+    border-radius: var(--radius-pill);
     font-size: 11.5px;
     font-weight: 600;
     letter-spacing: 0.3px;
   }
+  .synthetic-badge svg { width: 12px; height: 12px; flex-shrink: 0; }
   .api-status {
     font-size: 11px;
     color: var(--text-dim);
@@ -62,9 +145,9 @@
   main {
     display: grid;
     grid-template-columns: 1fr 380px;
-    gap: 16px;
-    padding: 16px;
-    max-width: 1500px;
+    gap: var(--sp-3);
+    padding: var(--sp-3);
+    max-width: 1440px;
     margin: 0 auto;
   }
   @media (max-width: 900px) {
@@ -74,64 +157,134 @@
   .panel {
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px;
+    border-radius: var(--radius-lg);
+    padding: var(--sp-3);
   }
   .panel h2 {
-    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-family: var(--font-heading);
+    font-size: 16px;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.6px;
-    color: var(--text-dim);
-    margin: 0 0 12px 0;
+    letter-spacing: 0.5px;
+    color: var(--text);
+    margin: 0 0 var(--sp-2) 0;
   }
+  .panel-icon { width: 18px; height: 18px; flex-shrink: 0; color: var(--accent); }
 
   .stat-row {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 10px;
-    margin-bottom: 16px;
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-2);
   }
   .stat-tile {
     background: var(--panel-alt);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    padding: 10px 10px;
     text-align: center;
+    transition: border-color 0.15s ease, transform 0.15s ease;
   }
-  .stat-tile .num { font-size: 22px; font-weight: 700; }
-  .stat-tile .label { font-size: 10.5px; color: var(--text-dim); text-transform: uppercase; margin-top: 2px; }
+  .stat-tile:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+  .stat-tile .num { font-family: var(--font-heading); font-size: 24px; font-weight: 700; color: var(--text); line-height: 1.1; }
+  .stat-tile .label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
   .stat-tile.normal .num { color: var(--normal); }
   .stat-tile.caution .num { color: var(--caution); }
   .stat-tile.warning .num { color: var(--warning); }
   .stat-tile.critical .num { color: var(--critical); }
 
+  .priority-alert { margin-bottom: var(--sp-2); }
+  .priority-alert-heading {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--font-heading);
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--critical);
+    margin-bottom: var(--sp-1);
+  }
+  .priority-alert-heading::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--critical);
+    flex-shrink: 0;
+  }
+  .priority-alert-heading.level-Warning { color: var(--warning); }
+  .priority-alert-heading.level-Warning::before { background: var(--warning); }
+  .priority-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--sp-2);
+  }
+  .priority-card {
+    background: var(--panel-alt);
+    border: 1px solid rgba(var(--critical-rgb), 0.4);
+    border-left: 3px solid var(--critical);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  .priority-card:hover { border-color: var(--critical); transform: translateY(-1px); }
+  .priority-card.level-Warning { border-color: rgba(var(--warning-rgb), 0.4); border-left-color: var(--warning); }
+  .priority-card.level-Warning:hover { border-color: var(--warning); }
+  .priority-card-unit { font-family: var(--font-heading); font-size: 17px; font-weight: 600; color: var(--text); margin-top: 8px; }
+  .priority-card-unit .priority-card-subsys { font-family: var(--font-body); font-size: 12px; font-weight: 400; color: var(--text-dim); }
+  .priority-card-train { font-size: 11px; color: var(--text-dim); margin-top: 2px; margin-bottom: 10px; }
+  .priority-card-row { font-size: 11.5px; color: var(--text-dim); margin-top: 6px; line-height: 1.45; }
+  .priority-card-row b { color: var(--text); font-weight: 600; }
+  .priority-alert-empty { color: var(--text-dim); font-size: 12.5px; padding: 6px 0; }
+
   .charts-row {
     display: grid;
     grid-template-columns: 1.6fr 1fr;
-    gap: 14px;
-    margin-bottom: 16px;
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-2);
   }
-  .chart-box { background: var(--panel-alt); border: 1px solid var(--border); border-radius: 8px; padding: 10px; height: 260px; }
+  .chart-box {
+    background: var(--panel-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--sp-2);
+    height: 260px;
+    transition: border-color 0.15s ease;
+  }
+  .chart-box:hover { border-color: var(--border-strong); }
 
   table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--border); }
-  th { color: var(--text-dim); font-weight: 500; text-transform: uppercase; font-size: 10.5px; }
-  tr.unit-row { cursor: pointer; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  th {
+    color: var(--text-dim);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    font-size: 10.5px;
+  }
+  tr.unit-row { cursor: pointer; transition: background 0.12s ease; }
   tr.unit-row:hover { background: var(--panel-alt); }
-  tr.unit-row.selected { background: #1a2431; }
+  tr.unit-row.selected { background: rgba(var(--accent-rgb), 0.14); }
   .badge {
     display: inline-block;
-    padding: 2px 8px;
-    border-radius: 999px;
+    padding: 4px 11px;
+    border-radius: var(--radius-pill);
     font-size: 11px;
     font-weight: 600;
+    letter-spacing: 0.2px;
   }
-  .badge.Normal { background: #123420; color: var(--normal); }
-  .badge.Caution { background: #3d3400; color: var(--caution); }
-  .badge.Warning { background: #4a2a00; color: var(--warning); }
-  .badge.Critical { background: #4a1414; color: var(--critical); }
+  .badge.Normal { background: rgba(var(--normal-rgb), 0.16); color: var(--normal); border: 1px solid rgba(var(--normal-rgb), 0.35); }
+  .badge.Caution { background: rgba(var(--caution-rgb), 0.16); color: var(--caution); border: 1px solid rgba(var(--caution-rgb), 0.35); }
+  .badge.Warning { background: rgba(var(--warning-rgb), 0.16); color: var(--warning); border: 1px solid rgba(var(--warning-rgb), 0.35); }
+  .badge.Critical { background: rgba(var(--critical-rgb), 0.16); color: var(--critical); border: 1px solid rgba(var(--critical-rgb), 0.35); }
 
-  #liveFeed { max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+  #liveFeed { max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: var(--sp-1); }
   .feed-item {
     display: flex;
     justify-content: space-between;
@@ -139,11 +292,13 @@
     background: var(--panel-alt);
     border: 1px solid var(--border);
     border-left: 3px solid var(--text-dim);
-    border-radius: 6px;
-    padding: 6px 10px;
+    border-radius: var(--radius-md);
+    padding: 10px 14px;
     font-size: 11.5px;
     animation: fadeIn 0.4s ease;
+    transition: border-color 0.15s ease;
   }
+  .feed-item:hover { border-color: var(--border-strong); }
   .feed-item.Normal { border-left-color: var(--normal); }
   .feed-item.Caution { border-left-color: var(--caution); }
   .feed-item.Warning { border-left-color: var(--warning); }
@@ -152,12 +307,66 @@
   .feed-item .ft { color: var(--text-dim); }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 
-  #unitDetail .placeholder { color: var(--text-dim); font-size: 12.5px; padding: 20px 0; text-align: center; }
+  /* Digital twin + Unit Detail, side by side as one combined block --
+     clicking a shape in the twin updates the panel right next to it. */
+  .twin-detail-row {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: var(--sp-3);
+  }
+  @media (max-width: 900px) {
+    .twin-detail-row { grid-template-columns: 1fr; }
+  }
+  #unitDetail {
+    align-self: start;
+    position: sticky;
+    top: var(--sp-2);
+  }
+  #unitDetail .placeholder { color: var(--text-dim); font-size: 12.5px; padding: var(--sp-2) 0; text-align: center; }
+  .ud-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: var(--sp-4) var(--sp-1) var(--sp-3);
+    gap: 7px;
+  }
+  .ud-empty .ud-empty-illustration {
+    max-width: 220px;
+    width: 100%;
+    height: auto;
+    margin-bottom: var(--sp-1);
+    display: block;
+  }
+  .ud-empty .ud-empty-title {
+    font-family: var(--font-heading);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+  .ud-empty .ud-empty-prompt {
+    font-size: 13.5px;
+    color: var(--text);
+    line-height: 1.55;
+    max-width: 250px;
+  }
+  .ud-empty .ud-empty-prompt b.hl-critical { color: var(--critical); }
+  .ud-empty .ud-empty-prompt b.hl-warning { color: var(--warning); }
+  .ud-empty .ud-empty-hint {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 6px;
+    max-width: 230px;
+    line-height: 1.5;
+  }
+  .ud-unit-title { font-family: var(--font-heading); font-size: 21px; font-weight: 600; color: var(--text); }
   .trace-step {
     display: flex;
     align-items: flex-start;
-    gap: 10px;
-    padding: 8px 0;
+    gap: var(--sp-1);
+    padding: 11px 0;
     border-bottom: 1px solid var(--border);
   }
   .trace-step:last-child { border-bottom: none; }
@@ -167,30 +376,29 @@
   .trace-step .st-detail { font-size: 11.5px; color: var(--text-dim); margin-top: 2px; }
 
   .action-box {
-    margin-top: 10px;
-    padding: 10px 12px;
-    border-radius: 8px;
+    margin-top: var(--sp-1);
+    padding: 12px 14px;
+    border-radius: var(--radius-md);
     background: var(--panel-alt);
     border: 1px solid var(--border);
     font-size: 12.5px;
   }
-  .action-box .lbl { color: var(--text-dim); font-size: 10.5px; text-transform: uppercase; margin-bottom: 4px; }
+  .action-box .lbl { color: var(--text-dim); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px; }
 
-  #unitChartBox { height: 200px; margin-top: 12px; }
+  #unitChartBox { height: 200px; margin-top: var(--sp-1); }
 
-  footer { text-align: center; color: var(--text-dim); font-size: 11px; padding: 20px; }
+  footer { text-align: center; color: var(--text-dim); font-size: 11px; padding: var(--sp-3); }
 
   /* Business impact calculator */
-  .impact-panel { grid-column: 1 / -1; border-color: #2a4a3a; background: linear-gradient(180deg, #10201a 0%, var(--panel) 60%); }
-  .impact-panel h2 { color: #8fe3b8; }
+  .impact-panel { grid-column: 1 / -1; }
   .impact-inputs {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 16px;
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-2);
   }
   @media (max-width: 700px) { .impact-inputs { grid-template-columns: 1fr; } }
-  .impact-input-group { display: flex; flex-direction: column; gap: 5px; }
+  .impact-input-group { display: flex; flex-direction: column; gap: 6px; }
   .impact-input-group label { font-size: 11px; color: var(--text-dim); line-height: 1.3; }
   .impact-input-wrap { position: relative; }
   .impact-input-wrap .prefix {
@@ -202,155 +410,195 @@
     width: 100%;
     background: var(--panel-alt);
     border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 8px 10px 8px 22px;
+    border-radius: var(--radius-md);
+    padding: 10px 12px 10px 22px;
     color: var(--text);
     font-size: 14px;
     font-weight: 600;
     font-family: inherit;
+    transition: border-color 0.15s ease;
   }
-  .impact-inputs input:focus { outline: none; border-color: #2ecc71; }
-  .impact-input-wrap.mult input { padding: 8px 26px 8px 10px; }
+  .impact-inputs input:focus { outline: none; border-color: var(--accent); }
+  .impact-input-wrap.mult input { padding: 10px 28px 10px 12px; }
   .impact-summary {
     font-size: 13.5px;
     line-height: 1.6;
-    padding: 12px 14px;
+    padding: 14px 16px;
     background: var(--panel-alt);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    margin-bottom: 12px;
+    border-radius: var(--radius-md);
+    margin-bottom: var(--sp-1);
   }
-  .impact-summary b { color: #8fe3b8; }
+  .impact-summary b { color: var(--accent); }
   .impact-figures {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: var(--sp-2);
   }
   @media (max-width: 700px) { .impact-figures { grid-template-columns: 1fr; } }
   .impact-figure {
     background: var(--panel-alt);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     padding: 14px 16px;
+    transition: border-color 0.15s ease;
   }
-  .impact-figure .amount { font-size: 26px; font-weight: 800; color: #2ecc71; }
-  .impact-figure .desc { font-size: 11px; color: var(--text-dim); margin-top: 4px; line-height: 1.4; }
-  .impact-caption { font-size: 10.5px; color: var(--text-dim); margin-top: 12px; line-height: 1.5; }
+  .impact-figure:hover { border-color: var(--border-strong); }
+  .impact-figure .amount { font-family: var(--font-heading); font-size: 29px; font-weight: 700; color: var(--accent); }
+  .impact-figure .desc { font-size: 11px; color: var(--text-dim); margin-top: 6px; line-height: 1.4; }
+  .impact-caption { font-size: 10.5px; color: var(--text-dim); margin-top: var(--sp-2); line-height: 1.5; }
 
   /* Detection sensitivity slider */
-  .sensitivity-panel { margin-bottom: 16px; border-color: #3a3320; background: linear-gradient(180deg, #201c10 0%, var(--panel) 60%); }
-  .sensitivity-panel h2 { color: #e8c766; }
-  .sensitivity-slider-row { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .sensitivity-panel { margin-bottom: var(--sp-3); }
+  .sensitivity-slider-row { display: flex; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-1); }
   .sensitivity-slider-row input[type="range"] {
     flex: 1;
-    accent-color: #e8c766;
+    accent-color: var(--accent);
     height: 4px;
     cursor: pointer;
   }
   .sensitivity-pct-badge {
     background: var(--panel-alt);
     border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 4px 10px;
+    border-radius: var(--radius-md);
+    padding: 5px 12px;
     font-size: 12.5px;
     font-weight: 700;
-    color: #e8c766;
+    color: var(--accent);
     white-space: nowrap;
     min-width: 88px;
     text-align: center;
   }
-  .sensitivity-endpoints { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--text-dim); margin-bottom: 14px; }
-  .sensitivity-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .sensitivity-endpoints { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--text-dim); margin-bottom: var(--sp-2); }
+  .sensitivity-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-2); }
   .sensitivity-stat {
     background: var(--panel-alt);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     padding: 9px 10px;
     text-align: center;
+    transition: border-color 0.15s ease;
   }
-  .sensitivity-stat .num { font-size: 19px; font-weight: 700; color: #e8c766; }
-  .sensitivity-stat .label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; margin-top: 2px; }
-  .sensitivity-caption { font-size: 10.5px; color: var(--text-dim); margin-top: 10px; line-height: 1.5; }
+  .sensitivity-stat:hover { border-color: var(--border-strong); }
+  .sensitivity-stat .num { font-family: var(--font-heading); font-size: 21px; font-weight: 700; color: var(--accent); }
+  .sensitivity-stat .label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
+  .sensitivity-caption { font-size: 10.5px; color: var(--text-dim); margin-top: var(--sp-2); line-height: 1.5; }
 
-  /* Train diagram (digital twin view) */
-  .diagram-panel { grid-column: 1 / -1; }
-  .diagram-panel h2 { display: flex; align-items: center; gap: 10px; }
-  .diagram-legend { display: flex; gap: 14px; font-size: 10.5px; color: var(--text-dim); font-weight: 400; text-transform: none; }
-  .diagram-legend span { display: inline-flex; align-items: center; gap: 4px; }
-  .diagram-legend .swatch { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+  /* Train diagram (digital twin view) -- lives inside .twin-detail-row now,
+     alongside Unit Detail, so it no longer spans main's full width itself. */
+  .diagram-panel {
+    position: relative;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .diagram-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("assets/grid_texture.png");
+    background-repeat: repeat;
+    opacity: 0.4;
+    z-index: -1;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+  .diagram-legend { display: flex; gap: var(--sp-2); font-size: 10.5px; color: var(--text-dim); font-weight: 400; text-transform: none; letter-spacing: 0; font-family: var(--font-body); }
+  .diagram-legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .diagram-legend .swatch { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
   #trainDiagramSvgWrap { width: 100%; overflow-x: auto; }
   #trainDiagramSvgWrap svg { display: block; min-width: 640px; }
   .diagram-unit { cursor: pointer; }
   .diagram-unit .diagram-shape { transition: filter 0.15s ease; }
-  .diagram-unit:hover .diagram-shape { filter: brightness(1.35); stroke: #ffffff !important; stroke-width: 2px; }
-  .diagram-unit.selected .diagram-shape { stroke: #3ea6ff !important; stroke-width: 2.5px; }
+  .diagram-unit:hover .diagram-shape { filter: brightness(1.3); stroke: #ffffff !important; stroke-width: 2px; }
+  .diagram-unit.selected .diagram-shape { stroke: var(--accent) !important; stroke-width: 2.5px; }
   .diagram-tooltip {
     position: fixed;
     z-index: 50;
-    background: #0b0f14;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 6px 10px;
+    background: var(--panel);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    padding: 8px 12px;
     font-size: 11.5px;
     line-height: 1.5;
     pointer-events: none;
     box-shadow: 0 4px 14px rgba(0,0,0,0.5);
   }
-  .diagram-caption { font-size: 10.5px; color: var(--text-dim); margin-top: 10px; line-height: 1.5; }
+  .diagram-caption { font-size: 10.5px; color: var(--text-dim); margin-top: var(--sp-2); line-height: 1.5; }
+
+  /* Fleet unit table: filter toolbar + scroll containment + sortable headers */
+  .fleet-table-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--sp-1); margin-bottom: var(--sp-1); }
+  .fleet-table-title { font-family: var(--font-heading); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); }
+  .fleet-filter-group { display: inline-flex; border: 1px solid var(--border); border-radius: var(--radius-pill); overflow: hidden; }
+  .fleet-filter-btn { background: transparent; border: none; color: var(--text-dim); font-family: var(--font-body); font-size: 11.5px; font-weight: 600; padding: 6px 14px; cursor: pointer; transition: background 0.15s ease, color 0.15s ease; }
+  .fleet-filter-btn + .fleet-filter-btn { border-left: 1px solid var(--border); }
+  .fleet-filter-btn:hover { color: var(--text); }
+  .fleet-filter-btn.active { background: rgba(var(--accent-rgb), 0.16); color: var(--accent); }
+  .fleet-table-wrap { max-height: 560px; overflow-y: auto; }
+  th[data-col] { cursor: pointer; user-select: none; }
+  th[data-col]:hover { color: var(--text); }
+  th[data-col].sort-asc::after { content: "\00a0\25B2"; font-size: 8px; }
+  th[data-col].sort-desc::after { content: "\00a0\25BC"; font-size: 8px; }
+  .fleet-table-empty { color: var(--text-dim); font-size: 12.5px; padding: 16px 12px; text-align: center; }
 
   /* Maintenance actions (simulated work orders) */
   .wo-table-wrap { max-height: 380px; overflow-y: auto; }
   .wo-table-wrap table td { vertical-align: top; }
   .wo-table-wrap td.wo-desc { max-width: 240px; line-height: 1.4; color: var(--text-dim); }
-  .wo-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; white-space: nowrap; }
-  .wo-badge.Urgent { background: #4a1414; color: var(--critical); }
-  .wo-badge.Medium { background: #4a2a00; color: var(--warning); }
-  .wo-badge.PendingAssignment { background: #232d3a; color: var(--text-dim); }
-  .wo-badge.Acknowledged { background: #0d2a3d; color: var(--accent); }
-  .wo-badge.Scheduled { background: #123420; color: var(--normal); }
+  .wo-badge { display: inline-block; padding: 4px 11px; border-radius: var(--radius-pill); font-size: 11px; font-weight: 600; white-space: nowrap; letter-spacing: 0.2px; }
+  .wo-badge.Urgent { background: rgba(var(--critical-rgb), 0.16); color: var(--critical); border: 1px solid rgba(var(--critical-rgb), 0.35); }
+  .wo-badge.Medium { background: rgba(var(--warning-rgb), 0.16); color: var(--warning); border: 1px solid rgba(var(--warning-rgb), 0.35); }
+  .wo-badge.PendingAssignment { background: rgba(var(--border-rgb), 0.4); color: var(--text-dim); border: 1px solid var(--border); }
+  .wo-badge.Acknowledged { background: rgba(var(--accent-rgb), 0.16); color: var(--accent); border: 1px solid rgba(var(--accent-rgb), 0.35); }
+  .wo-badge.Scheduled { background: rgba(var(--normal-rgb), 0.16); color: var(--normal); border: 1px solid rgba(var(--normal-rgb), 0.35); }
   .wo-btn {
     background: var(--panel-alt);
     border: 1px solid var(--border);
     color: var(--text);
-    border-radius: 6px;
-    padding: 4px 9px;
+    border-radius: var(--radius-md);
+    padding: 6px 12px;
     font-size: 10.5px;
+    font-weight: 500;
     cursor: pointer;
     margin-right: 6px;
     margin-bottom: 4px;
     white-space: nowrap;
+    transition: border-color 0.15s ease, color 0.15s ease;
   }
   .wo-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .wo-empty { color: var(--text-dim); text-align: center; padding: 18px 0; font-size: 12.5px; }
+  .wo-empty { color: var(--text-dim); text-align: center; padding: var(--sp-2) 0; font-size: 12.5px; }
 
-  /* About & architecture */
   .full-width-panel { grid-column: 1 / -1; }
-  .about-panel p { font-size: 12.5px; line-height: 1.65; color: var(--text-dim); margin: 0 0 10px 0; }
-  .about-panel p:last-child { margin-bottom: 0; }
-  .about-panel strong { color: var(--text); }
-  .about-panel code {
-    background: var(--panel-alt);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 1px 5px;
-    font-size: 11.5px;
-    color: #8fe3b8;
-  }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>NEBULA <span>X</span> — Predictive Fault Detection</h1>
-  <div style="display:flex; align-items:center; gap:12px;">
-    <span class="synthetic-badge">⚠ SYNTHETIC DATA — real LTA dataset pending</span>
-    <span class="api-status"><span class="dot" id="apiDot"></span><span id="apiStatusText">connecting…</span></span>
+  <div class="header-inner">
+    <img src="assets/header_watermark.png" alt="" class="header-watermark" />
+    <div class="brand">
+      <div class="brand-top">
+        <img src="assets/header_logo_master.png" alt="RAILPULSE logo" class="brand-logo" />
+        <h1 class="wordmark">RAILPULSE</h1>
+      </div>
+      <div class="brand-subtitle">Predictive fault detection for rail networks</div>
+    </div>
+    <div class="header-tagline">"Early signals. Scheduled fixes."</div>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <span class="synthetic-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5L21 19.5H3L12 3.5z"/><path d="M12 9.5v5"/><circle cx="12" cy="17" r="0.8" fill="currentColor" stroke="none"/></svg>
+        SYNTHETIC DATA — real LTA dataset pending
+      </span>
+      <span class="api-status"><span class="dot" id="apiDot"></span><span id="apiStatusText">connecting…</span></span>
+    </div>
   </div>
 </header>
 
 <main>
   <div class="panel impact-panel" id="businessImpact">
-    <h2>💰 Business Impact Calculator</h2>
+    <h2>
+      <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.7-2.5 1.8c0 2.6 5 1.2 5 3.8 0 1.1-1.1 1.9-2.5 1.9s-2.5-.9-2.5-2"/></svg>
+      Business Impact Calculator
+    </h2>
     <div class="impact-inputs">
       <div class="impact-input-group">
         <label for="costFailure">Cost per unplanned failure / service disruption</label>
@@ -391,114 +639,147 @@
     </div>
   </div>
 
-  <div class="panel diagram-panel" id="trainDiagramPanel">
-    <h2>
-      🚆 Rolling Stock Digital Twin
-      <span class="diagram-legend">
-        <span><span class="swatch" style="background:#2ecc71"></span>Normal</span>
-        <span><span class="swatch" style="background:#f1c40f"></span>Caution</span>
-        <span><span class="swatch" style="background:#e67e22"></span>Warning</span>
-        <span><span class="swatch" style="background:#e74c3c"></span>Critical</span>
-      </span>
-    </h2>
-    <div id="trainDiagramSvgWrap"><div class="placeholder" style="color:var(--text-dim); font-size:12.5px; padding:20px 0;">Loading fleet layout…</div></div>
-    <div class="diagram-caption">Schematic side view, not to scale — each train consist's door and bogie subsystems are colored live by current risk level. Hover a shape for its unit ID and score; click to open its decision trace below.</div>
-  </div>
-
-  <div>
-    <div class="panel sensitivity-panel" id="sensitivityPanel">
-      <h2>🎚 Detection Sensitivity</h2>
-      <div class="sensitivity-slider-row">
-        <input type="range" id="sensitivitySlider" min="90" max="99.5" step="0.5" value="97.5">
-        <span class="sensitivity-pct-badge" id="sensitivityPctBadge">97.5th pct</span>
-      </div>
-      <div class="sensitivity-endpoints">
-        <span>◀ Aggressive (90th pct) — fires earlier, more false alarms</span>
-        <span>Conservative (99.5th pct) — fewer false alarms, may catch later ▶</span>
-      </div>
-      <div class="sensitivity-stats">
-        <div class="sensitivity-stat"><div class="num" id="sensAlerts">–</div><div class="label">Total Alerts</div></div>
-        <div class="sensitivity-stat"><div class="num" id="sensCaught">–</div><div class="label">Faults Caught</div></div>
-        <div class="sensitivity-stat"><div class="num" id="sensLeadTime">–</div><div class="label">Avg Lead Time</div></div>
-      </div>
-      <div class="sensitivity-caption" id="sensitivityCaption">Loading…</div>
+  <div class="twin-detail-row full-width-panel">
+    <div class="panel diagram-panel" id="trainDiagramPanel">
+      <h2>
+        <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="13" rx="3"/><path d="M5 11h14M9 4v7M15 4v7"/><circle cx="8.5" cy="19.5" r="1.3"/><circle cx="15.5" cy="19.5" r="1.3"/><path d="M7 17l-1.5 3M17 17l1.5 3"/></svg>
+        Rolling Stock Digital Twin
+        <span class="diagram-legend">
+          <span><span class="swatch" style="background:#5FAE7A"></span>Normal</span>
+          <span><span class="swatch" style="background:#D4A73D"></span>Caution</span>
+          <span><span class="swatch" style="background:#D18A4A"></span>Warning</span>
+          <span><span class="swatch" style="background:#C24B4B"></span>Critical</span>
+        </span>
+      </h2>
+      <div id="trainDiagramSvgWrap"><div class="placeholder" style="color:var(--text-dim); font-size:12.5px; padding:20px 0;">Loading fleet layout…</div></div>
+      <div class="diagram-caption">Schematic side view, not to scale — each train consist's door and bogie subsystems are colored live by current risk level. Hover a shape for its unit ID and score; click to open its decision trace on the right.</div>
     </div>
 
-    <div class="panel">
-      <h2>Fleet Overview</h2>
-      <div class="stat-row" id="statRow">
-        <div class="stat-tile"><div class="num" id="statTotal">–</div><div class="label">Total Units</div></div>
-        <div class="stat-tile normal"><div class="num" id="statNormal">–</div><div class="label">Normal</div></div>
-        <div class="stat-tile caution"><div class="num" id="statCaution">–</div><div class="label">Caution</div></div>
-        <div class="stat-tile warning"><div class="num" id="statWarning">–</div><div class="label">Warning</div></div>
-        <div class="stat-tile critical"><div class="num" id="statCritical">–</div><div class="label">Critical</div></div>
+    <div class="panel" id="unitDetail">
+      <h2>
+        <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="2.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+        Unit Detail
+      </h2>
+      <div id="unitDetailBody">
+        <div class="ud-empty">
+          <img src="assets/bogie_illustration.png" alt="No unit selected illustration" class="ud-empty-illustration" />
+          <div class="ud-empty-title">No unit selected</div>
+          <div class="ud-empty-prompt">Select any <b class="hl-critical">red</b> or <b class="hl-warning">orange</b> unit above to see why it's flagged</div>
+          <div class="ud-empty-hint">Click a row in the fleet table, or a door/bogie shape in the digital twin.</div>
+        </div>
       </div>
-      <div class="charts-row">
-        <div class="chart-box"><canvas id="riskBarChart"></canvas></div>
-        <div class="chart-box"><canvas id="statusDonut"></canvas></div>
+    </div>
+  </div>
+
+  <div class="panel sensitivity-panel full-width-panel" id="sensitivityPanel">
+    <h2>
+      <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2" fill="var(--panel)"/><circle cx="16" cy="12" r="2" fill="var(--panel)"/><circle cx="8" cy="18" r="2" fill="var(--panel)"/></svg>
+      Detection Sensitivity
+    </h2>
+    <div class="sensitivity-slider-row">
+      <input type="range" id="sensitivitySlider" min="90" max="99.5" step="0.5" value="97.5">
+      <span class="sensitivity-pct-badge" id="sensitivityPctBadge">97.5th pct</span>
+    </div>
+    <div class="sensitivity-endpoints">
+      <span>◀ Aggressive (90th pct) — fires earlier, more false alarms</span>
+      <span>Conservative (99.5th pct) — fewer false alarms, may catch later ▶</span>
+    </div>
+    <div class="sensitivity-stats">
+      <div class="sensitivity-stat"><div class="num" id="sensAlerts">–</div><div class="label">Total Alerts</div></div>
+      <div class="sensitivity-stat"><div class="num" id="sensCaught">–</div><div class="label">Faults Caught</div></div>
+      <div class="sensitivity-stat"><div class="num" id="sensLeadTime">–</div><div class="label">Avg Lead Time</div></div>
+    </div>
+    <div class="sensitivity-caption" id="sensitivityCaption">Loading…</div>
+  </div>
+
+  <div class="panel full-width-panel">
+    <h2>
+      <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>
+      Fleet Overview
+    </h2>
+    <div class="stat-row" id="statRow">
+      <div class="stat-tile"><div class="num" id="statTotal">–</div><div class="label">Total Units</div></div>
+      <div class="stat-tile normal"><div class="num" id="statNormal">–</div><div class="label">Normal</div></div>
+      <div class="stat-tile caution"><div class="num" id="statCaution">–</div><div class="label">Caution</div></div>
+      <div class="stat-tile warning"><div class="num" id="statWarning">–</div><div class="label">Warning</div></div>
+      <div class="stat-tile critical"><div class="num" id="statCritical">–</div><div class="label">Critical</div></div>
+    </div>
+
+    <div class="priority-alert" id="priorityAlert">
+      <div class="priority-alert-heading">Priority Alert — Highest-Risk Units</div>
+      <div class="priority-cards" id="priorityCards"></div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-box"><canvas id="riskBarChart"></canvas></div>
+      <div class="chart-box"><canvas id="statusDonut"></canvas></div>
+    </div>
+    <div class="fleet-table-toolbar">
+      <div class="fleet-table-title">Unit List</div>
+      <div class="fleet-filter-group" id="fleetFilterGroup">
+        <button type="button" class="fleet-filter-btn" data-filter="all">All</button>
+        <button type="button" class="fleet-filter-btn" data-filter="flagged">Flagged only</button>
       </div>
+    </div>
+    <div class="fleet-table-wrap">
       <table>
         <thead>
-          <tr><th>Unit</th><th>Subsystem</th><th>Train</th><th>Risk</th><th>Recon Err</th></tr>
+          <tr>
+            <th data-col="unit_id">Unit</th>
+            <th data-col="subsystem_type">Subsystem</th>
+            <th data-col="train_id">Train</th>
+            <th data-col="risk">Risk</th>
+            <th data-col="recon_err">Recon Err</th>
+          </tr>
         </thead>
         <tbody id="fleetTableBody"></tbody>
       </table>
     </div>
-
-    <div class="panel" style="margin-top:16px;" id="maintenanceActionsPanel">
-      <h2>🛠 Maintenance Actions</h2>
-      <div class="wo-table-wrap">
-        <table>
-          <thead>
-            <tr><th>Work Order</th><th>Unit</th><th>Priority</th><th>Description</th><th>Created</th><th>Status</th><th>Actions</th></tr>
-          </thead>
-          <tbody id="workOrderTableBody">
-            <tr><td colspan="7" class="wo-empty">No active alerts — work orders appear here automatically when a unit crosses into Warning or Critical.</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="diagram-caption">Simulated maintenance workflow — illustrates how alerts would integrate with an existing CMMS (Computerized Maintenance Management System) or work order platform. Generated client-side for this demo session only; "Acknowledge"/"Schedule" just update local state, no real ticketing backend.</div>
-    </div>
-
-    <div class="panel" style="margin-top:16px;">
-      <h2>Simulated Live Feed <span style="color:var(--text-dim); font-weight:400; text-transform:none;">(polling synthetic onboard telemetry, sped up for demo)</span></h2>
-      <div id="liveFeed"></div>
-    </div>
   </div>
 
-  <div class="panel" id="unitDetail">
-    <h2>Unit Detail</h2>
-    <div id="unitDetailBody"><div class="placeholder">Click a unit in the fleet table to inspect its decision trace.</div></div>
+  <div class="panel full-width-panel" id="maintenanceActionsPanel">
+    <h2>
+      <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 00-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 005.4-5.4l-2.6 2.6-2-2 2.6-2.6z"/></svg>
+      Maintenance Actions
+    </h2>
+    <div class="wo-table-wrap">
+      <table>
+        <thead>
+          <tr><th>Work Order</th><th>Unit</th><th>Priority</th><th>Description</th><th>Created</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="workOrderTableBody">
+          <tr><td colspan="7" class="wo-empty">No active alerts — work orders appear here automatically when a unit crosses into Warning or Critical.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="diagram-caption">Simulated maintenance workflow — illustrates how alerts would integrate with an existing CMMS (Computerized Maintenance Management System) or work order platform. Generated client-side for this demo session only; "Acknowledge"/"Schedule" just update local state, no real ticketing backend.</div>
   </div>
 
-  <div class="panel full-width-panel about-panel" id="aboutPanel">
-    <h2>ℹ️ About &amp; Architecture</h2>
-    <p>
-      NEBULA X is a predictive maintenance prototype for rolling stock fault detection, built for the
-      NEBULA X hackathon (LTA Singapore). It fuses a rolling-statistics baseline with a healthy-trained
-      autoencoder over door and bogie subsystem signals to flag developing wear before it becomes an
-      unplanned service disruption — see the <strong>Detection Sensitivity</strong> panel above for how
-      that threshold trades off alert volume against lead time.
-    </p>
-    <p>
-      <strong>Data path today:</strong> synthetic CSVs generated to mirror the expected onboard sensor
-      schema, standing in for the real dataset that drops during the event.
-      <strong>Data path in production:</strong> this pipeline is designed to ingest onboard telemetry
-      directly from each train's TCMS (Train Control and Management System) and/or depot-side SCADA
-      feeds in place of the synthetic CSVs — <code>pipeline/schema_config.py</code> is the single file
-      that maps column names to a real data source, so swapping one in shouldn't require touching the
-      model or dashboard code.
-    </p>
+  <div class="panel full-width-panel">
+    <h2>
+      <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-7 4 14 2-7h6"/></svg>
+      Simulated Live Feed <span style="color:var(--text-dim); font-weight:400; text-transform:none; letter-spacing:0; font-family:var(--font-body); font-size:11px;">(polling synthetic onboard telemetry, sped up for demo)</span>
+    </h2>
+    <div id="liveFeed"></div>
   </div>
 </main>
 
-<footer>NEBULA X — hackathon prototype for LTA Singapore. All figures on this page are derived from a synthetic placeholder dataset. Not real fleet data.</footer>
+<footer>RAILPULSE — a predictive maintenance prototype for LTA Singapore. All figures on this page are derived from a synthetic placeholder dataset. Not real fleet data.</footer>
 
 <div class="diagram-tooltip" id="diagramTooltip" hidden></div>
 
 <script>
 const API_BASE = "http://localhost:8000";
-const RISK_COLORS = { Normal: "#2ecc71", Caution: "#f1c40f", Warning: "#e67e22", Critical: "#e74c3c" };
+const RISK_COLORS = { Normal: "#5FAE7A", Caution: "#D4A73D", Warning: "#D18A4A", Critical: "#C24B4B" };
+const TEXT_DIM_HEX = "#92A0B3";
+const BORDER_HEX = "#2E3D4F";
+const PANEL_ALT_HEX = "#212B3D";
+const BG_HEX = "#0B0F14";
+const ACCENT_HEX = "#4FA3D1";
+
+Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+Chart.defaults.color = TEXT_DIM_HEX;
+const CHART_GRID = "rgba(46, 61, 79, 0.35)";
 const RISK_ORDER = ["Normal", "Caution", "Warning", "Critical"];
 
 let riskBarChart, statusDonut, unitLineChart;
@@ -537,6 +818,7 @@ async function refreshFleet() {
     renderStatusDonut(data.status_counts);
     renderTrainDiagram(data.units);
     generateWorkOrdersFromFleet(data.units);
+    renderPriorityAlerts(data.units);
     recalcImpact();
   } catch (e) {
     setApiStatus(false);
@@ -643,23 +925,138 @@ function renderStats(counts, total) {
   document.getElementById("statCritical").textContent = counts.Critical || 0;
 }
 
+// --- Priority Alert: highest-risk units -----------------------------------
+
+const SIGNAL_LABELS = {
+  cycle_time_sec: "cycle time",
+  motor_current_amps: "motor current",
+  temperature_c: "temperature",
+  vibration_rms: "vibration",
+};
+
+async function renderPriorityAlerts(units) {
+  const heading = document.querySelector("#priorityAlert .priority-alert-heading");
+  const container = document.getElementById("priorityCards");
+  try {
+    let level = "Critical";
+    let candidates = units.filter(u => u.risk_level === "Critical");
+    if (candidates.length === 0) {
+      level = "Warning";
+      candidates = units.filter(u => u.risk_level === "Warning");
+    }
+    candidates = [...candidates].sort((a, b) => (b.ae_recon_error || 0) - (a.ae_recon_error || 0)).slice(0, 3);
+
+    heading.textContent = `Priority Alert — Highest-Risk Units`;
+    heading.className = "priority-alert-heading" + (level === "Warning" ? " level-Warning" : "");
+
+    if (candidates.length === 0) {
+      container.innerHTML = `<div class="priority-alert-empty">No Critical or Warning units right now — fleet is healthy.</div>`;
+      return;
+    }
+
+    // Fetch full detail (signals, healthy-baseline z-scores, recommended
+    // action) for just these top few units -- same endpoint the fleet
+    // table / digital twin already use for Unit Detail, so the "Action"
+    // text is guaranteed to match, not re-derived.
+    const details = await Promise.all(candidates.map(u => apiGet(`/unit/${u.unit_id}`).catch(() => null)));
+
+    container.innerHTML = candidates.map((u, i) => {
+      const d = details[i];
+      let signalLine = "n/a";
+      if (d && d.latest.signal_zscores) {
+        const entries = Object.entries(d.latest.signal_zscores);
+        const [sig, z] = entries.reduce((a, b) => Math.abs(b[1]) > Math.abs(a[1]) ? b : a);
+        const label = SIGNAL_LABELS[sig] || sig;
+        signalLine = `<b>${label}</b> (${Math.abs(z).toFixed(1)}σ above healthy baseline)`;
+      }
+      const actionText = d ? d.recommended_action : "—";
+      return `
+        <div class="priority-card level-${level}" data-unit-id="${u.unit_id}">
+          <span class="badge ${u.risk_level}">${u.risk_level}</span>
+          <div class="priority-card-unit">${u.unit_id} <span class="priority-card-subsys">· ${u.subsystem_type}</span></div>
+          <div class="priority-card-train">${u.train_id}</div>
+          <div class="priority-card-row">Reconstruction error: <b>${u.ae_recon_error != null ? u.ae_recon_error.toFixed(2) : "–"}</b></div>
+          <div class="priority-card-row">Primary signal: ${signalLine}</div>
+          <div class="priority-card-row">Action: <b>${actionText}</b></div>
+        </div>
+      `;
+    }).join("");
+
+    container.querySelectorAll(".priority-card").forEach(card => {
+      card.addEventListener("click", () => {
+        selectUnit(card.dataset.unitId);
+        document.getElementById("unitDetail").scrollIntoView({ behavior: "smooth", block: "nearest" });
+      });
+    });
+  } catch (e) {
+    container.innerHTML = `<div class="priority-alert-empty">Priority alerts unavailable.</div>`;
+    console.error(e);
+  }
+}
+
+// Fleet table filter/sort state. Default filter is "flagged" (Caution/
+// Warning/Critical only) since the Priority Alert cards above already
+// surface the worst offenders -- showing all 24 rows including 13+ Normal
+// ones by default just adds scroll with no signal. Default sort is by risk
+// level, worst first, matching the table's original (pre-filter) behavior.
+let fleetFilter = "flagged"; // "all" | "flagged"
+let fleetSortCol = "risk";
+let fleetSortDir = -1; // -1 = desc, 1 = asc
+
+const FLEET_COL_GETTERS = {
+  unit_id: u => u.unit_id,
+  subsystem_type: u => u.subsystem_type,
+  train_id: u => u.train_id,
+  risk: u => RISK_ORDER.indexOf(u.risk_level),
+  recon_err: u => (u.ae_recon_error != null ? u.ae_recon_error : -Infinity),
+};
+
+function compareFleetUnits(a, b) {
+  const getter = FLEET_COL_GETTERS[fleetSortCol];
+  const av = getter(a), bv = getter(b);
+  const cmp = typeof av === "string" ? av.localeCompare(bv) : av - bv;
+  return cmp * fleetSortDir;
+}
+
+function updateFleetFilterButtons() {
+  document.querySelectorAll(".fleet-filter-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.filter === fleetFilter);
+  });
+}
+
+function updateFleetSortIndicators() {
+  document.querySelectorAll("th[data-col]").forEach(th => {
+    th.classList.remove("sort-asc", "sort-desc");
+    if (th.dataset.col === fleetSortCol) {
+      th.classList.add(fleetSortDir === 1 ? "sort-asc" : "sort-desc");
+    }
+  });
+}
+
 function renderFleetTable(units) {
-  const sorted = [...units].sort((a, b) => RISK_ORDER.indexOf(b.risk_level) - RISK_ORDER.indexOf(a.risk_level));
+  const filtered = fleetFilter === "flagged" ? units.filter(u => u.risk_level !== "Normal") : units;
+  const sorted = [...filtered].sort(compareFleetUnits);
   const body = document.getElementById("fleetTableBody");
   body.innerHTML = "";
-  for (const u of sorted) {
-    const tr = document.createElement("tr");
-    tr.className = "unit-row" + (selectedUnit === u.unit_id ? " selected" : "");
-    tr.onclick = () => selectUnit(u.unit_id);
-    tr.innerHTML = `
-      <td>${u.unit_id}</td>
-      <td>${u.subsystem_type}</td>
-      <td>${u.train_id}</td>
-      <td><span class="badge ${u.risk_level}">${u.risk_level}</span></td>
-      <td>${u.ae_recon_error != null ? u.ae_recon_error.toFixed(2) : "–"}</td>
-    `;
-    body.appendChild(tr);
+  if (sorted.length === 0) {
+    body.innerHTML = `<tr><td colspan="5" class="fleet-table-empty">No flagged units right now — fleet is healthy.</td></tr>`;
+  } else {
+    for (const u of sorted) {
+      const tr = document.createElement("tr");
+      tr.className = "unit-row" + (selectedUnit === u.unit_id ? " selected" : "");
+      tr.onclick = () => selectUnit(u.unit_id);
+      tr.innerHTML = `
+        <td>${u.unit_id}</td>
+        <td>${u.subsystem_type}</td>
+        <td>${u.train_id}</td>
+        <td><span class="badge ${u.risk_level}">${u.risk_level}</span></td>
+        <td>${u.ae_recon_error != null ? u.ae_recon_error.toFixed(2) : "–"}</td>
+      `;
+      body.appendChild(tr);
+    }
   }
+  updateFleetFilterButtons();
+  updateFleetSortIndicators();
 }
 
 function renderRiskBarChart(units) {
@@ -667,17 +1064,30 @@ function renderRiskBarChart(units) {
   const ctx = document.getElementById("riskBarChart");
   const labels = sorted.map(u => u.unit_id);
   const values = sorted.map(u => u.ae_recon_error || 0);
-  const colors = sorted.map(u => RISK_COLORS[u.risk_level] || "#666");
+  const colors = sorted.map(u => RISK_COLORS[u.risk_level] || TEXT_DIM_HEX);
   if (riskBarChart) riskBarChart.destroy();
   riskBarChart = new Chart(ctx, {
     type: "bar",
-    data: { labels, datasets: [{ label: "Reconstruction error", data: values, backgroundColor: colors }] },
+    data: {
+      labels,
+      datasets: [{
+        label: "Reconstruction error",
+        data: values,
+        backgroundColor: colors.map(c => c + "CC"),
+        hoverBackgroundColor: colors,
+        borderRadius: 4,
+        borderSkipped: false,
+      }],
+    },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false }, title: { display: true, text: "Anomaly score by unit (top 12)", color: "#8b98a5", font: { size: 11 } } },
+      plugins: {
+        legend: { display: false },
+        title: { display: true, text: "Anomaly score by unit (top 12)", color: TEXT_DIM_HEX, font: { size: 11, weight: 500 } },
+      },
       scales: {
-        x: { ticks: { color: "#8b98a5", font: { size: 9 } }, grid: { color: "#232d3a" } },
-        y: { ticks: { color: "#8b98a5" }, grid: { color: "#232d3a" } },
+        x: { ticks: { color: TEXT_DIM_HEX, font: { size: 9 } }, grid: { display: false }, border: { color: BORDER_HEX } },
+        y: { ticks: { color: TEXT_DIM_HEX }, grid: { color: CHART_GRID }, border: { color: BORDER_HEX } },
       },
     },
   });
@@ -691,12 +1101,24 @@ function renderStatusDonut(counts) {
   if (statusDonut) statusDonut.destroy();
   statusDonut = new Chart(ctx, {
     type: "doughnut",
-    data: { labels, datasets: [{ data: values, backgroundColor: colors, borderColor: "#121821", borderWidth: 2 }] },
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: colors,
+        hoverBackgroundColor: colors,
+        hoverBorderColor: PANEL_ALT_HEX,
+        hoverOffset: 4,
+        borderColor: PANEL_ALT_HEX,
+        borderWidth: 2,
+      }],
+    },
     options: {
       responsive: true, maintainAspectRatio: false,
+      cutout: "62%",
       plugins: {
-        legend: { position: "bottom", labels: { color: "#e6edf3", font: { size: 10 }, boxWidth: 10 } },
-        title: { display: true, text: "Status distribution", color: "#8b98a5", font: { size: 11 } },
+        legend: { position: "bottom", labels: { color: "#E9EEF3", font: { size: 10 }, boxWidth: 10, padding: 12 } },
+        title: { display: true, text: "Status distribution", color: TEXT_DIM_HEX, font: { size: 11, weight: 500 } },
       },
     },
   });
@@ -735,26 +1157,26 @@ function buildTrainDiagram(units) {
     const rowTop = topPad + rowIdx * rowHeight;
     const carY = rowTop + 10;
 
-    svg += `<text x="12" y="${carY + carH / 2 + 4}" fill="#8b98a5" font-size="12" font-family="monospace">${trainId}</text>`;
+    svg += `<text x="12" y="${carY + carH / 2 + 4}" fill="${TEXT_DIM_HEX}" font-size="12" font-family="'Inter', sans-serif" font-weight="600">${trainId}</text>`;
 
     for (let c = 0; c < nCars; c++) {
       const carX = startX + c * (carW + gap);
 
       if (c < nCars - 1) {
-        svg += `<rect x="${carX + carW}" y="${carY + carH / 2 - 4}" width="${gap}" height="8" fill="#232d3a"/>`;
+        svg += `<rect x="${carX + carW}" y="${carY + carH / 2 - 4}" width="${gap}" height="8" fill="${BORDER_HEX}"/>`;
       }
       // car body + decorative windows
-      svg += `<rect x="${carX}" y="${carY}" width="${carW}" height="${carH}" rx="8" fill="#161e29" stroke="#2a3644" stroke-width="1.5"/>`;
-      svg += `<rect x="${carX + 16}" y="${carY + 8}" width="26" height="16" rx="3" fill="#0b0f14" stroke="#2a3644"/>`;
-      svg += `<rect x="${carX + carW - 42}" y="${carY + 8}" width="26" height="16" rx="3" fill="#0b0f14" stroke="#2a3644"/>`;
+      svg += `<rect x="${carX}" y="${carY}" width="${carW}" height="${carH}" rx="9" fill="${PANEL_ALT_HEX}" stroke="${BORDER_HEX}" stroke-width="1.5"/>`;
+      svg += `<rect x="${carX + 16}" y="${carY + 8}" width="26" height="16" rx="3" fill="${BG_HEX}" stroke="${BORDER_HEX}"/>`;
+      svg += `<rect x="${carX + carW - 42}" y="${carY + 8}" width="26" height="16" rx="3" fill="${BG_HEX}" stroke="${BORDER_HEX}"/>`;
 
       const door = doors[c];
       if (door) {
         const doorW = 20, doorH = carH - 8;
         const doorX = carX + carW * 0.6, doorY = carY + 4;
         svg += `<g class="diagram-unit" data-unit-id="${door.unit_id}" id="diagram-unit-${door.unit_id}">`;
-        svg += `<rect class="diagram-shape" x="${doorX}" y="${doorY}" width="${doorW}" height="${doorH}" rx="3" fill="${RISK_COLORS[door.risk_level] || "#555"}" stroke="#0b0f14" stroke-width="1.5"/>`;
-        svg += `<line x1="${doorX + doorW / 2}" y1="${doorY + 2}" x2="${doorX + doorW / 2}" y2="${doorY + doorH - 2}" stroke="#0b0f14" stroke-width="1"/>`;
+        svg += `<rect class="diagram-shape" x="${doorX}" y="${doorY}" width="${doorW}" height="${doorH}" rx="3" fill="${RISK_COLORS[door.risk_level] || TEXT_DIM_HEX}" stroke="${BG_HEX}" stroke-width="1.5"/>`;
+        svg += `<line x1="${doorX + doorW / 2}" y1="${doorY + 2}" x2="${doorX + doorW / 2}" y2="${doorY + doorH - 2}" stroke="${BG_HEX}" stroke-width="1"/>`;
         svg += `</g>`;
       }
 
@@ -764,11 +1186,11 @@ function buildTrainDiagram(units) {
         const bogieCX = carX + carW / 2, bogieY = carY + carH + 6;
         const wheelCY = bogieY + frameH + wheelR;
         svg += `<g class="diagram-unit" data-unit-id="${bogie.unit_id}" id="diagram-unit-${bogie.unit_id}">`;
-        svg += `<rect class="diagram-shape" x="${bogieCX - frameW / 2}" y="${bogieY}" width="${frameW}" height="${frameH}" rx="3" fill="${RISK_COLORS[bogie.risk_level] || "#555"}" stroke="#0b0f14" stroke-width="1.5"/>`;
-        svg += `<circle cx="${bogieCX - frameW / 2 + 12}" cy="${wheelCY}" r="${wheelR}" fill="#1a1f26" stroke="#3a4451"/>`;
-        svg += `<circle cx="${bogieCX + frameW / 2 - 12}" cy="${wheelCY}" r="${wheelR}" fill="#1a1f26" stroke="#3a4451"/>`;
+        svg += `<rect class="diagram-shape" x="${bogieCX - frameW / 2}" y="${bogieY}" width="${frameW}" height="${frameH}" rx="3" fill="${RISK_COLORS[bogie.risk_level] || TEXT_DIM_HEX}" stroke="${BG_HEX}" stroke-width="1.5"/>`;
+        svg += `<circle cx="${bogieCX - frameW / 2 + 12}" cy="${wheelCY}" r="${wheelR}" fill="${BG_HEX}" stroke="${BORDER_HEX}"/>`;
+        svg += `<circle cx="${bogieCX + frameW / 2 - 12}" cy="${wheelCY}" r="${wheelR}" fill="${BG_HEX}" stroke="${BORDER_HEX}"/>`;
         svg += `</g>`;
-        svg += `<line x1="${carX - 6}" y1="${wheelCY + wheelR + 5}" x2="${carX + carW + 6}" y2="${wheelCY + wheelR + 5}" stroke="#232d3a" stroke-width="2"/>`;
+        svg += `<line x1="${carX - 6}" y1="${wheelCY + wheelR + 5}" x2="${carX + carW + 6}" y2="${wheelCY + wheelR + 5}" stroke="${BORDER_HEX}" stroke-width="2"/>`;
       }
     }
   });
@@ -932,10 +1354,10 @@ function renderUnitDetail(d) {
   const sigEntries = Object.entries(d.latest.signals).map(([k, v]) => `${k}: <b>${v}</b>`).join(" &nbsp;|&nbsp; ");
 
   body.innerHTML = `
-    <div style="margin-bottom:10px;">
-      <div style="font-size:15px; font-weight:700;">${d.unit_id} <span class="badge ${d.latest.risk_level}" style="margin-left:6px;">${d.latest.risk_level}</span></div>
-      <div style="color:var(--text-dim); font-size:11.5px; margin-top:2px;">${d.subsystem_type} · ${d.train_id} · as of ${d.latest.timestamp}</div>
-      <div style="font-size:12px; margin-top:8px;">${sigEntries}</div>
+    <div style="margin-bottom:14px;">
+      <div class="ud-unit-title">${d.unit_id} <span class="badge ${d.latest.risk_level}" style="margin-left:6px; vertical-align:middle;">${d.latest.risk_level}</span></div>
+      <div style="color:var(--text-dim); font-size:11.5px; margin-top:4px;">${d.subsystem_type} · ${d.train_id} · as of ${d.latest.timestamp}</div>
+      <div style="font-size:12px; margin-top:10px;">${sigEntries}</div>
     </div>
     <div id="traceSteps"></div>
     <div class="action-box">
@@ -966,19 +1388,23 @@ function renderUnitDetail(d) {
       datasets: [{
         label: "Reconstruction error",
         data: reconSeries,
-        borderColor: "#00cec9",
-        backgroundColor: "transparent",
-        borderWidth: 1.2,
+        borderColor: ACCENT_HEX,
+        backgroundColor: "rgba(79, 163, 209, 0.1)",
+        fill: true,
+        borderWidth: 1.5,
         pointRadius: 0,
+        pointHoverRadius: 4,
+        pointHoverBackgroundColor: ACCENT_HEX,
+        pointHoverBorderColor: PANEL_ALT_HEX,
         tension: 0.15,
       }],
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false }, title: { display: true, text: "Anomaly trend (history)", color: "#8b98a5", font: { size: 11 } } },
+      plugins: { legend: { display: false }, title: { display: true, text: "Anomaly trend (history)", color: TEXT_DIM_HEX, font: { size: 11, weight: 500 } } },
       scales: {
-        x: { ticks: { display: false }, grid: { color: "#232d3a" } },
-        y: { ticks: { color: "#8b98a5", font: { size: 9 } }, grid: { color: "#232d3a" } },
+        x: { ticks: { display: false }, grid: { display: false }, border: { color: BORDER_HEX } },
+        y: { ticks: { color: TEXT_DIM_HEX, font: { size: 9 } }, grid: { color: CHART_GRID }, border: { color: BORDER_HEX } },
       },
     },
   });
@@ -1010,6 +1436,22 @@ async function pollLiveFeed() {
   document.getElementById(id).addEventListener("input", recalcImpact);
 });
 document.getElementById("sensitivitySlider").addEventListener("input", onSensitivitySlide);
+
+document.querySelectorAll(".fleet-filter-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    fleetFilter = btn.dataset.filter;
+    renderFleetTable(fleetCache);
+  });
+});
+document.querySelectorAll("th[data-col]").forEach(th => {
+  th.addEventListener("click", () => {
+    const col = th.dataset.col;
+    fleetSortDir = (fleetSortCol === col) ? -fleetSortDir : -1;
+    fleetSortCol = col;
+    renderFleetTable(fleetCache);
+  });
+});
+updateFleetFilterButtons();
 
 refreshFleet();
 pollLiveFeed();
