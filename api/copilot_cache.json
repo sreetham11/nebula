@@ -133,5 +133,20 @@
       "recommended_inspection": "No inspection is required on this detection. If a planner wants confirmation, compare a reading taken during sustained running against this one to check that bearing and traction motor temperatures rise into the normal band under load, and note the brake capacity reading at that time.",
       "disclaimer": "AI-assisted suggestion generated from this unit's pipeline output -- not a confirmed diagnosis."
     }
+  },
+  "BOGIE_02_1": {
+    "fingerprint": "a397fcdd6015f77c",
+    "model": "claude-opus-5",
+    "generated_at": "2026-09-18T16:26:16+00:00",
+    "response": {
+      "unit_id": "BOGIE_02_1",
+      "status": "ok",
+      "model": "claude-opus-5",
+      "generated_at": "2026-09-18T16:26:16+00:00",
+      "why_flagged": "The autoencoder reconstruction error is 3.443, far above the Critical threshold of 0.7063 (and the Caution 0.6018 and Warning 0.6573 levels), so the current signal combination does not match any healthy-fleet pattern the model was trained on. The largest single contributor is axle bearing temperature at 42.453 C, +2.39 sigma above the healthy mean of 38.0107 C, while traction motor rpm sits at 81.9 (-1.61 sigma below the 1309.9354 mean) and traction motor temp at 59.71 C (-0.96 sigma). The rolling baseline check did not trip (max abs z 1.54, baseline_deviation_flagged false), so the alert rests on the combination of signals rather than any one drifting trend.",
+      "predicted_issue": "One plausible explanation is added drag or friction at the axle bearing: bearing temperature is elevated even though the traction motor is turning slowly (81.9 rpm) and running cooler than baseline, so the heat is not obviously coming from traction effort. Degraded lubrication or early bearing wear would be consistent with this pattern, though vibration_rms at 0.3265 is slightly below baseline, which does not yet support advanced mechanical damage. This remains a hypothesis from signal statistics only.",
+      "recommended_inspection": "Have a technician take a direct temperature reading of the axle bearing housing and compare it with the corresponding bearing on the same bogie to see whether the 42.453 C reading is localised or fleet-typical. A check of lubricant condition and level at that bearing, plus a manual rotation check for roughness or drag, would help confirm or rule out added friction.",
+      "disclaimer": "AI-assisted suggestion generated from this unit's pipeline output -- not a confirmed diagnosis."
+    }
   }
 }
