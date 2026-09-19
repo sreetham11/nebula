@@ -9,94 +9,115 @@
 <link rel="apple-touch-icon" sizes="512x512" href="assets/favicon_square_512.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"></script>
 <style>
   /* ---------------------------------------------------------------
-     Palette — light by default, dark on request.
-     Every colour is a token; nothing downstream hardcodes a value, so
-     the two themes are the same stylesheet with a different set of
-     numbers. The JS reads these back through getComputedStyle for the
-     canvas charts and the hand-built SVG, which cannot inherit CSS.
+     PERMANENT WAY — the theme
 
-     Status colours are checked against their own background, not
-     against each other: all four clear 4.8:1 on white and 6:1 on the
-     dark card. They sit at similar lightness, so colour alone never
-     carries the meaning — every badge, tile and row states the level
-     in words as well.
+     Railways already have a visual language, so this borrows from it
+     instead of from a component library. Three decisions carry it:
+
+     1. Ground is warm drafting paper, not cool grey. Every value in the
+        neutral ramp is warm (yellow-red bias), the way a printed
+        engineering notice or a permanent-way drawing is. Cool greys plus
+        a blue accent is the default look of every admin template ever
+        generated; this reads as a technical document instead.
+
+     2. Status colours are RAILWAY SIGNAL ASPECTS — green, yellow, double
+        yellow, red. That is not decoration: it is the exact semantics
+        this dashboard needs, and any rail engineer reads it instantly
+        without a legend. Signal red is reserved for Critical, which is
+        why the interaction accent is petrol teal — an enamel-and-
+        machinery colour that sits nowhere near the status ramp.
+
+     3. Depth comes from hairlines and a shift of ground, never from a
+        soft drop shadow. Corners are effectively square. Panels read as
+        printed panes on a sheet, not as floating cards.
+
+     Contrast is measured, not assumed: every foreground clears 4.5:1 on
+     its own background in both themes (light 4.8-16.3:1, dark
+     5.8-14.5:1). The four aspects sit close in lightness, so colour
+     never carries meaning alone — every badge and row states the level
+     in words too.
      --------------------------------------------------------------- */
   :root {
     color-scheme: light;
 
-    --bg: #F4F6FA;
-    --panel: #FFFFFF;
-    --panel-alt: #F7F9FC;
-    --border-rgb: 219, 225, 234;
+    --bg: #E7E2D6;
+    --panel: #F5F2EA;
+    --panel-alt: #EDE8DC;
+    --border-rgb: 199, 190, 172;
     --border: rgb(var(--border-rgb));
-    --border-strong: #C6D0DE;
+    --border-strong: #A79C84;
 
-    --text: #131A24;
-    --text-dim: #59647A;
+    --text: #17150F;
+    --text-dim: #5E5748;
 
-    --accent: #3A5BD9;
-    --accent-rgb: 58, 91, 217;
-    --accent-contrast: #FFFFFF;
+    --accent: #13565C;
+    --accent-rgb: 19, 86, 92;
+    --accent-contrast: #F5F2EA;
 
-    --normal: #0E7C4A;    --normal-rgb: 14, 124, 74;
-    --caution: #9A6700;   --caution-rgb: 154, 103, 0;
-    --warning: #C2410C;   --warning-rgb: 194, 65, 12;
-    --critical: #B3182F;  --critical-rgb: 179, 24, 47;
+    --normal: #1D6B3F;    --normal-rgb: 29, 107, 63;
+    --caution: #8A6413;   --caution-rgb: 138, 100, 19;
+    --warning: #A2500F;   --warning-rgb: 162, 80, 15;
+    --critical: #A81F24;  --critical-rgb: 168, 31, 36;
 
-    /* Soft, low-contrast elevation: on a light page, depth comes from
-       shadow rather than from a heavier border. */
-    --shadow-sm: 0 1px 2px rgba(19, 26, 36, 0.05);
-    --shadow-md: 0 1px 3px rgba(19, 26, 36, 0.06), 0 4px 12px rgba(19, 26, 36, 0.05);
-    --shadow-lg: 0 8px 28px rgba(19, 26, 36, 0.10);
+    /* Flat by design. Kept as tokens so the dark theme can bring a
+       faint one back where the border alone is not enough. */
+    --shadow-sm: none;
+    --shadow-md: none;
+    --shadow-lg: 0 10px 30px rgba(23, 21, 15, 0.13);
 
-    /* One typeface, differentiated by weight and tracking rather than by
-       a second family. --font-heading is kept as a token so every call
-       site stays valid. */
-    --font-heading: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    /* Barlow was drawn from the grotesques on public-transit signage,
+       which is as close to the domain as a webfont gets. Condensed for
+       headings, regular for prose, and a true mono for every figure so
+       digits line up in a column and a live poll does not make a row
+       jitter. */
+    --font-heading: "Barlow Condensed", "Barlow", Arial Narrow, sans-serif;
+    --font-body: "Barlow", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
     --sp-1: 8px;
     --sp-2: 16px;
     --sp-3: 24px;
     --sp-4: 32px;
 
-    --radius-lg: 14px;
-    --radius-md: 10px;
-    --radius-sm: 6px;
-    --radius-pill: 999px;
+    /* Square, like a printed form. */
+    --radius-lg: 3px;
+    --radius-md: 2px;
+    --radius-sm: 2px;
+    --radius-pill: 2px;
   }
 
+  /* Night shift — the same sheet read in a signal box. Ground goes to
+     warm near-black rather than blue-black, and the aspects brighten to
+     hold their contrast. */
   [data-theme="dark"] {
     color-scheme: dark;
 
-    --bg: #0E1117;
-    --panel: #161B24;
-    --panel-alt: #1C222C;
-    --border-rgb: 42, 51, 64;
+    --bg: #111010;
+    --panel: #1A1814;
+    --panel-alt: #221F1A;
+    --border-rgb: 58, 53, 44;
     --border: rgb(var(--border-rgb));
-    --border-strong: #3A4556;
+    --border-strong: #574F42;
 
-    --text: #E8EDF4;
-    --text-dim: #98A5B8;
+    --text: #EDE8DC;
+    --text-dim: #9C9384;
 
-    --accent: #8AA0F5;
-    --accent-rgb: 138, 160, 245;
-    --accent-contrast: #0E1117;
+    --accent: #5FB8C0;
+    --accent-rgb: 95, 184, 192;
+    --accent-contrast: #111010;
 
-    --normal: #3DD68C;    --normal-rgb: 61, 214, 140;
-    --caution: #E3B341;   --caution-rgb: 227, 179, 65;
-    --warning: #FB8C3C;   --warning-rgb: 251, 140, 60;
-    --critical: #FF6B85;  --critical-rgb: 255, 107, 133;
+    --normal: #49C97C;    --normal-rgb: 73, 201, 124;
+    --caution: #E0B341;   --caution-rgb: 224, 179, 65;
+    --warning: #F0873B;   --warning-rgb: 240, 135, 59;
+    --critical: #FF5F5F;  --critical-rgb: 255, 95, 95;
 
-    /* Shadow does almost no work on a dark page; the border carries the
-       edge instead, so these stay deliberately faint. */
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.30);
-    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.34);
-    --shadow-lg: 0 10px 32px rgba(0, 0, 0, 0.46);
+    --shadow-sm: none;
+    --shadow-md: none;
+    --shadow-lg: 0 10px 32px rgba(0, 0, 0, 0.5);
   }
   * { box-sizing: border-box; }
   body {
@@ -104,8 +125,8 @@
     background: var(--bg);
     color: var(--text);
     font-family: var(--font-body);
-    font-size: 14px;
-    line-height: 1.5;
+    font-size: 15px;
+    line-height: 1.55;
   }
   header {
     padding: var(--sp-2) 0;
@@ -138,9 +159,10 @@
   .brand-logo { height: 30px; width: auto; display: block; }
   .wordmark {
     font-family: var(--font-heading);
-    font-size: 26px;
-    font-weight: 800;
-    letter-spacing: -0.4px;
+    font-size: 32px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
     margin: 0;
     color: var(--accent);
     line-height: 1.1;
@@ -184,12 +206,14 @@
     align-items: center;
     gap: 9px;
     font-family: var(--font-heading);
-    font-size: 16px;
+    font-size: 19px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 1.1px;
     color: var(--text);
     margin: 0 0 var(--sp-2) 0;
+    padding-bottom: 9px;
+    border-bottom: 1px solid var(--border);
   }
   .panel-icon { width: 18px; height: 18px; flex-shrink: 0; color: var(--accent); }
 
@@ -208,7 +232,7 @@
     transition: border-color 0.15s ease, transform 0.15s ease;
   }
   .stat-tile:hover { border-color: var(--border-strong); transform: translateY(-1px); }
-  .stat-tile .num { font-family: var(--font-heading); font-size: 24px; font-weight: 700; color: var(--text); line-height: 1.1; }
+  .stat-tile .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: -0.5px; font-size: 24px; font-weight: 700; color: var(--text); line-height: 1.1; }
   .stat-tile .label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
   .stat-tile.normal .num { color: var(--normal); }
   .stat-tile.caution .num { color: var(--caution); }
@@ -255,7 +279,7 @@
   .priority-card:hover { border-color: var(--critical); transform: translateY(-1px); }
   .priority-card.level-Warning { border-color: rgba(var(--warning-rgb), 0.4); border-left-color: var(--warning); }
   .priority-card.level-Warning:hover { border-color: var(--warning); }
-  .priority-card-unit { font-family: var(--font-heading); font-size: 17px; font-weight: 600; color: var(--text); margin-top: 8px; }
+  .priority-card-unit { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: -0.5px; font-size: 17px; font-weight: 600; color: var(--text); margin-top: 8px; }
   .priority-card-unit .priority-card-subsys { font-family: var(--font-body); font-size: 12px; font-weight: 400; color: var(--text-dim); }
   .priority-card-train { font-size: 11px; color: var(--text-dim); margin-top: 2px; margin-bottom: 10px; }
   .priority-card-row { font-size: 11.5px; color: var(--text-dim); margin-top: 6px; line-height: 1.45; }
@@ -292,16 +316,20 @@
   tr.unit-row.selected { background: rgba(var(--accent-rgb), 0.14); }
   .badge {
     display: inline-block;
-    padding: 4px 11px;
-    border-radius: var(--radius-pill);
-    font-size: 11px;
+    padding: 3px 9px 3px 8px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-heading);
+    font-size: 12px;
     font-weight: 600;
-    letter-spacing: 0.2px;
+    text-transform: uppercase;
+    letter-spacing: 0.9px;
+    border-left-width: 3px;
+    border-left-style: solid;
   }
-  .badge.Normal { background: rgba(var(--normal-rgb), 0.16); color: var(--normal); border: 1px solid rgba(var(--normal-rgb), 0.35); }
-  .badge.Caution { background: rgba(var(--caution-rgb), 0.16); color: var(--caution); border: 1px solid rgba(var(--caution-rgb), 0.35); }
-  .badge.Warning { background: rgba(var(--warning-rgb), 0.16); color: var(--warning); border: 1px solid rgba(var(--warning-rgb), 0.35); }
-  .badge.Critical { background: rgba(var(--critical-rgb), 0.16); color: var(--critical); border: 1px solid rgba(var(--critical-rgb), 0.35); }
+  .badge.Normal { background: rgba(var(--normal-rgb), 0.12); color: var(--normal); border-color: var(--normal); }
+  .badge.Caution { background: rgba(var(--caution-rgb), 0.12); color: var(--caution); border-color: var(--caution); }
+  .badge.Warning { background: rgba(var(--warning-rgb), 0.12); color: var(--warning); border-color: var(--warning); }
+  .badge.Critical { background: rgba(var(--critical-rgb), 0.12); color: var(--critical); border-color: var(--critical); }
 
   #liveFeed { max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: var(--sp-1); }
   .feed-item {
@@ -380,7 +408,7 @@
     max-width: 230px;
     line-height: 1.5;
   }
-  .ud-unit-title { font-family: var(--font-heading); font-size: 21px; font-weight: 600; color: var(--text); }
+  .ud-unit-title { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: -0.5px; font-size: 21px; font-weight: 600; color: var(--text); }
   .trace-step {
     display: flex;
     align-items: flex-start;
@@ -604,7 +632,7 @@
     background: var(--panel); border: 1px solid var(--accent); border-radius: var(--radius-pill);
     padding: 4px 13px; display: flex; align-items: baseline; gap: 4px; white-space: nowrap;
   }
-  .lt-days-num { font-family: var(--font-heading); font-size: 17px; font-weight: 700; color: var(--accent); }
+  .lt-days-num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: -0.5px; font-size: 17px; font-weight: 700; color: var(--accent); }
   .lt-days-unit { font-family: var(--font-body); font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.3px; }
 
   #unitChartBox { height: 200px; margin-top: var(--sp-1); }
@@ -648,7 +676,7 @@
     transition: border-color 0.15s ease;
   }
   .sensitivity-stat:hover { border-color: var(--border-strong); }
-  .sensitivity-stat .num { font-family: var(--font-heading); font-size: 21px; font-weight: 700; color: var(--accent); }
+  .sensitivity-stat .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: -0.5px; font-size: 21px; font-weight: 700; color: var(--accent); }
   .sensitivity-stat .label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
   .sensitivity-caption { font-size: 10.5px; color: var(--text-dim); margin-top: var(--sp-2); line-height: 1.5; }
 
@@ -751,11 +779,13 @@
      values with units attached; .num-col right-aligns a whole table
      column of them. */
   .mono {
+    font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum" 1;
-    letter-spacing: -0.1px;
+    font-size: 0.94em;
+    letter-spacing: -0.2px;
   }
-  .num-col { text-align: right; font-variant-numeric: tabular-nums; }
+  .num-col { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 0.94em; }
   .unit-suffix { color: var(--text-dim); font-size: 0.85em; margin-left: 2px; }
   .sub-note { color: var(--text-dim); font-size: 10.5px; line-height: 1.45; }
 
@@ -789,7 +819,7 @@
   .hi-Critical { color: var(--critical); }
 
   .hi-big { display: flex; align-items: baseline; gap: 7px; }
-  .hi-big .v { font-family: var(--font-heading); font-size: 30px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+  .hi-big .v { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: -0.5px; font-size: 30px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
   .hi-big .of { font-size: 12px; color: var(--text-dim); }
   .hi-big .band { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
 
@@ -1115,7 +1145,7 @@
     border: 1px solid var(--border);
   }
   .act-by-clock { display: flex; align-items: baseline; gap: 5px; }
-  .act-by-num { font-family: var(--font-heading); font-size: 26px; font-weight: 700; line-height: 1; }
+  .act-by-num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: -0.5px; font-size: 26px; font-weight: 700; line-height: 1; }
   .act-by-unit { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); }
   .act-by-text { flex: 1; min-width: 180px; font-size: 12px; line-height: 1.55; color: var(--text-dim); }
   .act-by-text b { color: var(--text); }
@@ -1239,7 +1269,7 @@
   }
   .impact-stat { background: var(--panel-alt); padding: 14px 16px; }
   .impact-stat .v {
-    font-family: var(--font-heading);
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: -0.5px;
     font-size: 23px;
     font-weight: 700;
     line-height: 1.1;
@@ -1929,7 +1959,7 @@ function readThemeColors() {
 }
 readThemeColors();
 
-Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+Chart.defaults.font.family = "'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
 Chart.defaults.color = TEXT_DIM_HEX;
 const RISK_ORDER = ["Normal", "Caution", "Warning", "Critical"];
 
@@ -2659,9 +2689,9 @@ function chipSvg(id, x, y, w, h, label, state) {
             fill="${state.color}" fill-opacity="${state.opacity}" stroke="${BORDER_HEX}" stroke-width="1"/>
       <rect class="chip-bar" x="${x}" y="${y}" width="3" height="${h}" rx="1.5" fill="${state.color}"/>
       <text x="${x + 9}" y="${y + h / 2 + 3.5}" fill="${TEXT_DIM_HEX}" font-size="8.5"
-            font-family="'Inter', sans-serif" font-weight="700" letter-spacing="0.4">${label}</text>
+            font-family="'Barlow Condensed', sans-serif" font-weight="700" letter-spacing="0.4">${label}</text>
       <text class="chip-val" x="${x + w - 7}" y="${y + h / 2 + 3.5}" text-anchor="end"
-            fill="${state.color}" font-size="9.5" font-family="'Inter', sans-serif"
+            fill="${state.color}" font-size="9.5" font-family="'Barlow Condensed', sans-serif"
             font-weight="600">${state.text}</text>
     </g>`;
 }
@@ -2695,11 +2725,11 @@ function buildTrainDiagram(units) {
     const worstColor = worstUnit ? healthColor(worstUnit.health_band) : TEXT_DIM_HEX;
 
     svg += `<text x="10" y="${carY + 20}" fill="${TEXT_HEX}" font-size="12.5"
-              font-family="'Inter', sans-serif" font-weight="700">${trainId}</text>`;
+              font-family="'Barlow Condensed', sans-serif" font-weight="700">${trainId}</text>`;
     svg += `<text x="10" y="${carY + 36}" fill="${TEXT_DIM_HEX}" font-size="9.5"
-              font-family="'Inter', sans-serif">worst health</text>`;
+              font-family="'Barlow Condensed', sans-serif">worst health</text>`;
     svg += `<text x="10" y="${carY + 52}" fill="${worstColor}" font-size="15"
-              font-family="'Inter', sans-serif" font-weight="700">${worst != null ? Math.round(worst) : "–"}</text>`;
+              font-family="'Barlow Condensed', sans-serif" font-weight="700">${worst != null ? Math.round(worst) : "–"}</text>`;
 
     for (let c = 0; c < nCars; c++) {
       const carX = DG.startX + c * (DG.carW + DG.carGap);
@@ -2733,7 +2763,7 @@ function buildTrainDiagram(units) {
                   fill="${lightState.color}" fill-opacity="0.16" stroke="${BORDER_HEX}" stroke-width="1"/>`;
       }
       svg += `<text x="${carX + 14}" y="${carY + DG.carH - 9}" fill="${TEXT_DIM_HEX}" font-size="9"
-                font-family="'Inter', sans-serif" font-weight="600">${carUnit ? carUnit.unit_id : "CAR " + (c + 1)}</text>`;
+                font-family="'Barlow Condensed', sans-serif" font-weight="600">${carUnit ? carUnit.unit_id : "CAR " + (c + 1)}</text>`;
 
       // Door leaf
       if (doorUnit) {
