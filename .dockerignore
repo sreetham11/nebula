@@ -5,12 +5,27 @@ venv/
 .git/
 .gitignore
 
-# Not needed in the image -- the Dockerfile regenerates these at build time
-# (data_gen + pipeline run during `docker build`), and the dashboard is a
-# separate static site, not part of the API image.
-dashboard/
-data/
-models/
-validation_outputs/
+# Secrets never go into an image. api/.env holds the Anthropic/Exa keys for
+# local runs; on Cloud Run they are set as environment variables instead.
+**/.env
+**/.env.*
 
+# Regenerated at build time (the Dockerfile runs data_gen + the pipeline), so
+# not sent in the build context...
+data/
+models/*
+validation_outputs/*
+
+# ...except what CANNOT be regenerated in the image: the Colab-trained
+# real-data models, and the committed ablation summary that /model-validation
+# reads (pipeline/ablation.py is not part of the build).
+!models/real_door_autoencoder.pt
+!models/real_door_scaler.pkl
+!models/real_door_threshold.pkl
+!models/real_rail_classifier.pkl
+!models/real_rail_label_encoder.pkl
+!validation_outputs/ablation_comparison.csv
+
+# Not part of the service.
+ps3_door/
 *.md

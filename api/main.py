@@ -41,6 +41,7 @@ import numpy as np
 import pandas as pd
 from fastapi import FastAPI, File, Form, HTTPException, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Dict, List, Optional
 
@@ -1170,3 +1171,15 @@ def chat_status():
         "model": chat.MODEL,
         "literature_search": chat.exa_key_present(),
     }
+
+
+# ---------------------------------------------------------------------------
+# Dashboard
+# ---------------------------------------------------------------------------
+# The dashboard is served by this same app, so one URL is the whole product
+# (the API and the page that uses it share an origin). Mounted LAST so every
+# route above takes priority; "/" then falls through to dashboard/index.html.
+# Skipped if the folder is absent (e.g. an API-only checkout).
+_DASHBOARD_DIR = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "dashboard"))
+if os.path.isdir(_DASHBOARD_DIR):
+    app.mount("/", StaticFiles(directory=_DASHBOARD_DIR, html=True), name="dashboard")
