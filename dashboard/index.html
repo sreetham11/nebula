@@ -1930,7 +1930,14 @@
 </div>
 
 <script>
-const API_BASE = "http://localhost:8000";
+// Deployed, the API and this page are one origin, so a relative base is
+// correct and there is no CORS hop. Locally the dashboard is served by
+// `python -m http.server 8080` while the API runs on 8000, so that one
+// case still points at 8000.
+const API_BASE =
+  (location.hostname === "localhost" || location.hostname === "127.0.0.1") && location.port === "8080"
+    ? "http://localhost:8000"
+    : "";
 // Chart.js paints to a canvas and the digital twin is a hand-built SVG
 // string; neither inherits CSS custom properties. These mirror the tokens
 // and are re-read on every theme change -- they are `let`, not `const`,

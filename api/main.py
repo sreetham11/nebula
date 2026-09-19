@@ -41,6 +41,7 @@ import numpy as np
 import pandas as pd
 from fastapi import FastAPI, File, Form, HTTPException, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Dict, List, Optional
 
@@ -1159,3 +1160,20 @@ def chat_status():
         "model": chat.MODEL,
         "literature_search": chat.exa_key_present(),
     }
+
+
+# ---------------------------------------------------------------------------
+# Static dashboard
+# ---------------------------------------------------------------------------
+#
+# Mounted LAST, because a mount at "/" swallows every path that did not match
+# a route declared above it. Serving the page from the same origin as the API
+# is what lets the deployed build be a single Cloud Run service with one URL,
+# and removes the CORS hop entirely.
+#
+# Skipped silently when dashboard/ is absent (e.g. an API-only image), so this
+# can never stop the service starting.
+
+_DASHBOARD_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "dashboard"))
+if os.path.isdir(_DASHBOARD_DIR):
+    app.mount("/", StaticFiles(directory=_DASHBOARD_DIR, html=True), name="dashboard")

@@ -5,12 +5,12 @@ venv/
 .git/
 .gitignore
 
-# Not needed in the image -- the Dockerfile regenerates these at build time
-# (data_gen + pipeline run during `docker build`), and the dashboard is a
-# separate static site, not part of the API image.
-dashboard/
+# Regenerated at build time by data_gen + the pipeline run, so shipping the
+# local copies would only make the build context bigger.
 data/
-models/
 validation_outputs/
+
+# dashboard/ and models/ ARE needed now: the API serves the page itself, and
+# models/real_* are Colab-trained artifacts the build cannot regenerate.
 
 *.md
