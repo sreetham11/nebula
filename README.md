@@ -121,6 +121,46 @@ someone to discover from a suspiciously red fleet.
 curl -F "file=@your_data.csv" http://localhost:8000/upload
 ```
 
+## Real-data models (Door + Rail corrugation)
+
+Everything above runs on the synthetic placeholder fleet. Separately, two
+models trained on the **actual PS3 datasets** are checked into `models/`
+(`real_*`) and served by `api/real_inference.py`, which shares nothing with
+the synthetic pipeline -- no synthetic artifact is read or written by it.
+
+| Endpoint | Input | Output |
+|----------|-------|--------|
+| `POST /predict-door-real` | Door CSV: `Datetime` + the 6 motor/door columns | per door cycle, Normal / Abnormal resistance |
+| `POST /predict-rail-real` | Rail_Corrugation CSV: the 129 recording columns | Normal / Side I / Side II, with probabilities |
+
+The door stream is split into cycles wherever consecutive rows are more than
+0.1s apart, each cycle reduced to 24 features (mean/std/max/min of the six
+signals), and flagged when the autoencoder's reconstruction error exceeds the
+calibrated threshold. The rail recording is reduced to rms/std/max per column
+(387 features) and classified by a 300-round XGBoost model.
+
+```bash
+curl -F "file=@door.csv" http://localhost:8000/predict-door-real
+curl -F "file=@rail_corrugation.csv" http://localhost:8000/predict-rail-real
+```
+
+Both are fail-soft: if the `real_*` artifacts are missing or unreadable the
+API still starts, the synthetic endpoints are unaffected, and these two
+return 503 with the reason.
+
+Two things to know about the artifacts themselves:
+
+- `real_rail_classifier.pkl` holds its booster in XGBoost's non-portable
+  serialize-buffer format, which the pinned `xgboost==3.4.1` wheel refuses
+  with "input stream corrupted". `real_inference.load_rail_classifier`
+  recovers it by loading the portable half of that buffer through
+  `Booster.load_model` -- same 300 rounds, same 387 features. If these models
+  are ever retrained, save them with `save_model()` and this can go away.
+- The scaler and label encoder were pickled by scikit-learn 1.6.1 while this
+  repo pins 1.5.2, so loading them prints an `InconsistentVersionWarning`.
+  Both load correctly and are checked against their expected feature names at
+  startup, but retraining under the pinned version would remove the warning.
+
 ## Maintenance Copilot (optional, needs an Anthropic API key)
 
 The Unit Detail panel has a **Maintenance Copilot** card that turns a unit's
@@ -253,9 +293,11 @@ data_gen/       synthetic data generator + its own config
 data/           generated CSVs (raw + scored + fleet_status)
 pipeline/       schema_config.py (remap point), model_config.py, baseline.py,
                 autoencoder.py, fusion.py, validate.py, run_pipeline.py
-models/         trained model/scaler/threshold artifacts (git-ignored)
+models/         trained model/scaler/threshold artifacts (git-ignored),
+                plus the checked-in real_* models trained on the real data
 validation_outputs/  per-fault plots + lead-time summary
-api/            FastAPI service + copilot.py (Claude) + research.py (Exa)
+api/            FastAPI service + real_inference.py (real-data models)
+                + copilot.py (Claude) + research.py (Exa)
                 + logistics.py (Google Routes) + locations_config.py
                 (ALL fabricated demo coordinates live here)
                 + prefetch_copilot.py (demo cache warm-up)

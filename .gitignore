@@ -13,6 +13,14 @@ models/*.joblib
 models/*.npy
 models/*_meta.json
 
+# real-data trained models (Colab-trained on the actual PS3 datasets) --
+# small, and not regenerable from this repo, so they ARE checked in
+!models/real_door_autoencoder.pt
+!models/real_door_scaler.pkl
+!models/real_door_threshold.pkl
+!models/real_rail_classifier.pkl
+!models/real_rail_label_encoder.pkl
+
 # regenerable derived data (rerun pipeline/run_pipeline.py) -- keep the
 # raw generator outputs (door_data.csv, bogie_data.csv, fault_log.csv)
 # checked in since they're the Phase 1 deliverable and small
