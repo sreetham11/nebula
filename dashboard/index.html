@@ -9,30 +9,54 @@
 <link rel="apple-touch-icon" sizes="512x512" href="assets/favicon_square_512.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"></script>
 <style>
-  :root {
-    --bg: #0B0F14;
-    --panel: #1A2230;
-    --panel-alt: #212B3D;
-    --border-rgb: 46, 61, 79;
-    --border: rgba(var(--border-rgb), 0.5);
-    --border-strong: rgba(var(--border-rgb), 0.85);
-    --text: #E9EEF3;
-    --text-dim: #92A0B3;
-    --accent: #4FA3D1;
-    --accent-rgb: 79, 163, 209;
-    --normal: #5FAE7A;
-    --normal-rgb: 95, 174, 122;
-    --caution: #D4A73D;
-    --caution-rgb: 212, 167, 61;
-    --warning: #D18A4A;
-    --warning-rgb: 209, 138, 74;
-    --critical: #C24B4B;
-    --critical-rgb: 194, 75, 75;
+  /* ---------------------------------------------------------------
+     Palette — light by default, dark on request.
+     Every colour is a token; nothing downstream hardcodes a value, so
+     the two themes are the same stylesheet with a different set of
+     numbers. The JS reads these back through getComputedStyle for the
+     canvas charts and the hand-built SVG, which cannot inherit CSS.
 
-    --font-heading: "Fraunces", Georgia, "Times New Roman", serif;
+     Status colours are checked against their own background, not
+     against each other: all four clear 4.8:1 on white and 6:1 on the
+     dark card. They sit at similar lightness, so colour alone never
+     carries the meaning — every badge, tile and row states the level
+     in words as well.
+     --------------------------------------------------------------- */
+  :root {
+    color-scheme: light;
+
+    --bg: #F4F6FA;
+    --panel: #FFFFFF;
+    --panel-alt: #F7F9FC;
+    --border-rgb: 219, 225, 234;
+    --border: rgb(var(--border-rgb));
+    --border-strong: #C6D0DE;
+
+    --text: #131A24;
+    --text-dim: #59647A;
+
+    --accent: #3A5BD9;
+    --accent-rgb: 58, 91, 217;
+    --accent-contrast: #FFFFFF;
+
+    --normal: #0E7C4A;    --normal-rgb: 14, 124, 74;
+    --caution: #9A6700;   --caution-rgb: 154, 103, 0;
+    --warning: #C2410C;   --warning-rgb: 194, 65, 12;
+    --critical: #B3182F;  --critical-rgb: 179, 24, 47;
+
+    /* Soft, low-contrast elevation: on a light page, depth comes from
+       shadow rather than from a heavier border. */
+    --shadow-sm: 0 1px 2px rgba(19, 26, 36, 0.05);
+    --shadow-md: 0 1px 3px rgba(19, 26, 36, 0.06), 0 4px 12px rgba(19, 26, 36, 0.05);
+    --shadow-lg: 0 8px 28px rgba(19, 26, 36, 0.10);
+
+    /* One typeface, differentiated by weight and tracking rather than by
+       a second family. --font-heading is kept as a token so every call
+       site stays valid. */
+    --font-heading: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
     --sp-1: 8px;
@@ -42,7 +66,37 @@
 
     --radius-lg: 14px;
     --radius-md: 10px;
+    --radius-sm: 6px;
     --radius-pill: 999px;
+  }
+
+  [data-theme="dark"] {
+    color-scheme: dark;
+
+    --bg: #0E1117;
+    --panel: #161B24;
+    --panel-alt: #1C222C;
+    --border-rgb: 42, 51, 64;
+    --border: rgb(var(--border-rgb));
+    --border-strong: #3A4556;
+
+    --text: #E8EDF4;
+    --text-dim: #98A5B8;
+
+    --accent: #8AA0F5;
+    --accent-rgb: 138, 160, 245;
+    --accent-contrast: #0E1117;
+
+    --normal: #3DD68C;    --normal-rgb: 61, 214, 140;
+    --caution: #E3B341;   --caution-rgb: 227, 179, 65;
+    --warning: #FB8C3C;   --warning-rgb: 251, 140, 60;
+    --critical: #FF6B85;  --critical-rgb: 255, 107, 133;
+
+    /* Shadow does almost no work on a dark page; the border carries the
+       edge instead, so these stay deliberately faint. */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.30);
+    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.34);
+    --shadow-lg: 0 10px 32px rgba(0, 0, 0, 0.46);
   }
   * { box-sizing: border-box; }
   body {
@@ -77,19 +131,7 @@
      clipping happens on the outer <header> (full bar height, bounded by
      the border-bottom) rather than .header-inner's shorter content row, so
      it can never bleed past the divider line. */
-  .header-watermark {
-    position: absolute;
-    top: 50%;
-    right: 470px;
-    transform: translateY(-50%);
-    height: 60px;
-    width: auto;
-    opacity: 0.16;
-    z-index: -1;
-    pointer-events: none;
-  }
   @media (max-width: 1100px) {
-    .header-watermark { display: none; }
   }
   .brand { display: flex; flex-direction: column; gap: 2px; }
   .brand-top { display: flex; align-items: center; gap: var(--sp-1); }
@@ -97,8 +139,8 @@
   .wordmark {
     font-family: var(--font-heading);
     font-size: 26px;
-    font-weight: 700;
-    letter-spacing: 0.3px;
+    font-weight: 800;
+    letter-spacing: -0.4px;
     margin: 0;
     color: var(--accent);
     line-height: 1.1;
@@ -135,6 +177,7 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     padding: var(--sp-3);
+    box-shadow: var(--shadow-md);
   }
   .panel h2 {
     display: flex;
@@ -616,13 +659,18 @@
     z-index: 0;
     overflow: hidden;
   }
+  /* The grid texture that used to sit here was a PNG baked onto opaque
+     dark navy — on a light card it rendered as a dark smudge. A tokenised
+     CSS grid costs nothing, scales, and follows the theme. */
   .diagram-panel::before {
     content: "";
     position: absolute;
     inset: 0;
-    background-image: url("assets/grid_texture.png");
-    background-repeat: repeat;
-    opacity: 0.4;
+    background-image:
+      linear-gradient(to right, rgba(var(--border-rgb), 0.55) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(var(--border-rgb), 0.55) 1px, transparent 1px);
+    background-size: 22px 22px;
+    opacity: 0.85;
     z-index: -1;
     pointer-events: none;
     border-radius: inherit;
@@ -903,10 +951,9 @@
 
      Visual direction follows the data-dense dashboard pattern: tight
      grid, minimal chrome, information carried by weight and position
-     rather than boxes-inside-boxes. It deliberately keeps the existing
-     rail palette and the Fraunces/Inter pairing instead of the generic
-     blue-and-card look — the serif headline on steel is the thing that
-     stops this reading as a template. */
+     rather than boxes-inside-boxes. Colour and type come from the
+     tokens at the top of this stylesheet, so both themes are one
+     stylesheet with two sets of numbers. */
 
   /* --- Role tabs -------------------------------------------------------
      The primary control on the page: it decides what the dashboard IS,
@@ -1419,13 +1466,52 @@
   @media (max-width: 560px) {
     .chat-dock { right: 8px; left: 8px; bottom: 8px; width: auto; max-height: calc(100vh - 16px); }
   }
+
+  /* --- Theme toggle ----------------------------------------------------
+     Shows the theme you would switch TO, which is the convention people
+     already read correctly: a moon means "go dark". */
+  .header-controls { display: flex; align-items: flex-end; gap: var(--sp-2); }
+  .theme-toggle {
+    appearance: none;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    margin-bottom: 6px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+    transition: color 0.18s ease, border-color 0.18s ease;
+  }
+  .theme-toggle:hover { color: var(--accent); border-color: var(--accent); }
+  .theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .theme-toggle svg { width: 17px; height: 17px; }
+  .theme-toggle .icon-sun { display: none; }
+  .theme-toggle .icon-moon { display: block; }
+  [data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+  [data-theme="dark"] .theme-toggle .icon-moon { display: none; }
 </style>
+<script>
+  // Runs before first paint: no flash of the wrong theme.
+  (function () {
+    try {
+      var saved = localStorage.getItem("railpulse.theme");
+      var dark = saved ? saved === "dark"
+        : window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (dark) document.documentElement.setAttribute("data-theme", "dark");
+    } catch (e) { /* private mode: fall through to the light default */ }
+  })();
+</script>
 </head>
 <body>
 
 <header>
   <div class="header-inner">
-    <img src="assets/header_watermark.png" alt="" class="header-watermark" />
     <div class="brand">
       <div class="brand-top">
         <img src="assets/header_logo_master.png" alt="RAILPULSE logo" class="brand-logo" />
@@ -1434,6 +1520,11 @@
       <div class="brand-subtitle">Predictive fault detection for rail networks</div>
     </div>
     <div class="header-tagline">"Early signals. Scheduled fixes."</div>
+    <div class="header-controls">
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch colour theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6"/></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.2A8.5 8.5 0 019.8 3.5a8.5 8.5 0 1010.7 10.7z"/></svg>
+    </button>
     <div class="role-tabs" role="tablist" aria-label="Dashboard view">
       <button class="role-tab" role="tab" data-role="operator" aria-selected="false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5L21 19.5H3L12 3.5z"/><path d="M12 10v4"/><circle cx="12" cy="17" r="0.9" fill="currentColor" stroke="none"/></svg>
@@ -1447,6 +1538,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16"/><path d="M8 15.5l3.5-4.5 3 3L20 7"/></svg>
         <span class="role-tab-text">Analyst<span class="rt-sub">The model and the case</span></span>
       </button>
+    </div>
     </div>
   </div>
 </header>
@@ -1578,17 +1670,17 @@
       <div class="diagram-legend-row">
         <div class="diagram-legend-group">
           <span class="lg-label">Unit risk</span>
-          <span class="sw"><span class="swatch" style="background:#5FAE7A"></span>Normal</span>
-          <span class="sw"><span class="swatch" style="background:#D4A73D"></span>Caution</span>
-          <span class="sw"><span class="swatch" style="background:#D18A4A"></span>Warning</span>
-          <span class="sw"><span class="swatch" style="background:#C24B4B"></span>Critical</span>
+          <span class="sw"><span class="swatch" style="background:var(--normal)"></span>Normal</span>
+          <span class="sw"><span class="swatch" style="background:var(--caution)"></span>Caution</span>
+          <span class="sw"><span class="swatch" style="background:var(--warning)"></span>Warning</span>
+          <span class="sw"><span class="swatch" style="background:var(--critical)"></span>Critical</span>
         </div>
         <div class="diagram-legend-group">
           <span class="lg-label">System deviation</span>
-          <span class="sw"><span class="swatch" style="background:#5FAE7A"></span>&lt;1σ</span>
-          <span class="sw"><span class="swatch" style="background:#D4A73D"></span>1–2σ</span>
-          <span class="sw"><span class="swatch" style="background:#D18A4A"></span>2–3.5σ</span>
-          <span class="sw"><span class="swatch" style="background:#C24B4B"></span>&gt;3.5σ</span>
+          <span class="sw"><span class="swatch" style="background:var(--normal)"></span>&lt;1σ</span>
+          <span class="sw"><span class="swatch" style="background:var(--caution)"></span>1–2σ</span>
+          <span class="sw"><span class="swatch" style="background:var(--warning)"></span>2–3.5σ</span>
+          <span class="sw"><span class="swatch" style="background:var(--critical)"></span>&gt;3.5σ</span>
         </div>
       </div>
 
@@ -1809,16 +1901,36 @@
 
 <script>
 const API_BASE = "http://localhost:8000";
-const RISK_COLORS = { Normal: "#5FAE7A", Caution: "#D4A73D", Warning: "#D18A4A", Critical: "#C24B4B" };
-const TEXT_DIM_HEX = "#92A0B3";
-const BORDER_HEX = "#2E3D4F";
-const PANEL_ALT_HEX = "#212B3D";
-const BG_HEX = "#0B0F14";
-const ACCENT_HEX = "#4FA3D1";
+// Chart.js paints to a canvas and the digital twin is a hand-built SVG
+// string; neither inherits CSS custom properties. These mirror the tokens
+// and are re-read on every theme change -- they are `let`, not `const`,
+// for exactly that reason. Read them at call time, never cache them into
+// another module-level constant.
+let RISK_COLORS, HEALTH_BAND_COLORS, TEXT_DIM_HEX, TEXT_HEX, BORDER_HEX, PANEL_ALT_HEX, BG_HEX, ACCENT_HEX, CHART_GRID;
+
+function readThemeColors() {
+  const cs = getComputedStyle(document.documentElement);
+  const v = name => cs.getPropertyValue(name).trim();
+  RISK_COLORS = { Normal: v("--normal"), Caution: v("--caution"), Warning: v("--warning"), Critical: v("--critical") };
+  HEALTH_BAND_COLORS = {
+    Healthy: RISK_COLORS.Normal, Watch: RISK_COLORS.Caution,
+    Degraded: RISK_COLORS.Warning, Critical: RISK_COLORS.Critical,
+  };
+  TEXT_DIM_HEX = v("--text-dim");
+  BORDER_HEX = v("--border-strong");
+  PANEL_ALT_HEX = v("--panel-alt");
+  // The twin sits on a card, so its cut-outs take the card colour, not the
+  // page colour behind it.
+  BG_HEX = v("--panel");
+  ACCENT_HEX = v("--accent");
+  TEXT_HEX = v("--text");
+  CHART_GRID = `rgba(${v("--border-rgb")}, 0.75)`;
+  if (window.Chart) Chart.defaults.color = TEXT_DIM_HEX;
+}
+readThemeColors();
 
 Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
 Chart.defaults.color = TEXT_DIM_HEX;
-const CHART_GRID = "rgba(46, 61, 79, 0.35)";
 const RISK_ORDER = ["Normal", "Caution", "Warning", "Critical"];
 
 let riskBarChart, statusDonut, unitLineChart;
@@ -1893,8 +2005,6 @@ function devColor(dev) {
   for (const [cut, , level] of DEV_BANDS) if (dev >= cut) return RISK_COLORS[level];
   return RISK_COLORS.Normal;
 }
-
-const HEALTH_BAND_COLORS = { Healthy: RISK_COLORS.Normal, Watch: RISK_COLORS.Caution, Degraded: RISK_COLORS.Warning, Critical: RISK_COLORS.Critical };
 
 function healthColor(band) {
   return HEALTH_BAND_COLORS[band] || TEXT_DIM_HEX;
@@ -2435,7 +2545,7 @@ function renderStatusDonut(counts) {
       responsive: true, maintainAspectRatio: false,
       cutout: "62%",
       plugins: {
-        legend: { position: "bottom", labels: { color: "#E9EEF3", font: { size: 10 }, boxWidth: 10, padding: 12 } },
+        legend: { position: "bottom", labels: { color: TEXT_HEX, font: { size: 10 }, boxWidth: 10, padding: 12 } },
         title: { display: true, text: "Status distribution", color: TEXT_DIM_HEX, font: { size: 11, weight: 500 } },
       },
     },
@@ -2584,7 +2694,7 @@ function buildTrainDiagram(units) {
     const worstUnit = worst != null ? consistUnits.find(u => u.health_index === worst) : null;
     const worstColor = worstUnit ? healthColor(worstUnit.health_band) : TEXT_DIM_HEX;
 
-    svg += `<text x="10" y="${carY + 20}" fill="${"#E9EEF3"}" font-size="12.5"
+    svg += `<text x="10" y="${carY + 20}" fill="${TEXT_HEX}" font-size="12.5"
               font-family="'Inter', sans-serif" font-weight="700">${trainId}</text>`;
     svg += `<text x="10" y="${carY + 36}" fill="${TEXT_DIM_HEX}" font-size="9.5"
               font-family="'Inter', sans-serif">worst health</text>`;
@@ -4072,6 +4182,71 @@ function initChat() {
     chip.textContent = s.literature_search ? "Claude + Exa" : "Claude";
   }).catch(() => { chatEl("chatModelChip").textContent = "offline"; });
 }
+
+// --- Theme ------------------------------------------------------------------
+//
+// The stylesheet carries both palettes; this only decides which one is
+// active and then repaints the two things CSS cannot reach — the Chart.js
+// canvases and the hand-built SVG twin, both of which bake plain colour
+// values at draw time.
+//
+// Resolution order: an explicit choice the visitor made, else the OS
+// setting. The <head> runs the same check before first paint so there is
+// no flash of the wrong theme; this block only handles changes after load.
+
+function currentTheme() {
+  return document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+}
+
+function repaintForTheme() {
+  readThemeColors();
+
+  // Charts bake their colours into the instance, so re-render from the data
+  // already in hand rather than waiting for the next poll.
+  if (fleetCache && fleetCache.length) {
+    renderRiskBarChart(fleetCache);
+    renderTrainDiagram(fleetCache);
+    const counts = {};
+    for (const u of fleetCache) {
+      const lvl = u.risk_level || "Normal";
+      counts[lvl] = (counts[lvl] || 0) + 1;
+    }
+    renderStatusDonut(counts);
+  }
+  // The unit panel redraws its own line chart from the cached payload.
+  if (unitDetailCache) renderUnitDetail(unitDetailCache);
+}
+
+function setTheme(mode, remember) {
+  if (mode === "dark") document.documentElement.setAttribute("data-theme", "dark");
+  else document.documentElement.removeAttribute("data-theme");
+  if (remember) {
+    try { localStorage.setItem("railpulse.theme", mode); } catch (e) { /* private mode */ }
+  }
+  const btn = document.getElementById("themeToggle");
+  if (btn) btn.setAttribute("title", mode === "dark" ? "Switch to light theme" : "Switch to dark theme");
+  repaintForTheme();
+}
+
+function initTheme() {
+  const btn = document.getElementById("themeToggle");
+  if (btn) {
+    btn.setAttribute("title", currentTheme() === "dark" ? "Switch to light theme" : "Switch to dark theme");
+    btn.addEventListener("click", () => setTheme(currentTheme() === "dark" ? "light" : "dark", true));
+  }
+  // Follow the OS while the visitor has not expressed a preference of their
+  // own; once they click the toggle, their choice wins and this stops.
+  const mq = window.matchMedia("(prefers-color-scheme: dark)");
+  const onSystemChange = e => {
+    let saved = null;
+    try { saved = localStorage.getItem("railpulse.theme"); } catch (err) { /* ignore */ }
+    if (!saved) setTheme(e.matches ? "dark" : "light", false);
+  };
+  if (mq.addEventListener) mq.addEventListener("change", onSystemChange);
+  else if (mq.addListener) mq.addListener(onSystemChange);
+}
+
+initTheme();
 
 initRole();
 initChat();
