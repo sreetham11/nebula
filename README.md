@@ -168,17 +168,30 @@ number to the person who has to act on it. Four things carry it, and none of
 them computes or can change a risk level -- delete the lot and the detection
 is byte-identical, it just stops explaining itself.
 
-**A role switch, top right.** One page, three readers, one attribute on
-`<body>`:
+**Role tabs, top right.** One page, three readers, one attribute on
+`<body>`. Each tab hides what that reader does not act on *and* reorders
+what is left so it leads with their first question — the three views are
+genuinely different pages, not the same scroll with gaps in it.
 
-| Role | Sees | Rationale |
-|------|------|-----------|
-| **Operator** | Fleet triage, digital twin, unit detail, work orders, live feed | Needs what to pull and in what order. Reconstruction error, the cost model and the percentile slider are not decisions they make. |
-| **Engineer** | The above plus decision trace, signal table, copilot, literature search, model validation, CSV scoring | Needs the *why*, and the vocabulary explained. |
-| **Analyst** | Fleet table, unit detail, CSV scoring, model validation, sensitivity tuning, business case — but **not** the twin, work-order queue or live feed | Reasoning about the model and the case for it, not walking a platform. The shop-floor instruments cost a screenful each and answer nothing they asked. |
+| Panel | Operator | Engineer | Analyst |
+|-------|:--------:|:--------:|:-------:|
+| Fleet Overview | ● | ● | ● |
+| Unit Detail | ● plain | ● full | ● full |
+| Digital Twin | ● | ● | — |
+| Maintenance Actions | ● | — | — |
+| Live Feed | ● | — | — |
+| Score Your Own Data | — | ● | ● |
+| Model Validation | — | ● | ● |
+| Detection Sensitivity | — | ● | ● |
+| External Services | — | ● | — |
+| Business Impact | — | — | ● |
 
-The choice is remembered per browser. Every role reads the same endpoints and
-the same scores -- this hides panels, it does not compute anything different.
+Only the fleet table and unit detail appear in all three, because they are
+the subject matter. Operator leads with triage, engineer with the unit and
+its evidence, analyst with the business case. The choice is remembered per
+browser, arrow keys move between tabs, and every role reads the same
+endpoints and the same scores — this hides and orders panels, it does not
+compute anything different.
 
 **The sentence before the number.** Unit detail and the priority cards now
 lead with a plain reading built from that unit's own `primary_signal` --

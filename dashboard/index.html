@@ -571,92 +571,6 @@
   /* Business impact calculator -- compact summary by default (secondary to
      Fleet Health / Active Anomalies), full breakdown expands on click */
   .impact-panel { grid-column: 1 / -1; padding: 14px var(--sp-3); }
-  .impact-compact-row { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); flex-wrap: wrap; }
-  .impact-compact-main { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; flex: 1; min-width: 0; }
-  .impact-compact-label { display: flex; align-items: center; gap: 7px; font-family: var(--font-heading); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); white-space: nowrap; }
-  .impact-compact-label .panel-icon { width: 15px; height: 15px; }
-  .impact-compact-stats { font-size: 12.5px; color: var(--text-dim); white-space: nowrap; }
-  .impact-compact-stats b { color: var(--text); font-weight: 600; }
-  .impact-compact-savings { font-size: 13px; color: var(--text-dim); white-space: nowrap; }
-  .impact-compact-savings b { color: var(--accent); font-family: var(--font-heading); font-weight: 700; font-size: 15px; }
-  .impact-asterisk { color: var(--text-dim); }
-  .impact-toggle {
-    display: inline-flex; align-items: center; gap: 5px;
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-pill);
-    color: var(--text-dim);
-    font-family: var(--font-body);
-    font-size: 11px;
-    font-weight: 600;
-    padding: 5px 12px;
-    cursor: pointer;
-    transition: border-color 0.15s ease, color 0.15s ease;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-  .impact-toggle svg { transition: transform 0.15s ease; }
-  .impact-toggle:hover { color: var(--text); border-color: var(--border-strong); }
-  .impact-toggle.open svg { transform: rotate(180deg); }
-  .impact-footnote { font-size: 10.5px; color: var(--text-dim); margin-top: 4px; line-height: 1.4; }
-  .impact-footnote a { color: var(--accent); cursor: pointer; text-decoration: none; }
-  .impact-footnote a:hover { text-decoration: underline; }
-  .impact-details { margin-top: var(--sp-2); padding-top: var(--sp-2); border-top: 1px solid var(--border); }
-  .impact-inputs {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--sp-2);
-    margin-bottom: var(--sp-2);
-  }
-  @media (max-width: 700px) { .impact-inputs { grid-template-columns: 1fr; } }
-  .impact-input-group { display: flex; flex-direction: column; gap: 6px; }
-  .impact-input-group label { font-size: 11px; color: var(--text-dim); line-height: 1.3; }
-  .impact-input-wrap { position: relative; }
-  .impact-input-wrap .prefix {
-    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
-    color: var(--text-dim); font-size: 13px; pointer-events: none;
-  }
-  .impact-input-wrap.mult .prefix { left: auto; right: 10px; }
-  .impact-inputs input {
-    width: 100%;
-    background: var(--panel-alt);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 10px 12px 10px 22px;
-    color: var(--text);
-    font-size: 14px;
-    font-weight: 600;
-    font-family: inherit;
-    transition: border-color 0.15s ease;
-  }
-  .impact-inputs input:focus { outline: none; border-color: var(--accent); }
-  .impact-input-wrap.mult input { padding: 10px 28px 10px 12px; }
-  .impact-summary {
-    font-size: 13.5px;
-    line-height: 1.6;
-    padding: 14px 16px;
-    background: var(--panel-alt);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    margin-bottom: var(--sp-1);
-  }
-  .impact-summary b { color: var(--accent); }
-  .impact-figures {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--sp-2);
-  }
-  @media (max-width: 700px) { .impact-figures { grid-template-columns: 1fr; } }
-  .impact-figure {
-    background: var(--panel-alt);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 14px 16px;
-    transition: border-color 0.15s ease;
-  }
-  .impact-figure:hover { border-color: var(--border-strong); }
-  .impact-figure .amount { font-family: var(--font-heading); font-size: 29px; font-weight: 700; color: var(--accent); }
-  .impact-figure .desc { font-size: 11px; color: var(--text-dim); margin-top: 6px; line-height: 1.4; }
   .impact-caption { font-size: 10.5px; color: var(--text-dim); margin-top: var(--sp-2); line-height: 1.5; }
 
   /* Detection sensitivity slider */
@@ -981,31 +895,77 @@
   .dev-warning { color: var(--warning); }
   .dev-critical { color: var(--critical); }
 
-  /* ===================================================================
-     PS3 part 2: reading the output, not just producing it
-     ===================================================================
-     Everything below exists to answer one question -- how does a person
-     who is not a data analyst act on this? The detection logic above is
-     untouched by all of it. */
+  /* =====================================================================
+     PS3 part 2 — delivering the detection to the person acting on it
+     =====================================================================
+     One block, one definition per selector. Everything here is about
+     WHO is reading and HOW they act; nothing computes or alters a score.
 
-  /* --- Role switch ---------------------------------------------------
-     One page, three readers. Rather than three dashboards to keep in
-     sync, the role attribute on <body> decides what is visible; every
-     panel still renders from the same data and the same endpoints. */
-  .role-switch { display: flex; gap: 2px; padding: 2px; border-radius: var(--radius-pill);
-    background: var(--panel-alt); border: 1px solid var(--border); }
-  .role-btn {
-    appearance: none; border: 0; cursor: pointer; font-family: var(--font-body);
-    font-size: 10.5px; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase;
-    padding: 6px 13px; border-radius: var(--radius-pill);
-    background: transparent; color: var(--text-dim); transition: background 0.14s, color 0.14s;
+     Visual direction follows the data-dense dashboard pattern: tight
+     grid, minimal chrome, information carried by weight and position
+     rather than boxes-inside-boxes. It deliberately keeps the existing
+     rail palette and the Fraunces/Inter pairing instead of the generic
+     blue-and-card look — the serif headline on steel is the thing that
+     stops this reading as a template. */
+
+  /* --- Role tabs -------------------------------------------------------
+     The primary control on the page: it decides what the dashboard IS,
+     so it is sized and placed like navigation, not like a filter. */
+  .role-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
   }
-  .role-btn:hover { color: var(--text); }
-  .role-btn[aria-pressed="true"] { background: var(--accent); color: #0B0F14; }
-  .role-hint { font-size: 10.5px; color: var(--text-dim); max-width: 232px; line-height: 1.4; }
+  .role-tab {
+    appearance: none;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    color: var(--text-dim);
+    padding: 13px 22px 11px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.18s ease, border-color 0.18s ease;
+  }
+  .role-tab svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .role-tab:hover { color: var(--text); }
+  .role-tab:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .role-tab[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+  .role-tab .rt-sub {
+    display: block;
+    font-size: 10.5px;
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--text-dim);
+    margin-top: 1px;
+  }
+  .role-tab[aria-selected="true"] .rt-sub { color: var(--text); opacity: 0.75; }
+  .role-tab-text { display: flex; flex-direction: column; line-height: 1.25; text-align: left; }
+  @media (max-width: 760px) {
+    .role-tabs { overflow-x: auto; }
+    .role-tab { padding: 11px 15px 9px; font-size: 12.5px; }
+    .role-tab .rt-sub { display: none; }
+  }
 
-  /* Operator: triage and act. The model internals, the cost model and the
-     data-science controls are not decisions they make. */
+  /* --- Who sees what ---------------------------------------------------
+     Each role keeps only what that reader acts on, and leads with the
+     panel that answers their first question. Order is set per role so
+     the three tabs are genuinely different pages, not the same scroll
+     with gaps in it.
+
+       Operator  triage and dispatch  — fleet, twin, unit, work orders, feed
+       Engineer  the why              — unit, fleet, twin, validation, tuning, upload, services
+       Analyst   the model and case   — impact, validation, tuning, fleet, unit, upload
+
+     Only the fleet table and unit detail appear in all three, because
+     they are the subject matter. Everything else lives in one or two. */
+
   body[data-role="operator"] #businessImpact,
   body[data-role="operator"] #uploadPanel,
   body[data-role="operator"] #aiPanel,
@@ -1013,77 +973,129 @@
   body[data-role="operator"] #sensitivityPanel,
   body[data-role="operator"] .ud-engineer-only { display: none; }
 
-  /* Engineer: everything an operator sees, plus the why. Still not the
-     cost case or the threshold tuning. */
   body[data-role="engineer"] #businessImpact,
-  body[data-role="engineer"] #sensitivityPanel { display: none; }
+  body[data-role="engineer"] #maintenanceActionsPanel,
+  body[data-role="engineer"] #liveFeedPanel { display: none; }
 
-  /* Analyst sees the lot -- no rules needed. */
+  body[data-role="analyst"] #trainDiagramPanel,
+  body[data-role="analyst"] #maintenanceActionsPanel,
+  body[data-role="analyst"] #liveFeedPanel,
+  body[data-role="analyst"] #aiPanel { display: none; }
 
-  /* --- Plain-language headline ---------------------------------------
+  /* Lead with the panel that answers the role's first question. */
+  body[data-role="operator"] #fleetPanel        { order: 1; }
+  body[data-role="operator"] .twin-detail-row   { order: 2; }
+  body[data-role="operator"] #maintenanceActionsPanel { order: 3; }
+  body[data-role="operator"] #liveFeedPanel     { order: 4; }
+
+  body[data-role="engineer"] .twin-detail-row   { order: 1; }
+  body[data-role="engineer"] #fleetPanel        { order: 2; }
+  body[data-role="engineer"] #modelValidationPanel { order: 3; }
+  body[data-role="engineer"] #sensitivityPanel  { order: 4; }
+  body[data-role="engineer"] #uploadPanel       { order: 5; }
+  body[data-role="engineer"] #aiPanel           { order: 6; }
+
+  body[data-role="analyst"] #businessImpact     { order: 1; }
+  body[data-role="analyst"] #modelValidationPanel { order: 2; }
+  body[data-role="analyst"] #sensitivityPanel   { order: 3; }
+  body[data-role="analyst"] #fleetPanel         { order: 4; }
+  /* Unit detail takes the whole row once the twin beside it is gone. */
+  body[data-role="analyst"] .twin-detail-row    { order: 5; grid-template-columns: 1fr; }
+  body[data-role="analyst"] #uploadPanel        { order: 6; }
+
+  /* --- Plain-language headline ----------------------------------------
      The sentence a reader can act on, above the numbers it came from.
-     Never replaces the numbers; they sit directly underneath. */
+     Never replaces them; they sit directly underneath. */
   .plain-read {
-    padding: 13px 15px; margin-bottom: var(--sp-1);
-    border-radius: var(--radius-md); background: var(--panel-alt);
-    border: 1px solid var(--border); border-left: 3px solid var(--accent);
-    font-size: 14px; line-height: 1.5; color: var(--text);
+    padding: 14px 16px;
+    margin-bottom: var(--sp-1);
+    border-radius: var(--radius-md);
+    background: var(--panel-alt);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--text);
   }
   .plain-read b { font-weight: 650; }
-  .plain-read .pr-act { display: block; margin-top: 7px; font-size: 12px; color: var(--text-dim); }
   .priority-card-plain { font-size: 12px; line-height: 1.45; margin: 6px 0 2px; color: var(--text); }
 
-  /* --- Glossary ------------------------------------------------------
-     A dotted underline on every term a new engineer would not know.
-     Hover or keyboard focus; no library, no layout shift. */
-  .gloss {
-    border-bottom: 1px dotted var(--text-dim); cursor: help;
-    position: relative; outline: none;
-  }
+  /* --- Glossary --------------------------------------------------------
+     A dotted underline on every term a new engineer would have to look
+     up, defined at the point of use rather than in a legend. */
+  .gloss { border-bottom: 1px dotted var(--text-dim); cursor: help; position: relative; outline: none; }
   .gloss::after {
     content: attr(data-tip);
-    position: absolute; left: 0; bottom: calc(100% + 7px); z-index: 60;
-    width: max-content; max-width: 290px;
-    padding: 9px 11px; border-radius: var(--radius-md);
-    background: var(--bg); border: 1px solid var(--accent);
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 7px);
+    z-index: 60;
+    width: max-content;
+    max-width: 280px;
+    padding: 9px 11px;
+    border-radius: var(--radius-md);
+    background: var(--bg);
+    border: 1px solid var(--accent);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
-    font-family: var(--font-body); font-size: 11.5px; font-weight: 400;
-    line-height: 1.5; color: var(--text); text-transform: none; letter-spacing: 0;
-    white-space: normal; text-align: left;
-    opacity: 0; visibility: hidden; transform: translateY(3px);
-    transition: opacity 0.13s, transform 0.13s, visibility 0.13s;
+    font-family: var(--font-body);
+    font-size: 11.5px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--text);
+    text-transform: none;
+    letter-spacing: 0;
+    white-space: normal;
+    text-align: left;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(3px);
+    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease;
   }
   .gloss:hover::after, .gloss:focus::after { opacity: 1; visibility: visible; transform: translateY(0); }
 
-  /* --- Response window ------------------------------------------------
-     A deadline, not a statistic. The policy window is a service rule and
-     is labelled as one -- it is NOT a model prediction, and the two are
-     kept visually separate so they cannot be read as a single claim. */
+  /* --- Response window -------------------------------------------------
+     A deadline, not a statistic. The window is a service policy and says
+     so; a validated lead time is a separate, attributed line. */
   .act-by {
-    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-    padding: 12px 15px; margin-bottom: var(--sp-1);
-    border-radius: var(--radius-md); background: var(--panel-alt); border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding: 13px 16px;
+    margin-bottom: var(--sp-1);
+    border-radius: var(--radius-md);
+    background: var(--panel-alt);
+    border: 1px solid var(--border);
   }
   .act-by-clock { display: flex; align-items: baseline; gap: 5px; }
-  .act-by-num { font-family: var(--font-heading); font-size: 25px; font-weight: 700; line-height: 1; }
+  .act-by-num { font-family: var(--font-heading); font-size: 26px; font-weight: 700; line-height: 1; }
   .act-by-unit { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); }
-  .act-by-text { flex: 1; min-width: 175px; font-size: 12px; line-height: 1.5; color: var(--text-dim); }
+  .act-by-text { flex: 1; min-width: 180px; font-size: 12px; line-height: 1.55; color: var(--text-dim); }
   .act-by-text b { color: var(--text); }
-  .act-by.now { border-left: 3px solid #C24B4B; }
-  .act-by.now .act-by-num { font-size: 16px; color: #C24B4B; text-transform: uppercase; letter-spacing: 0.5px; }
-  .act-by.soon { border-left: 3px solid #D18A4A; }
-  .act-by.soon .act-by-num { color: #D18A4A; }
-  .act-by.routine { border-left: 3px solid #5FAE7A; }
-  .act-by.routine .act-by-num { color: #5FAE7A; }
+  .act-by.now { border-left: 3px solid var(--critical); }
+  .act-by.now .act-by-num { font-size: 17px; color: var(--critical); text-transform: uppercase; letter-spacing: 0.5px; }
+  .act-by.soon { border-left: 3px solid var(--warning); }
+  .act-by.soon .act-by-num { color: var(--warning); }
+  .act-by.routine { border-left: 3px solid var(--normal); }
+  .act-by.routine .act-by-num { color: var(--normal); }
 
-  /* --- Work card ------------------------------------------------------
-     Screen: a button. Print: the only thing on the page. */
+  /* --- Work card: a button on screen, the whole page in print --------- */
   .wc-launch { display: flex; align-items: center; gap: 11px; margin-top: var(--sp-2); flex-wrap: wrap; }
   .wc-btn {
-    appearance: none; cursor: pointer; font-family: var(--font-body);
-    font-size: 11.5px; font-weight: 600; padding: 8px 15px;
-    border-radius: var(--radius-pill); border: 1px solid var(--border);
-    background: var(--panel-alt); color: var(--text); display: inline-flex; align-items: center; gap: 7px;
+    appearance: none;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 8px 15px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border);
+    background: var(--panel-alt);
+    color: var(--text);
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    transition: border-color 0.18s ease, color 0.18s ease;
   }
   .wc-btn:hover { border-color: var(--accent); color: var(--accent); }
   .wc-btn svg { width: 13px; height: 13px; }
@@ -1108,167 +1120,305 @@
     #workCard .wc-foot { margin-top: 18px; font-size: 10px; color: #444; border-top: 1px solid #ccc; padding-top: 7px; }
   }
 
-  /* --- Fleet Assistant dock -------------------------------------------
-     Floating so it is reachable from any panel without taking layout from
-     one. Collapsed by default: it assists, it does not lead. */
+  /* --- Business impact: form left, consequences right ------------------
+     Nine assumptions and two derivations do not belong in one column.
+     The inputs are a narrow, scannable stack of label/value rows; the
+     results sit beside them and move as you type. */
+  .impact-layout { display: grid; grid-template-columns: 330px 1fr; gap: var(--sp-3); align-items: start; }
+  @media (max-width: 1000px) { .impact-layout { grid-template-columns: 1fr; } }
+
+  .impact-form { display: flex; flex-direction: column; gap: 18px; }
+  .impact-group { display: flex; flex-direction: column; gap: 2px; }
+  .impact-group-head {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    font-weight: 700;
+    color: var(--accent);
+    padding-bottom: 6px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+  }
+  .impact-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(var(--accent-rgb), 0.07);
+  }
+  .impact-row:last-child { border-bottom: 0; }
+  .impact-row label { flex: 1; font-size: 11.5px; line-height: 1.35; color: var(--text-dim); }
+  .impact-field { position: relative; flex-shrink: 0; width: 104px; }
+  .impact-field .unit {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 11px;
+    color: var(--text-dim);
+    pointer-events: none;
+  }
+  .impact-field .unit.pre { left: 9px; }
+  .impact-field .unit.post { right: 9px; }
+  .impact-field input {
+    width: 100%;
+    background: var(--panel-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm, 6px);
+    padding: 7px 9px;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: var(--font-body);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    transition: border-color 0.18s ease;
+  }
+  .impact-field.has-pre input { padding-left: 20px; }
+  .impact-field.has-post input { padding-right: 24px; }
+  .impact-field input:focus { outline: none; border-color: var(--accent); }
+  .impact-field input::-webkit-outer-spin-button,
+  .impact-field input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .impact-field input[type=number] { -moz-appearance: textfield; }
+
+  .impact-results { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
+  .impact-headline {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+  .impact-stat { background: var(--panel-alt); padding: 14px 16px; }
+  .impact-stat .v {
+    font-family: var(--font-heading);
+    font-size: 23px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .impact-stat .k {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-dim);
+    margin-top: 5px;
+    line-height: 1.4;
+  }
+
+  .impact-tbl-head {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    font-weight: 700;
+    color: var(--text-dim);
+    margin-bottom: 7px;
+  }
+  .impact-breakdown { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .impact-breakdown td { padding: 9px 0; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; }
+  .impact-breakdown td.num {
+    text-align: right;
+    white-space: nowrap;
+    padding-left: 14px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+  .impact-breakdown td .sub { display: block; font-size: 10.5px; color: var(--text-dim); margin-top: 3px; line-height: 1.45; }
+  .impact-breakdown tr.neg td.num { color: var(--warning); }
+  .impact-breakdown tr.total td { border-bottom: 0; border-top: 1px solid var(--accent); font-weight: 700; padding-top: 11px; }
+  .impact-breakdown tr.total td.num { color: var(--accent); font-size: 15px; }
+
+  .impact-assumption {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    padding: 12px 14px;
+    background: var(--panel-alt);
+    border-radius: var(--radius-md);
+    border-left: 2px solid var(--border);
+  }
+  .impact-assumption b { color: var(--text); }
+
+  /* --- Fleet Assistant -------------------------------------------------
+     Floating so it is reachable from any tab without taking layout from
+     one. Narrow enough that a line of prose stays readable — around 60
+     characters, not the full width of a panel. */
   .chat-fab {
-    position: fixed; right: 22px; bottom: 22px; z-index: 90;
-    width: 54px; height: 54px; border-radius: 50%; border: 1px solid var(--accent);
-    background: var(--accent); color: #0B0F14; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.42); transition: transform 0.15s;
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 90;
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: #0B0F14;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.42);
+    transition: transform 0.18s ease;
   }
   .chat-fab:hover { transform: translateY(-2px); }
-  .chat-fab svg { width: 24px; height: 24px; }
+  .chat-fab svg { width: 25px; height: 25px; }
   .chat-fab[hidden] { display: none; }
 
   .chat-dock {
-    position: fixed; right: 22px; bottom: 22px; z-index: 95;
-    width: min(408px, calc(100vw - 32px)); max-height: min(646px, calc(100vh - 44px));
-    display: none; flex-direction: column;
-    border: 1px solid var(--border); border-radius: var(--radius-md);
-    background: var(--panel); box-shadow: 0 14px 44px rgba(0, 0, 0, 0.5); overflow: hidden;
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 95;
+    width: min(430px, calc(100vw - 32px));
+    max-height: min(660px, calc(100vh - 48px));
+    display: none;
+    flex-direction: column;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--panel);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+    overflow: hidden;
   }
   .chat-dock.open { display: flex; }
-  .chat-head { display: flex; align-items: center; gap: 9px; padding: 12px 14px;
-    border-bottom: 1px solid var(--border); background: var(--panel-alt); }
-  .chat-head .ttl { font-family: var(--font-heading); font-size: 14px; font-weight: 600; flex: 1; }
-  .chat-head .chip { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.5px;
-    color: var(--text-dim); border: 1px solid var(--border); border-radius: var(--radius-pill); padding: 2px 8px; }
-  .chat-close { appearance: none; border: 0; background: transparent; color: var(--text-dim);
-    cursor: pointer; font-size: 19px; line-height: 1; padding: 0 2px; }
+
+  .chat-head {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 13px 15px;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel-alt);
+  }
+  .chat-head .ttl { font-family: var(--font-heading); font-size: 14.5px; font-weight: 600; flex: 1; }
+  .chat-head .chip {
+    font-size: 9.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    padding: 2px 8px;
+    white-space: nowrap;
+  }
+  .chat-close {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    padding: 0 2px;
+  }
   .chat-close:hover { color: var(--text); }
 
-  .chat-scope { padding: 7px 14px; font-size: 10.5px; color: var(--text-dim);
-    border-bottom: 1px solid var(--border); background: var(--panel); }
+  .chat-scope {
+    padding: 8px 15px;
+    font-size: 10.5px;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+  }
   .chat-scope b { color: var(--accent); }
 
-  .chat-log { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 11px; }
-  .chat-msg { font-size: 12.5px; line-height: 1.58; max-width: 92%; }
-  .chat-msg.user { align-self: flex-end; background: var(--accent); color: #0B0F14;
-    padding: 9px 12px; border-radius: 12px 12px 3px 12px; font-weight: 500; }
-  .chat-msg.bot { align-self: flex-start; background: var(--panel-alt); color: var(--text);
-    border: 1px solid var(--border); padding: 10px 12px; border-radius: 12px 12px 12px 3px; white-space: pre-wrap; }
-  .chat-msg.bot.err { border-color: #C24B4B; color: var(--text-dim); }
-  .chat-msg .cm-src { display: block; margin-top: 8px; padding-top: 7px; border-top: 1px solid var(--border);
-    font-size: 10.5px; color: var(--text-dim); }
+  .chat-log { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
+  .chat-msg { font-size: 13px; line-height: 1.6; }
+  .chat-msg.user {
+    align-self: flex-end;
+    max-width: 82%;
+    background: var(--accent);
+    color: #0B0F14;
+    padding: 9px 13px;
+    border-radius: 12px 12px 3px 12px;
+    font-weight: 500;
+  }
+  .chat-msg.bot {
+    align-self: flex-start;
+    max-width: 94%;
+    background: var(--panel-alt);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 11px 13px;
+    border-radius: 12px 12px 12px 3px;
+    white-space: pre-wrap;
+  }
+  .chat-msg.bot.err { border-color: var(--critical); color: var(--text-dim); }
+  .chat-msg .cm-src {
+    display: block;
+    margin-top: 9px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    font-size: 10.5px;
+    line-height: 1.5;
+    color: var(--text-dim);
+    white-space: normal;
+  }
   .chat-msg .cm-src a { color: var(--accent); text-decoration: none; }
   .chat-msg .cm-src a:hover { text-decoration: underline; }
+
   .chat-typing { align-self: flex-start; display: flex; gap: 4px; padding: 11px 13px; }
-  .chat-typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim);
-    animation: chatBlink 1.3s infinite; }
+  .chat-typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); animation: chatBlink 1.3s infinite; }
   .chat-typing span:nth-child(2) { animation-delay: 0.18s; }
   .chat-typing span:nth-child(3) { animation-delay: 0.36s; }
   @keyframes chatBlink { 0%, 60%, 100% { opacity: 0.25; } 30% { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) {
+    .chat-typing span { animation: none; opacity: 0.55; }
+    .chat-fab, .role-tab, .wc-btn, .gloss::after { transition: none; }
+  }
 
-  .chat-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 14px 11px; }
-  .chat-chip { appearance: none; cursor: pointer; font-family: var(--font-body); font-size: 11px;
-    padding: 6px 11px; border-radius: var(--radius-pill); border: 1px solid var(--border);
-    background: var(--panel-alt); color: var(--text-dim); text-align: left; }
+  .chat-chips { display: flex; flex-direction: column; gap: 6px; padding: 0 15px 11px; }
+  .chat-chip {
+    appearance: none;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: 11.5px;
+    line-height: 1.4;
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: var(--panel-alt);
+    color: var(--text-dim);
+    text-align: left;
+    transition: border-color 0.18s ease, color 0.18s ease;
+  }
   .chat-chip:hover { border-color: var(--accent); color: var(--accent); }
 
-  .chat-input-row { display: flex; gap: 8px; padding: 11px 14px; border-top: 1px solid var(--border);
-    background: var(--panel-alt); }
+  .chat-input-row { display: flex; gap: 8px; padding: 11px 15px; border-top: 1px solid var(--border); background: var(--panel-alt); }
   .chat-input-row textarea {
-    flex: 1; resize: none; font-family: var(--font-body); font-size: 12.5px; line-height: 1.45;
-    padding: 9px 11px; border-radius: var(--radius-md); border: 1px solid var(--border);
-    background: var(--panel); color: var(--text); max-height: 96px;
+    flex: 1;
+    min-width: 0;
+    resize: none;
+    font-family: var(--font-body);
+    font-size: 13px;
+    line-height: 1.45;
+    padding: 9px 11px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    max-height: 110px;
   }
   .chat-input-row textarea:focus { outline: none; border-color: var(--accent); }
-  .chat-send { appearance: none; cursor: pointer; border: 0; border-radius: var(--radius-md);
-    background: var(--accent); color: #0B0F14; padding: 0 15px; font-weight: 700; font-size: 12.5px; }
+  .chat-send {
+    appearance: none;
+    cursor: pointer;
+    border: 0;
+    border-radius: var(--radius-md);
+    background: var(--accent);
+    color: #0B0F14;
+    padding: 0 16px;
+    font-weight: 700;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
   .chat-send:disabled { opacity: 0.45; cursor: default; }
-  .chat-foot { padding: 0 14px 10px; font-size: 9.5px; line-height: 1.5; color: var(--text-dim); }
+  .chat-foot { padding: 0 15px 11px; font-size: 9.5px; line-height: 1.5; color: var(--text-dim); }
 
   @media (max-width: 560px) {
     .chat-dock { right: 8px; left: 8px; bottom: 8px; width: auto; max-height: calc(100vh - 16px); }
   }
-
-  /* --- Role switch, second pass --------------------------------------
-     Bigger. It is the primary control on the page -- it decides what the
-     whole dashboard is -- and it was reading as a footnote. */
-  .role-switch { gap: 3px; padding: 3px; }
-  .role-btn { font-size: 13px; padding: 10px 22px; letter-spacing: 0.5px; }
-
-  /* Revised role assignment. Each role keeps only what that reader acts
-     on; nothing is computed differently, panels are just not shown.
-       Operator  -- triage and dispatch: fleet, twin, unit, work orders, feed
-       Engineer  -- the above plus the why and the model's own behaviour
-       Analyst   -- the model and the case for it; no shop-floor tooling */
-  body[data-role="operator"] #businessImpact,
-  body[data-role="operator"] #uploadPanel,
-  body[data-role="operator"] #aiPanel,
-  body[data-role="operator"] #modelValidationPanel,
-  body[data-role="operator"] #sensitivityPanel,
-  body[data-role="operator"] .ud-engineer-only { display: none; }
-
-  body[data-role="engineer"] #businessImpact,
-  body[data-role="engineer"] #sensitivityPanel { display: none; }
-
-  /* The analyst is reasoning about the model and the business case, not
-     walking a platform. The digital twin, the work-order queue and the
-     live feed are shop-floor instruments -- they cost a screenful each
-     and answer nothing an analyst asked. */
-  body[data-role="analyst"] #trainDiagramPanel,
-  body[data-role="analyst"] #maintenanceActionsPanel,
-  body[data-role="analyst"] #liveFeedPanel { display: none; }
-
-  /* With the twin hidden, unit detail takes the full row rather than
-     leaving a 380px column floating beside dead space. */
-  body[data-role="analyst"] .twin-detail-row { grid-template-columns: 1fr; }
-
-  /* --- Business impact, elaborated ------------------------------------ */
-  .impact-inputs { grid-template-columns: repeat(3, 1fr); }
-  .impact-subhead {
-    font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.6px;
-    color: var(--text-dim); margin: var(--sp-2) 0 9px;
-    padding-bottom: 5px; border-bottom: 1px solid var(--border);
-  }
-  .impact-breakdown { width: 100%; border-collapse: collapse; margin-bottom: var(--sp-1); font-size: 12.5px; }
-  .impact-breakdown th {
-    text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;
-    color: var(--text-dim); font-weight: 600; padding: 7px 10px; border-bottom: 1px solid var(--border);
-  }
-  .impact-breakdown th.num, .impact-breakdown td.num { text-align: right; }
-  .impact-breakdown td { padding: 9px 10px; border-bottom: 1px solid var(--border); color: var(--text); }
-  .impact-breakdown td .sub { display: block; font-size: 10.5px; color: var(--text-dim); margin-top: 2px; line-height: 1.4; }
-  .impact-breakdown td.num { font-family: var(--font-mono, ui-monospace, monospace); font-variant-numeric: tabular-nums; }
-  .impact-breakdown tr.total td { border-bottom: 0; border-top: 2px solid var(--accent); font-weight: 700; padding-top: 11px; }
-  .impact-breakdown tr.total td.num { color: var(--accent); font-size: 14.5px; }
-  .impact-breakdown tr.neg td.num { color: #D18A4A; }
-
-  .impact-assumption {
-    font-size: 11px; color: var(--text-dim); line-height: 1.55;
-    padding: 11px 13px; background: var(--panel-alt);
-    border: 1px solid var(--border); border-radius: var(--radius-md);
-    margin-bottom: var(--sp-1);
-  }
-  .impact-assumption b { color: var(--text); }
-
-  /* --- Chat dock, second pass: more room to read --------------------- */
-  .chat-fab { width: 66px; height: 66px; right: 26px; bottom: 26px; }
-  .chat-fab svg { width: 29px; height: 29px; }
-  .chat-dock {
-    right: 26px; bottom: 26px;
-    width: min(520px, calc(100vw - 40px));
-    max-height: min(780px, calc(100vh - 52px));
-  }
-  .chat-head { padding: 14px 16px; }
-  .chat-head .ttl { font-size: 15.5px; }
-  .chat-log { padding: 16px; gap: 13px; }
-  .chat-msg { font-size: 13.5px; line-height: 1.62; max-width: 94%; }
-  .chat-msg.user { padding: 10px 14px; }
-  .chat-msg.bot { padding: 12px 14px; }
-  .chat-chip { font-size: 11.5px; padding: 7px 12px; }
-  .chat-input-row textarea { font-size: 13.5px; padding: 10px 12px; max-height: 128px; }
-  .chat-send { font-size: 13.5px; padding: 0 18px; }
-  .chat-scope { font-size: 11px; padding: 8px 16px; }
-  .chat-foot { font-size: 10px; padding: 0 16px 11px; }
-
-  /* Four headline figures now (window, annual, per unit, payback). */
-  .impact-figures { grid-template-columns: repeat(4, 1fr); }
-  @media (max-width: 1100px) { .impact-figures { grid-template-columns: 1fr 1fr; } }
-  @media (max-width: 700px)  { .impact-figures { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -1284,12 +1434,19 @@
       <div class="brand-subtitle">Predictive fault detection for rail networks</div>
     </div>
     <div class="header-tagline">"Early signals. Scheduled fixes."</div>
-    <div style="display:flex; align-items:center; justify-content:flex-end;">
-      <div class="role-switch" role="group" aria-label="Who is reading this dashboard">
-        <button class="role-btn" data-role="operator" aria-pressed="false">Operator</button>
-        <button class="role-btn" data-role="engineer" aria-pressed="false">Engineer</button>
-        <button class="role-btn" data-role="analyst" aria-pressed="true">Analyst</button>
-      </div>
+    <div class="role-tabs" role="tablist" aria-label="Dashboard view">
+      <button class="role-tab" role="tab" data-role="operator" aria-selected="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5L21 19.5H3L12 3.5z"/><path d="M12 10v4"/><circle cx="12" cy="17" r="0.9" fill="currentColor" stroke="none"/></svg>
+        <span class="role-tab-text">Operator<span class="rt-sub">What to pull, and when</span></span>
+      </button>
+      <button class="role-tab" role="tab" data-role="engineer" aria-selected="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 00-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 005.4-5.4l-2.6 2.6-2-2 2.6-2.6z"/></svg>
+        <span class="role-tab-text">Engineer<span class="rt-sub">Why it was flagged</span></span>
+      </button>
+      <button class="role-tab" role="tab" data-role="analyst" aria-selected="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16"/><path d="M8 15.5l3.5-4.5 3 3L20 7"/></svg>
+        <span class="role-tab-text">Analyst<span class="rt-sub">The model and the case</span></span>
+      </button>
     </div>
   </div>
 </header>
@@ -1300,175 +1457,114 @@
       <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.7-2.5 1.8c0 2.6 5 1.2 5 3.8 0 1.1-1.1 1.9-2.5 1.9s-2.5-.9-2.5-2"/></svg>
       Business Impact Calculator
     </h2>
-    <div class="impact-subhead">Cost of a failure that reaches service</div>
-    <div class="impact-inputs">
-      <div class="impact-input-group">
-        <label for="costFailure">Emergency repair, recovery and callout, per unplanned failure</label>
-        <div class="impact-input-wrap"><span class="prefix">$</span>
-          <input type="number" id="costFailure" value="50000" min="0" step="1000">
+    <div class="impact-layout">
+      <div class="impact-form">
+        <div class="impact-group">
+          <div class="impact-group-head">If it fails in service</div>
+          <div class="impact-row">
+            <label for="costFailure">Emergency repair &amp; recovery</label>
+            <div class="impact-field has-pre"><span class="unit pre">$</span>
+              <input type="number" id="costFailure" value="50000" min="0" step="1000"></div>
+          </div>
+          <div class="impact-row">
+            <label for="hoursUnplanned">Hours out of service</label>
+            <div class="impact-field has-post"><span class="unit post">h</span>
+              <input type="number" id="hoursUnplanned" value="14" min="0" step="1"></div>
+          </div>
+          <div class="impact-row">
+            <label for="costDowntimeHour">Cost per hour unavailable</label>
+            <div class="impact-field has-pre"><span class="unit pre">$</span>
+              <input type="number" id="costDowntimeHour" value="1200" min="0" step="100"></div>
+          </div>
         </div>
-      </div>
-      <div class="impact-input-group">
-        <label for="hoursUnplanned">Hours the unit is out of service, unplanned</label>
-        <div class="impact-input-wrap mult"><span class="prefix">h</span>
-          <input type="number" id="hoursUnplanned" value="14" min="0" step="1">
-        </div>
-      </div>
-      <div class="impact-input-group">
-        <label for="costDowntimeHour">Cost of an hour out of service (lost availability, penalties)</label>
-        <div class="impact-input-wrap"><span class="prefix">$</span>
-          <input type="number" id="costDowntimeHour" value="1200" min="0" step="100">
-        </div>
-      </div>
-    </div>
 
-    <div class="impact-subhead">Cost of catching it first</div>
-    <div class="impact-inputs">
-      <div class="impact-input-group">
-        <label for="costMaintenance">Planned intervention, per unit (parts and labour)</label>
-        <div class="impact-input-wrap"><span class="prefix">$</span>
-          <input type="number" id="costMaintenance" value="5000" min="0" step="500">
+        <div class="impact-group">
+          <div class="impact-group-head">If we catch it first</div>
+          <div class="impact-row">
+            <label for="costMaintenance">Planned intervention</label>
+            <div class="impact-field has-pre"><span class="unit pre">$</span>
+              <input type="number" id="costMaintenance" value="5000" min="0" step="500"></div>
+          </div>
+          <div class="impact-row">
+            <label for="hoursPlanned">Hours out of service</label>
+            <div class="impact-field has-post"><span class="unit post">h</span>
+              <input type="number" id="hoursPlanned" value="4" min="0" step="1"></div>
+          </div>
+          <div class="impact-row">
+            <label for="falseAlarmCost">Cost of a false alarm</label>
+            <div class="impact-field has-pre"><span class="unit pre">$</span>
+              <input type="number" id="falseAlarmCost" value="1200" min="0" step="100"></div>
+          </div>
         </div>
-      </div>
-      <div class="impact-input-group">
-        <label for="hoursPlanned">Hours out of service, planned into a maintenance slot</label>
-        <div class="impact-input-wrap mult"><span class="prefix">h</span>
-          <input type="number" id="hoursPlanned" value="4" min="0" step="1">
-        </div>
-      </div>
-      <div class="impact-input-group">
-        <label for="falseAlarmCost">Cost of inspecting a unit the model flagged but that was healthy</label>
-        <div class="impact-input-wrap"><span class="prefix">$</span>
-          <input type="number" id="falseAlarmCost" value="1200" min="0" step="100">
-        </div>
-      </div>
-    </div>
 
-    <div class="impact-subhead">Scale</div>
-    <div class="impact-inputs">
-      <div class="impact-input-group">
-        <label for="fleetMultiplier">Fleet multiplier (scale to a larger rolling stock fleet)</label>
-        <div class="impact-input-wrap mult"><span class="prefix">×</span>
-          <input type="number" id="fleetMultiplier" value="10" min="1" step="1">
+        <div class="impact-group">
+          <div class="impact-group-head">Fleet &amp; rates</div>
+          <div class="impact-row">
+            <label for="fleetMultiplier">Scale this fleet by</label>
+            <div class="impact-field has-post"><span class="unit post">×</span>
+              <input type="number" id="fleetMultiplier" value="10" min="1" step="1"></div>
+          </div>
+          <div class="impact-row">
+            <label for="faultsPer100">Failures per 100 units / year</label>
+            <div class="impact-field">
+              <input type="number" id="faultsPer100" value="8" min="0" step="1"></div>
+          </div>
+          <div class="impact-row">
+            <label for="detectionRate">Caught with usable notice</label>
+            <div class="impact-field has-post"><span class="unit post">%</span>
+              <input type="number" id="detectionRate" value="85" min="0" max="100" step="5"></div>
+          </div>
+          <div class="impact-row">
+            <label for="falseAlarmsPerYear">False alarms per 100 / year</label>
+            <div class="impact-field">
+              <input type="number" id="falseAlarmsPerYear" value="12" min="0" step="1"></div>
+          </div>
+          <div class="impact-row">
+            <label for="programCost">Annual cost to run</label>
+            <div class="impact-field has-pre"><span class="unit pre">$</span>
+              <input type="number" id="programCost" value="120000" min="0" step="10000"></div>
+          </div>
         </div>
       </div>
-      <div class="impact-input-group">
-        <label for="faultsPer100">Expected failures per 100 units per year (your reliability history)</label>
-        <div class="impact-input-wrap mult"><span class="prefix">n</span>
-          <input type="number" id="faultsPer100" value="8" min="0" step="1">
+
+      <div class="impact-results">
+        <div class="impact-headline">
+          <div class="impact-stat">
+            <div class="v" id="impactPerFault">–</div>
+            <div class="k">Saved per fault caught early</div>
+          </div>
+          <div class="impact-stat">
+            <div class="v" id="impactAnnualSavings">–</div>
+            <div class="k">Net per year, <span id="impactAnnualUnitCount">–</span> units</div>
+          </div>
+          <div class="impact-stat">
+            <div class="v" id="impactPerTrain">–</div>
+            <div class="k">Net per unit per year</div>
+          </div>
+          <div class="impact-stat">
+            <div class="v" id="impactPayback">–</div>
+            <div class="k">To cover the running cost</div>
+          </div>
         </div>
-      </div>
-      <div class="impact-input-group">
-        <label for="detectionRate">Share of those the system catches with usable notice</label>
-        <div class="impact-input-wrap mult"><span class="prefix">%</span>
-          <input type="number" id="detectionRate" value="85" min="0" max="100" step="5">
+
+        <div>
+          <div class="impact-tbl-head">Per fault caught before it reached service</div>
+          <table class="impact-breakdown"><tbody id="impactPerFaultBody"></tbody></table>
         </div>
-      </div>
-    </div>
-    <div class="impact-inputs">
-      <div class="impact-input-group">
-        <label for="falseAlarmsPerYear">False alarms investigated per 100 units per year</label>
-        <div class="impact-input-wrap mult"><span class="prefix">n</span>
-          <input type="number" id="falseAlarmsPerYear" value="12" min="0" step="1">
+
+        <div>
+          <div class="impact-tbl-head">Annual, at the scaled fleet</div>
+          <table class="impact-breakdown"><tbody id="impactAnnualBody"></tbody></table>
         </div>
-      </div>
-      <div class="impact-input-group">
-        <label for="programCost">Annual cost to run the system (compute, licences, upkeep)</label>
-        <div class="impact-input-wrap"><span class="prefix">$</span>
-          <input type="number" id="programCost" value="120000" min="0" step="10000">
-        </div>
-      </div>
-    </div>
 
-    <div class="impact-summary" id="impactSummary">Loading validation results…</div>
-
-    <div class="impact-subhead">Per fault caught before it reached service</div>
-    <table class="impact-breakdown">
-      <thead>
-        <tr><th>Line item</th><th class="num">Per fault</th></tr>
-      </thead>
-      <tbody id="impactPerFaultBody"></tbody>
-    </table>
-
-    <div class="impact-subhead">Annual, at the scaled fleet</div>
-    <table class="impact-breakdown">
-      <thead>
-        <tr><th>Line item</th><th class="num">Per year</th></tr>
-      </thead>
-      <tbody id="impactAnnualBody"></tbody>
-    </table>
-
-    <div class="impact-figures">
-      <div class="impact-figure">
-        <div class="amount" id="impactObservedSavings">–</div>
-        <div class="desc">Net saving over the 6-week validation window, this fleet size (<span id="impactUnitCount">–</span> units)</div>
-      </div>
-      <div class="impact-figure">
-        <div class="amount" id="impactAnnualSavings">–</div>
-        <div class="desc">Net annual saving after running costs, scaled fleet (<span id="impactAnnualUnitCount">–</span> units)</div>
-      </div>
-      <div class="impact-figure">
-        <div class="amount" id="impactPerTrain">–</div>
-        <div class="desc">Net annual saving per unit monitored</div>
-      </div>
-      <div class="impact-figure">
-        <div class="amount" id="impactPayback">–</div>
-        <div class="desc">Time for avoided failures to cover the annual running cost</div>
-      </div>
-    </div>
-
-    <div class="impact-assumption" id="impactAssumptions"></div>
-
-    <div class="impact-caption">
-      Illustrative default costs based on typical rail-industry disruption/maintenance figures — edit the fields above to reflect real LTA/SMRT numbers.
-      Savings are derived from <span id="impactSourceNote">this pipeline's validation results</span> (predictive detections that occurred before a logged fault, per <code>validation_outputs/lead_time_summary.csv</code>) and a linear annualization of the 6-week synthetic monitoring window — treat as directional, not a budget figure.
-    </div>
-  </div>
-</header>
-
-<main>
-  <div class="panel impact-panel" id="businessImpact">
-    <h2>
-      <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.7-2.5 1.8c0 2.6 5 1.2 5 3.8 0 1.1-1.1 1.9-2.5 1.9s-2.5-.9-2.5-2"/></svg>
-      Business Impact Calculator
-    </h2>
-    <div class="impact-inputs">
-      <div class="impact-input-group">
-        <label for="costFailure">Cost per unplanned failure / service disruption</label>
-        <div class="impact-input-wrap"><span class="prefix">$</span>
-          <input type="number" id="costFailure" value="50000" min="0" step="1000">
-        </div>
-      </div>
-      <div class="impact-input-group">
-        <label for="costMaintenance">Cost per scheduled maintenance intervention</label>
-        <div class="impact-input-wrap"><span class="prefix">$</span>
-          <input type="number" id="costMaintenance" value="5000" min="0" step="500">
-        </div>
-      </div>
-      <div class="impact-input-group">
-        <label for="fleetMultiplier">Fleet multiplier (scale to a larger rolling stock fleet)</label>
-        <div class="impact-input-wrap mult"><span class="prefix">×</span>
-          <input type="number" id="fleetMultiplier" value="10" min="1" step="1">
-        </div>
-      </div>
-    </div>
-
-    <div class="impact-summary" id="impactSummary">Loading validation results…</div>
-
-    <div class="impact-figures">
-      <div class="impact-figure">
-        <div class="amount" id="impactObservedSavings">–</div>
-        <div class="desc">Savings over the synthetic 6-week validation window, this fleet size (<span id="impactUnitCount">–</span> units)</div>
-      </div>
-      <div class="impact-figure">
-        <div class="amount" id="impactAnnualSavings">–</div>
-        <div class="desc">Estimated annual savings, extrapolated and scaled by the fleet multiplier (<span id="impactAnnualUnitCount">–</span> units)</div>
+        <div class="impact-assumption" id="impactAssumptions"></div>
       </div>
     </div>
 
     <div class="impact-caption">
-      Illustrative default costs based on typical rail-industry disruption/maintenance figures — edit the fields above to reflect real LTA/SMRT numbers.
-      Savings estimates are derived from <span id="impactSourceNote">this pipeline's validation results</span> (predictive detections that occurred before a logged fault, per <code>validation_outputs/lead_time_summary.csv</code>) and a simple annualization of the 6-week synthetic monitoring window — treat as directional, not a budget figure.
+      Defaults are illustrative rail-industry figures — replace them with real LTA/SMRT numbers.
+      The per-fault saving and lead time come from <span id="impactSourceNote">this pipeline's validation results</span>
+      (<code>validation_outputs/lead_time_summary.csv</code>); the failure rate is yours to supply, for the reason given above.
     </div>
   </div>
 
@@ -1600,7 +1696,7 @@
     <div class="sensitivity-caption" id="sensitivityCaption">Loading…</div>
   </div>
 
-  <div class="panel full-width-panel">
+  <div class="panel full-width-panel" id="fleetPanel">
     <h2>
       <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>
       Fleet Overview
@@ -1841,8 +1937,8 @@ async function apiGet(path) {
 }
 
 function setApiStatus(ok) {
-  // The header status pill was removed; failures surface in the panel that
-  // failed, which is where someone is actually looking.
+  // The header status pill was removed; a failure surfaces in whichever
+  // panel failed, which is where someone is actually looking.
   if (!ok) console.warn("API unreachable");
 }
 
@@ -1889,7 +1985,7 @@ async function loadValidationSummary() {
     validationCache = await apiGet("/validation-summary");
     recalcImpact();
   } catch (e) {
-    document.getElementById("impactSummary").textContent =
+    document.getElementById("impactAssumptions").textContent =
       "Validation summary unavailable — run pipeline/run_pipeline.py to generate validation_outputs/lead_time_summary.csv.";
     console.error(e);
   }
@@ -2072,17 +2168,8 @@ function recalcImpact() {
       <td class="num">${money(netAnnual)}</td>
     </tr>`;
 
-  const observedNet = n * perFault;
-  document.getElementById("impactSummary").innerHTML =
-    `Across <b>${n} fault${n === 1 ? "" : "s"}</b> caught an average of ` +
-    `<b>${avgLeadDays != null ? avgLeadDays.toFixed(1) + " days" : "n/a"}</b> early, converting each from an ` +
-    `emergency failure into a scheduled intervention is worth <b>${money(perFault)}</b> apiece — ` +
-    `<b>${money(observedNet)}</b> over the validation window. That per-fault figure is what this ` +
-    `dataset supports; how often faults occur is an input above.`;
-
-  document.getElementById("impactObservedSavings").textContent = money(observedNet);
+  document.getElementById("impactPerFault").textContent = money(perFault);
   document.getElementById("impactAnnualSavings").textContent = money(netAnnual);
-  document.getElementById("impactUnitCount").textContent = currentFleetUnits;
   document.getElementById("impactAnnualUnitCount").textContent = scaledUnits;
   document.getElementById("impactPerTrain").textContent =
     scaledUnits > 0 ? money(netAnnual / scaledUnits) : "–";
@@ -3636,22 +3723,35 @@ const ROLES = {
   analyst:  "Everything, including validation and threshold tuning.",
 };
 
-function setRole(role) {
+function setRole(role, userInitiated) {
   if (!ROLES[role]) role = "analyst";
   document.body.dataset.role = role;
-  document.querySelectorAll(".role-btn").forEach(b =>
-    b.setAttribute("aria-pressed", String(b.dataset.role === role)));
+  document.querySelectorAll(".role-tab").forEach(b =>
+    b.setAttribute("aria-selected", String(b.dataset.role === role)));
   try { localStorage.setItem("railpulse.role", role); } catch (e) { /* private mode */ }
   renderChatChips();
   // The open unit panel changes shape by role, so re-render it in place.
   if (selectedUnit && unitDetailCache) renderUnitDetail(unitDetailCache);
+  // Switching view is navigation: land at the top of the new view rather
+  // than halfway down wherever the previous one was scrolled to.
+  if (userInitiated) window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function initRole() {
   let saved = "analyst";
   try { saved = localStorage.getItem("railpulse.role") || "analyst"; } catch (e) { /* ignore */ }
-  document.querySelectorAll(".role-btn").forEach(b =>
-    b.addEventListener("click", () => setRole(b.dataset.role)));
+  const tabs = [...document.querySelectorAll(".role-tab")];
+  tabs.forEach((b, i) => {
+    b.addEventListener("click", () => setRole(b.dataset.role, true));
+    b.addEventListener("keydown", e => {
+      const step = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+      if (!step) return;
+      e.preventDefault();
+      const next = tabs[(i + step + tabs.length) % tabs.length];
+      next.focus();
+      setRole(next.dataset.role, true);
+    });
+  });
   setRole(saved);
 }
 
