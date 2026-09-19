@@ -546,65 +546,6 @@
   .research-fallback { padding: 15px 14px; font-size: 12px; color: var(--text-dim); line-height: 1.5; }
   .research-fallback .reason { display: block; margin-top: 5px; font-size: 10.5px; opacity: 0.75; }
 
-  /* Maintenance Logistics -- depot routing for flagged units.
-     The data-notice banner is deliberately loud: the coordinates behind
-     this panel are fabricated (api/locations_config.py), and that must not
-     be mistakable for something the pipeline knows. */
-  .logistics { margin-top: var(--sp-2); border: 1px solid var(--border);
-    border-radius: var(--radius-md); background: var(--panel-alt); overflow: hidden; }
-  .logistics-head {
-    display: flex; align-items: center; gap: 8px;
-    padding: 10px 14px; border-bottom: 1px solid var(--border);
-    background: rgba(var(--accent-rgb), 0.07);
-  }
-  .logistics-head .ttl {
-    font-family: var(--font-heading); font-size: 12.5px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.5px;
-  }
-  .logistics-head .chip {
-    margin-left: auto; font-size: 9.5px; text-transform: uppercase;
-    letter-spacing: 0.5px; color: var(--text-dim);
-    border: 1px solid var(--border-strong); border-radius: var(--radius-pill);
-    padding: 2px 8px; white-space: nowrap;
-  }
-
-  /* Unmissable by design -- full-width caution bar, not a footnote. */
-  .demo-banner {
-    display: flex; align-items: flex-start; gap: 10px;
-    padding: 11px 14px;
-    background: rgba(var(--caution-rgb), 0.16);
-    border-bottom: 2px solid var(--caution);
-  }
-  .demo-banner .demo-tag {
-    flex-shrink: 0;
-    font-family: var(--font-heading); font-size: 10px; font-weight: 700;
-    letter-spacing: 0.8px; text-transform: uppercase;
-    color: var(--bg); background: var(--caution);
-    padding: 3px 7px; border-radius: 4px; line-height: 1.3;
-  }
-  .demo-banner .demo-text { font-size: 11px; color: var(--text); line-height: 1.45; }
-
-  .logi-route { display: flex; align-items: center; gap: 10px; padding: 13px 14px;
-    border-bottom: 1px solid var(--border); flex-wrap: wrap; }
-  .logi-node { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-  .logi-node .nd-lbl { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); }
-  .logi-node .nd-val { font-size: 13px; font-weight: 600; }
-  .logi-node .nd-sub { font-size: 10.5px; color: var(--text-dim); }
-  .logi-arrow { color: var(--accent); font-size: 17px; line-height: 1; }
-
-  .logi-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
-    background: var(--border); border-bottom: 1px solid var(--border); }
-  .logi-stat { background: var(--panel-alt); padding: 12px 14px; }
-  .logi-stat .num { font-family: var(--font-heading); font-size: 21px; font-weight: 600; color: var(--accent); }
-  .logi-stat .lbl { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); margin-top: 2px; }
-
-  .logi-map { display: block; width: 100%; height: auto; border-bottom: 1px solid var(--border); }
-  .logi-alts { padding: 11px 14px; font-size: 11px; color: var(--text-dim); line-height: 1.55; }
-  .logi-alts .alt-ttl { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-  .logistics-loading { display: flex; align-items: center; gap: 9px; padding: 18px 14px;
-    font-size: 12px; color: var(--text-dim); }
-  .logistics-fallback { padding: 15px 14px; font-size: 12px; color: var(--text-dim); line-height: 1.5; }
-  .logistics-fallback .reason { display: block; margin-top: 5px; font-size: 10.5px; opacity: 0.75; }
   .why-flagged {
     margin-bottom: var(--sp-1);
     padding: 12px 14px;
@@ -1063,6 +1004,209 @@
   .dev-caution { color: var(--caution); }
   .dev-warning { color: var(--warning); }
   .dev-critical { color: var(--critical); }
+
+  /* ===================================================================
+     PS3 part 2: reading the output, not just producing it
+     ===================================================================
+     Everything below exists to answer one question -- how does a person
+     who is not a data analyst act on this? The detection logic above is
+     untouched by all of it. */
+
+  /* --- Role switch ---------------------------------------------------
+     One page, three readers. Rather than three dashboards to keep in
+     sync, the role attribute on <body> decides what is visible; every
+     panel still renders from the same data and the same endpoints. */
+  .role-switch { display: flex; gap: 2px; padding: 2px; border-radius: var(--radius-pill);
+    background: var(--panel-alt); border: 1px solid var(--border); }
+  .role-btn {
+    appearance: none; border: 0; cursor: pointer; font-family: var(--font-body);
+    font-size: 10.5px; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase;
+    padding: 6px 13px; border-radius: var(--radius-pill);
+    background: transparent; color: var(--text-dim); transition: background 0.14s, color 0.14s;
+  }
+  .role-btn:hover { color: var(--text); }
+  .role-btn[aria-pressed="true"] { background: var(--accent); color: #0B0F14; }
+  .role-hint { font-size: 10.5px; color: var(--text-dim); max-width: 232px; line-height: 1.4; }
+
+  /* Operator: triage and act. The model internals, the cost model and the
+     data-science controls are not decisions they make. */
+  body[data-role="operator"] #businessImpact,
+  body[data-role="operator"] #uploadPanel,
+  body[data-role="operator"] #aiPanel,
+  body[data-role="operator"] #modelValidationPanel,
+  body[data-role="operator"] #sensitivityPanel,
+  body[data-role="operator"] .ud-engineer-only { display: none; }
+
+  /* Engineer: everything an operator sees, plus the why. Still not the
+     cost case or the threshold tuning. */
+  body[data-role="engineer"] #businessImpact,
+  body[data-role="engineer"] #sensitivityPanel { display: none; }
+
+  /* Analyst sees the lot -- no rules needed. */
+
+  /* --- Plain-language headline ---------------------------------------
+     The sentence a reader can act on, above the numbers it came from.
+     Never replaces the numbers; they sit directly underneath. */
+  .plain-read {
+    padding: 13px 15px; margin-bottom: var(--sp-1);
+    border-radius: var(--radius-md); background: var(--panel-alt);
+    border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    font-size: 14px; line-height: 1.5; color: var(--text);
+  }
+  .plain-read b { font-weight: 650; }
+  .plain-read .pr-act { display: block; margin-top: 7px; font-size: 12px; color: var(--text-dim); }
+  .priority-card-plain { font-size: 12px; line-height: 1.45; margin: 6px 0 2px; color: var(--text); }
+
+  /* --- Glossary ------------------------------------------------------
+     A dotted underline on every term a new engineer would not know.
+     Hover or keyboard focus; no library, no layout shift. */
+  .gloss {
+    border-bottom: 1px dotted var(--text-dim); cursor: help;
+    position: relative; outline: none;
+  }
+  .gloss::after {
+    content: attr(data-tip);
+    position: absolute; left: 0; bottom: calc(100% + 7px); z-index: 60;
+    width: max-content; max-width: 290px;
+    padding: 9px 11px; border-radius: var(--radius-md);
+    background: var(--bg); border: 1px solid var(--accent);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+    font-family: var(--font-body); font-size: 11.5px; font-weight: 400;
+    line-height: 1.5; color: var(--text); text-transform: none; letter-spacing: 0;
+    white-space: normal; text-align: left;
+    opacity: 0; visibility: hidden; transform: translateY(3px);
+    transition: opacity 0.13s, transform 0.13s, visibility 0.13s;
+  }
+  .gloss:hover::after, .gloss:focus::after { opacity: 1; visibility: visible; transform: translateY(0); }
+
+  /* --- Response window ------------------------------------------------
+     A deadline, not a statistic. The policy window is a service rule and
+     is labelled as one -- it is NOT a model prediction, and the two are
+     kept visually separate so they cannot be read as a single claim. */
+  .act-by {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 12px 15px; margin-bottom: var(--sp-1);
+    border-radius: var(--radius-md); background: var(--panel-alt); border: 1px solid var(--border);
+  }
+  .act-by-clock { display: flex; align-items: baseline; gap: 5px; }
+  .act-by-num { font-family: var(--font-heading); font-size: 25px; font-weight: 700; line-height: 1; }
+  .act-by-unit { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); }
+  .act-by-text { flex: 1; min-width: 175px; font-size: 12px; line-height: 1.5; color: var(--text-dim); }
+  .act-by-text b { color: var(--text); }
+  .act-by.now { border-left: 3px solid #C24B4B; }
+  .act-by.now .act-by-num { font-size: 16px; color: #C24B4B; text-transform: uppercase; letter-spacing: 0.5px; }
+  .act-by.soon { border-left: 3px solid #D18A4A; }
+  .act-by.soon .act-by-num { color: #D18A4A; }
+  .act-by.routine { border-left: 3px solid #5FAE7A; }
+  .act-by.routine .act-by-num { color: #5FAE7A; }
+
+  /* --- Work card ------------------------------------------------------
+     Screen: a button. Print: the only thing on the page. */
+  .wc-launch { display: flex; align-items: center; gap: 11px; margin-top: var(--sp-2); flex-wrap: wrap; }
+  .wc-btn {
+    appearance: none; cursor: pointer; font-family: var(--font-body);
+    font-size: 11.5px; font-weight: 600; padding: 8px 15px;
+    border-radius: var(--radius-pill); border: 1px solid var(--border);
+    background: var(--panel-alt); color: var(--text); display: inline-flex; align-items: center; gap: 7px;
+  }
+  .wc-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .wc-btn svg { width: 13px; height: 13px; }
+  .wc-hint { font-size: 10.5px; color: var(--text-dim); }
+  #workCard { display: none; }
+
+  @media print {
+    body { background: #fff; color: #000; }
+    body > *, .chat-dock, .chat-fab { display: none !important; }
+    #workCard { display: block !important; color: #000; font-family: Georgia, "Times New Roman", serif; }
+    #workCard h1 { font-size: 20px; margin: 0 0 2px; }
+    #workCard .wc-sub { font-size: 11px; color: #444; margin-bottom: 14px; }
+    #workCard .wc-band { border: 2px solid #000; padding: 10px 12px; margin-bottom: 14px; }
+    #workCard .wc-band .wc-lvl { font-size: 17px; font-weight: 700; text-transform: uppercase; }
+    #workCard table { width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 12px; }
+    #workCard th, #workCard td { border: 1px solid #999; padding: 5px 7px; text-align: left; }
+    #workCard th { background: #eee; }
+    #workCard .wc-sec { font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.6px; border-bottom: 1px solid #000; padding-bottom: 3px; margin: 0 0 6px; }
+    #workCard .wc-block { margin-bottom: 14px; font-size: 12.5px; line-height: 1.55; }
+    #workCard .wc-sign div { border-top: 1px solid #000; width: 230px; padding-top: 4px; margin-top: 34px; font-size: 12px; }
+    #workCard .wc-foot { margin-top: 18px; font-size: 10px; color: #444; border-top: 1px solid #ccc; padding-top: 7px; }
+  }
+
+  /* --- Fleet Assistant dock -------------------------------------------
+     Floating so it is reachable from any panel without taking layout from
+     one. Collapsed by default: it assists, it does not lead. */
+  .chat-fab {
+    position: fixed; right: 22px; bottom: 22px; z-index: 90;
+    width: 54px; height: 54px; border-radius: 50%; border: 1px solid var(--accent);
+    background: var(--accent); color: #0B0F14; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.42); transition: transform 0.15s;
+  }
+  .chat-fab:hover { transform: translateY(-2px); }
+  .chat-fab svg { width: 24px; height: 24px; }
+  .chat-fab[hidden] { display: none; }
+
+  .chat-dock {
+    position: fixed; right: 22px; bottom: 22px; z-index: 95;
+    width: min(408px, calc(100vw - 32px)); max-height: min(646px, calc(100vh - 44px));
+    display: none; flex-direction: column;
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    background: var(--panel); box-shadow: 0 14px 44px rgba(0, 0, 0, 0.5); overflow: hidden;
+  }
+  .chat-dock.open { display: flex; }
+  .chat-head { display: flex; align-items: center; gap: 9px; padding: 12px 14px;
+    border-bottom: 1px solid var(--border); background: var(--panel-alt); }
+  .chat-head .ttl { font-family: var(--font-heading); font-size: 14px; font-weight: 600; flex: 1; }
+  .chat-head .chip { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.5px;
+    color: var(--text-dim); border: 1px solid var(--border); border-radius: var(--radius-pill); padding: 2px 8px; }
+  .chat-close { appearance: none; border: 0; background: transparent; color: var(--text-dim);
+    cursor: pointer; font-size: 19px; line-height: 1; padding: 0 2px; }
+  .chat-close:hover { color: var(--text); }
+
+  .chat-scope { padding: 7px 14px; font-size: 10.5px; color: var(--text-dim);
+    border-bottom: 1px solid var(--border); background: var(--panel); }
+  .chat-scope b { color: var(--accent); }
+
+  .chat-log { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 11px; }
+  .chat-msg { font-size: 12.5px; line-height: 1.58; max-width: 92%; }
+  .chat-msg.user { align-self: flex-end; background: var(--accent); color: #0B0F14;
+    padding: 9px 12px; border-radius: 12px 12px 3px 12px; font-weight: 500; }
+  .chat-msg.bot { align-self: flex-start; background: var(--panel-alt); color: var(--text);
+    border: 1px solid var(--border); padding: 10px 12px; border-radius: 12px 12px 12px 3px; white-space: pre-wrap; }
+  .chat-msg.bot.err { border-color: #C24B4B; color: var(--text-dim); }
+  .chat-msg .cm-src { display: block; margin-top: 8px; padding-top: 7px; border-top: 1px solid var(--border);
+    font-size: 10.5px; color: var(--text-dim); }
+  .chat-msg .cm-src a { color: var(--accent); text-decoration: none; }
+  .chat-msg .cm-src a:hover { text-decoration: underline; }
+  .chat-typing { align-self: flex-start; display: flex; gap: 4px; padding: 11px 13px; }
+  .chat-typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim);
+    animation: chatBlink 1.3s infinite; }
+  .chat-typing span:nth-child(2) { animation-delay: 0.18s; }
+  .chat-typing span:nth-child(3) { animation-delay: 0.36s; }
+  @keyframes chatBlink { 0%, 60%, 100% { opacity: 0.25; } 30% { opacity: 1; } }
+
+  .chat-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 14px 11px; }
+  .chat-chip { appearance: none; cursor: pointer; font-family: var(--font-body); font-size: 11px;
+    padding: 6px 11px; border-radius: var(--radius-pill); border: 1px solid var(--border);
+    background: var(--panel-alt); color: var(--text-dim); text-align: left; }
+  .chat-chip:hover { border-color: var(--accent); color: var(--accent); }
+
+  .chat-input-row { display: flex; gap: 8px; padding: 11px 14px; border-top: 1px solid var(--border);
+    background: var(--panel-alt); }
+  .chat-input-row textarea {
+    flex: 1; resize: none; font-family: var(--font-body); font-size: 12.5px; line-height: 1.45;
+    padding: 9px 11px; border-radius: var(--radius-md); border: 1px solid var(--border);
+    background: var(--panel); color: var(--text); max-height: 96px;
+  }
+  .chat-input-row textarea:focus { outline: none; border-color: var(--accent); }
+  .chat-send { appearance: none; cursor: pointer; border: 0; border-radius: var(--radius-md);
+    background: var(--accent); color: #0B0F14; padding: 0 15px; font-weight: 700; font-size: 12.5px; }
+  .chat-send:disabled { opacity: 0.45; cursor: default; }
+  .chat-foot { padding: 0 14px 10px; font-size: 9.5px; line-height: 1.5; color: var(--text-dim); }
+
+  @media (max-width: 560px) {
+    .chat-dock { right: 8px; left: 8px; bottom: 8px; width: auto; max-height: calc(100vh - 16px); }
+  }
 </style>
 </head>
 <body>
@@ -1078,7 +1222,15 @@
       <div class="brand-subtitle">Predictive fault detection for rail networks</div>
     </div>
     <div class="header-tagline">"Early signals. Scheduled fixes."</div>
-    <div style="display:flex; align-items:center; gap:12px;">
+    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:flex-end;">
+      <div style="display:flex; align-items:center; gap:9px;">
+        <div class="role-switch" role="group" aria-label="Who is reading this dashboard">
+          <button class="role-btn" data-role="operator" aria-pressed="false">Operator</button>
+          <button class="role-btn" data-role="engineer" aria-pressed="false">Engineer</button>
+          <button class="role-btn" data-role="analyst" aria-pressed="true">Analyst</button>
+        </div>
+        <span class="role-hint" id="roleHint"></span>
+      </div>
       <span class="synthetic-badge">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5L21 19.5H3L12 3.5z"/><path d="M12 9.5v5"/><circle cx="12" cy="17" r="0.8" fill="currentColor" stroke="none"/></svg>
         SYNTHETIC DATA — real LTA dataset pending
@@ -1216,7 +1368,7 @@
     <div class="ai-grid" id="aiGrid"></div>
     <div class="diagram-caption">
       None of these produce a risk level, and none of them can change one. Every score, threshold and decision trace on this page is
-      computed locally by <code>pipeline/</code> and stands on its own if all three are switched off. API keys are read server-side
+      computed locally by <code>pipeline/</code> and stands on its own if every one of them is switched off. API keys are read server-side
       from the API process's environment — the browser never holds a key and never calls these providers directly.
     </div>
   </div>
@@ -1341,6 +1493,38 @@
 
 <div class="diagram-tooltip" id="diagramTooltip" hidden></div>
 
+<!-- Printable work card. Empty on screen (display:none); filled by
+     buildWorkCard() and revealed only by the print stylesheet, so the
+     operator hands the technician a page rather than a screenshot. -->
+<div id="workCard" aria-hidden="true"></div>
+
+<!-- Fleet Assistant. The translation layer PS3 part 2 asks for: the
+     operator or new engineer asks in their own words, and the answer is
+     assembled server-side from this same pipeline's output. The browser
+     holds no API key -- it posts to /chat on our own API. -->
+<button class="chat-fab" id="chatFab" title="Ask the Fleet Assistant" aria-label="Open the Fleet Assistant">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11.5a8 8 0 01-11.6 7.1L4 20l1.4-4.6A8 8 0 1120.5 11.5z"/><path d="M9 10.5h6M9 14h4"/></svg>
+</button>
+
+<div class="chat-dock" id="chatDock" role="dialog" aria-label="Fleet Assistant">
+  <div class="chat-head">
+    <span class="ttl">Fleet Assistant</span>
+    <span class="chip" id="chatModelChip">checking…</span>
+    <button class="chat-close" id="chatClose" aria-label="Close">&times;</button>
+  </div>
+  <div class="chat-scope" id="chatScope">Asking about the whole fleet — select a unit to focus the conversation.</div>
+  <div class="chat-log" id="chatLog"></div>
+  <div class="chat-chips" id="chatChips"></div>
+  <div class="chat-input-row">
+    <textarea id="chatInput" rows="1" placeholder="Ask about a unit, a number, or what to do first…" aria-label="Your question"></textarea>
+    <button class="chat-send" id="chatSend">Send</button>
+  </div>
+  <div class="chat-foot">
+    Answers are generated from this dashboard's own pipeline output and cannot change a risk level.
+    A suggested cause is a hypothesis for a technician to confirm, never a diagnosis.
+  </div>
+</div>
+
 <script>
 const API_BASE = "http://localhost:8000";
 const RISK_COLORS = { Normal: "#5FAE7A", Caution: "#D4A73D", Warning: "#D18A4A", Critical: "#C24B4B" };
@@ -1366,6 +1550,9 @@ let signalsCache = {};
 let subsystemMeta = {};
 let autoSelectDone = false;
 let validationCache = null;
+// Last /unit payload rendered, kept so the role switch and the work card
+// can re-render the panel without another round trip.
+let unitDetailCache = null;
 const SYNTHETIC_WINDOW_DAYS = 42; // 6-week synthetic generation window (data_gen/config.py: DURATION_WEEKS=6)
 const DAYS_PER_YEAR = 365;
 
@@ -1641,20 +1828,6 @@ function recalcImpact() {
   document.getElementById("impactAnnualUnitCount").textContent =
     currentFleetUnits != null ? Math.round(currentFleetUnits * fleetMultiplier) : "–";
 
-  document.getElementById("impactCompactCount").textContent = n;
-  document.getElementById("impactCompactLead").textContent = avgLeadDays != null ? avgLeadDays.toFixed(1) + " days" : "n/a";
-  document.getElementById("impactCompactSavings").textContent = fmtMoney(observedSavings);
-}
-
-function toggleImpactDetails(forceOpen) {
-  const details = document.getElementById("impactDetails");
-  const btn = document.getElementById("impactToggleBtn");
-  const link = document.getElementById("impactExpandLink");
-  const willOpen = forceOpen != null ? forceOpen : details.hidden;
-  details.hidden = !willOpen;
-  btn.setAttribute("aria-expanded", String(willOpen));
-  btn.classList.toggle("open", willOpen);
-  link.textContent = willOpen ? "hide" : "click to view";
 }
 
 function renderStats(counts, total) {
@@ -1729,7 +1902,8 @@ async function renderPriorityAlerts(units) {
           <span class="badge ${u.risk_level}">${u.risk_level}</span>
           <div class="priority-card-unit">${u.unit_id} <span class="priority-card-subsys">· ${u.subsystem_type}</span></div>
           <div class="priority-card-train">${u.train_id}</div>
-          <div class="priority-card-row">Reconstruction error: <b>${u.ae_recon_error != null ? u.ae_recon_error.toFixed(2) : "–"}</b></div>
+          ${d ? `<div class="priority-card-plain">${plainLanguageSummary(d)}</div>` : ""}
+          <div class="priority-card-row">${gloss("Reconstruction error")}: <b>${u.ae_recon_error != null ? u.ae_recon_error.toFixed(2) : "–"}</b></div>
           <div class="priority-card-row">Primary signal: ${signalLine}</div>
           <div class="priority-card-row">Action: <b>${actionText}</b></div>
         </div>
@@ -2466,6 +2640,7 @@ function buildLeadTimeHtml(d) {
 function renderUnitDetail(d) {
   const body = document.getElementById("unitDetailBody");
   const L = d.latest;
+  unitDetailCache = d;
 
   // Headline: the bounded index first because it is scannable, then the raw
   // reconstruction error it was derived from, with the healthy median and
@@ -2476,11 +2651,11 @@ function renderUnitDetail(d) {
   const headline = L.health_index != null
     ? `<div class="hi-big">
          <span class="v" style="color:${hiColor}">${L.health_index.toFixed(0)}</span>
-         <span class="of">/ 100 Health Index</span>
+         <span class="of">/ 100 ${gloss("Health Index")}</span>
          <span class="band" style="color:${hiColor}">${L.health_band}</span>
        </div>
        <div class="sub-note" style="margin-top:5px;">
-         Reconstruction error <b class="mono">${L.ae_recon_error != null ? L.ae_recon_error.toFixed(2) : "–"}</b>
+         ${gloss("Reconstruction error")} <b class="mono">${L.ae_recon_error != null ? L.ae_recon_error.toFixed(2) : "–"}</b>
          ${L.error_vs_healthy_median != null ? `· <b class="mono">×${L.error_vs_healthy_median >= 10 ? L.error_vs_healthy_median.toFixed(0) : L.error_vs_healthy_median.toFixed(1)}</b> the healthy fleet median (<span class="mono">${L.healthy_median_recon_error}</span>)` : ""}
          · Critical cut point <span class="mono">${L.thresholds ? L.thresholds.Critical : "–"}</span>
        </div>`
@@ -2490,36 +2665,41 @@ function renderUnitDetail(d) {
     <div style="margin-bottom:14px;">
       <div class="ud-unit-title">${d.unit_id} <span class="badge ${d.latest.risk_level}" style="margin-left:6px; vertical-align:middle;">${d.latest.risk_level}</span></div>
       <div style="color:var(--text-dim); font-size:11.5px; margin-top:4px;">${d.subsystem_type} · ${d.train_id} · as of ${d.latest.timestamp}</div>
-      <div style="margin-top:12px;">${headline}</div>
-      <div style="margin-top:12px;">${renderSignalTable(L.signal_detail)}</div>
+      <div class="plain-read" style="margin-top:12px;">${plainLanguageSummary(d)}</div>
+      ${buildResponseWindowHtml(d)}
+      <div class="ud-engineer-only" style="margin-top:12px;">${headline}</div>
+      <div class="ud-engineer-only" style="margin-top:12px;">${renderSignalTable(L.signal_detail)}</div>
     </div>
     <div class="why-flagged">${buildWhyFlaggedHtml(d)}</div>
-    ${buildLeadTimeHtml(d)}
-    <div id="traceSteps"></div>
+    <div class="ud-engineer-only">${buildLeadTimeHtml(d)}</div>
+    <div id="traceSteps" class="ud-engineer-only"></div>
     <div class="action-box">
       <div class="lbl">Recommended Action</div>
       ${d.recommended_action}
     </div>
-    <div id="copilotPanel"></div>
-    <div class="research-launch">
+    <div class="wc-launch">
+      <button class="wc-btn" onclick="printWorkCard('${d.unit_id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6M6 18H4v-6h16v6h-2"/><rect x="8" y="14" width="8" height="7" rx="1"/></svg>
+        Print work card
+      </button>
+      <span class="wc-hint">A one-page handover for the technician, with provenance attached.</span>
+    </div>
+    <div id="copilotPanel" class="ud-engineer-only"></div>
+    <div class="research-launch ud-engineer-only">
       <button class="research-btn" id="researchBtn" onclick="investigateFault('${d.unit_id}')">
         <span class="rb-dot"></span>Investigate Fault
       </button>
       <span class="research-hint">Search published engineering literature for similar signatures</span>
     </div>
-    <div id="researchPanel"></div>
-    <div id="logisticsPanel"></div>
+    <div id="researchPanel" class="ud-engineer-only"></div>
     <div id="unitChartBox"><canvas id="unitLineChart"></canvas></div>
   `;
+
+  updateChatScope();
 
   // Fire-and-forget: the trace, action box and chart above are already
   // rendered and stay rendered regardless of what these do.
   loadCopilot(d.unit_id);
-  // Logistics is only meaningful for a unit the pipeline actually escalated;
-  // the panel is absent entirely for Normal/Caution rather than empty.
-  if (LOGISTICS_RISK_LEVELS.includes(d.latest.risk_level)) {
-    loadLogistics(d.unit_id);
-  }
 
   const traceEl = document.getElementById("traceSteps");
   traceEl.innerHTML = "";
@@ -2834,184 +3014,6 @@ async function investigateFault(unitId) {
   renderResearch(data);
 }
 
-// --- Maintenance Logistics (Google Routes) -------------------------------
-//
-// Shown ONLY for Warning/Critical units -- the server enforces this too, so
-// the panel can't be summoned for a healthy unit by calling the route
-// directly.
-//
-// *** The coordinates behind this are fabricated. *** The synthetic dataset
-// has no geolocation; api/locations_config.py invents train positions and
-// depot sites. The distances and ETAs are real Google Routes results between
-// invented points, and the banner at the top of the panel says exactly that
-// -- rendered from the server's own constant, always, never suppressed.
-//
-// The map <img> points at our own /logistics/{id}/map proxy, never at a
-// Google URL, so the Maps key is never published to the page.
-
-const LOGISTICS_RISK_LEVELS = ["Warning", "Critical"];
-const LOGISTICS_TIMEOUT_MS = 12000;
-
-// Session cache -- the inputs are static constants, so re-selecting a unit
-// must never re-call a billable routing API.
-const logisticsCache = {};
-
-function logisticsEl() { return document.getElementById("logisticsPanel"); }
-
-function logisticsShell(inner, chip) {
-  return `<div class="logistics">
-      <div class="logistics-head">
-        <span class="ttl">Maintenance Logistics</span>
-        <span class="chip">${chip || "demo routing"}</span>
-      </div>
-      ${inner}
-    </div>`;
-}
-
-function demoBanner(noticeText) {
-  const wrap = document.createElement("div");
-  wrap.className = "demo-banner";
-  const tag = document.createElement("span");
-  tag.className = "demo-tag";
-  tag.textContent = "Demo / Simulated";
-  const txt = document.createElement("span");
-  txt.className = "demo-text";
-  txt.textContent = noticeText;
-  wrap.append(tag, txt);
-  return wrap;
-}
-
-function renderLogisticsFallback(reason, notice) {
-  const el = logisticsEl();
-  if (!el) return;
-  const r = reason ? `<span class="reason">${reason}</span>` : "";
-  el.innerHTML = logisticsShell(
-    `<div class="demo-banner-slot"></div>
-     <div class="logistics-fallback">Logistics unavailable.${r}</div>`
-  );
-  // The notice belongs on the failure path too -- it describes the whole
-  // feature, not just a successful result.
-  const slot = el.querySelector(".demo-banner-slot");
-  if (slot && notice) slot.replaceWith(demoBanner(notice));
-}
-
-function renderLogistics(data) {
-  const el = logisticsEl();
-  if (!el) return;
-  const d = data.recommended_depot;
-
-  el.innerHTML = logisticsShell(
-    `<div class="demo-banner-slot"></div>
-     <div class="logi-route">
-       <div class="logi-node">
-         <span class="nd-lbl">Unit position</span>
-         <span class="nd-val js-origin"></span>
-         <span class="nd-sub js-origin-sub"></span>
-       </div>
-       <span class="logi-arrow">&rarr;</span>
-       <div class="logi-node">
-         <span class="nd-lbl">Recommended depot</span>
-         <span class="nd-val js-depot"></span>
-         <span class="nd-sub js-depot-sub"></span>
-       </div>
-     </div>
-     <div class="logi-stats">
-       <div class="logi-stat"><div class="num js-dist"></div><div class="lbl">Road distance</div></div>
-       <div class="logi-stat"><div class="num js-eta"></div><div class="lbl">Estimated travel time</div></div>
-     </div>
-     <div class="js-map-slot"></div>
-     <div class="logi-alts js-alts" hidden></div>`,
-    data.cached ? "demo routing \u00b7 cached" : "demo routing"
-  );
-
-  el.querySelector(".demo-banner-slot").replaceWith(demoBanner(data.data_notice));
-
-  el.querySelector(".js-origin").textContent = data.train_id;
-  el.querySelector(".js-origin-sub").textContent =
-    data.origin.place + (data.origin.assigned ? "" : " (unlisted train \u2014 default position)");
-  el.querySelector(".js-depot").textContent = d.name;
-  el.querySelector(".js-depot-sub").textContent = d.note || "";
-  el.querySelector(".js-dist").textContent = d.distance_text;
-  el.querySelector(".js-eta").textContent = d.duration_text;
-
-  if (data.has_map) {
-    const img = document.createElement("img");
-    img.className = "logi-map";
-    img.alt = `Simulated route from ${data.train_id} to ${d.name}`;
-    img.loading = "lazy";
-    // Our own proxy -- the Maps key stays on the server.
-    img.src = `${API_BASE}/logistics/${encodeURIComponent(data.unit_id)}/map`;
-    img.onerror = () => img.remove();
-    el.querySelector(".js-map-slot").replaceWith(img);
-  }
-
-  const alts = data.alternatives || [];
-  if (alts.length) {
-    const box = el.querySelector(".js-alts");
-    box.hidden = false;
-    const t = document.createElement("div");
-    t.className = "alt-ttl";
-    t.textContent = "Other depots considered";
-    box.appendChild(t);
-    for (const a of alts) {
-      const line = document.createElement("div");
-      line.textContent = `${a.depot_name} \u2014 ${a.distance_text}, ${a.duration_text}`;
-      box.appendChild(line);
-    }
-  }
-}
-
-async function loadLogistics(unitId) {
-  if (logisticsCache[unitId]) {
-    renderLogistics(logisticsCache[unitId]);
-    return;
-  }
-  const el = logisticsEl();
-  if (el) {
-    el.innerHTML = logisticsShell(
-      `<div class="logistics-loading"><div class="copilot-spinner"></div>
-         <span>Planning depot routing\u2026</span></div>`
-    );
-  }
-
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), LOGISTICS_TIMEOUT_MS);
-
-  let data;
-  try {
-    const res = await fetch(`${API_BASE}/logistics/${encodeURIComponent(unitId)}`, {
-      signal: controller.signal,
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    data = await res.json();
-  } catch (e) {
-    if (selectedUnit === unitId) {
-      renderLogisticsFallback(
-        e.name === "AbortError" ? "Timed out after 12s." : "Could not reach the logistics service.",
-        null
-      );
-    }
-    return;
-  } finally {
-    clearTimeout(timer);
-  }
-
-  if (selectedUnit !== unitId) return;
-
-  if (data.status === "not_applicable") {
-    // Shouldn't happen (we gate on risk level before calling), but if the
-    // server disagrees, show nothing rather than an empty shell.
-    if (el) el.innerHTML = "";
-    return;
-  }
-  if (data.status !== "ok") {
-    renderLogisticsFallback(data.reason ? `Reason: ${data.reason}` : null, data.data_notice);
-    return;
-  }
-  logisticsCache[unitId] = data;
-  renderLogistics(data);
-}
-
 function renderLiveFeed(events) {
   const feed = document.getElementById("liveFeed");
   for (const ev of events.reverse()) {
@@ -3036,14 +3038,14 @@ async function pollLiveFeed() {
 
 // --- External services strip ---------------------------------------------
 //
-// These three call outside providers, each needs its own server-side key,
-// and each was previously invisible until a unit was clicked -- there was
-// no way to tell from the dashboard whether Claude and Exa were even
+// These call outside providers, each needs its own server-side key, and
+// each was previously invisible until a unit was clicked -- there was no
+// way to tell from the dashboard whether Claude and Exa were even
 // configured, or what they were for. This panel answers both, and says
 // where in the UI each one actually appears.
 //
 // None of them can change a risk level. Every score on this page is
-// computed locally by pipeline/ and survives all three being switched off.
+// computed locally by pipeline/ and survives all of them being switched off.
 
 const AI_SERVICES = [
   {
@@ -3055,20 +3057,20 @@ const AI_SERVICES = [
     where: "Unit Detail panel — appears automatically when you select any unit.",
   },
   {
+    key: "chat",
+    name: "Fleet Assistant",
+    provider: "Anthropic — Claude (+ Exa for literature)",
+    endpoint: "/chat-status",
+    desc: "The chatbox. Answers questions in plain language about any unit or number on this page, pitched at whoever is asking — an operator wanting a running order, or an engineer wanting to know what a parameter means. It reads the same endpoints this page renders and can call one tool to search literature; it has no write path and cannot alter a risk level.",
+    where: "Floating button, bottom-right of every view.",
+  },
+  {
     key: "research",
     name: "Investigate Fault",
     provider: "Exa — web search",
     endpoint: "/research-status",
     desc: "Searches published engineering literature for documented failures with a similar signal signature. Deliberately non-generative: the bullets are extracted from result titles and highlights, so no model can invent a claim about this unit.",
     where: "Unit Detail panel — click the <b>Investigate Fault</b> button.",
-  },
-  {
-    key: "logistics",
-    name: "Depot Logistics",
-    provider: "Google — Routes API",
-    endpoint: "/logistics-status",
-    desc: "Works out which depot a flagged train should be routed to, using real driving distances and travel times between demo coordinates. The train positions themselves are fabricated — the synthetic dataset carries no geolocation.",
-    where: "Unit Detail panel — shown for Warning and Critical units only.",
   },
 ];
 
@@ -3293,11 +3295,6 @@ function initUpload() {
 ["costFailure", "costMaintenance", "fleetMultiplier"].forEach(id => {
   document.getElementById(id).addEventListener("input", recalcImpact);
 });
-document.getElementById("impactToggleBtn").addEventListener("click", () => toggleImpactDetails());
-document.getElementById("impactExpandLink").addEventListener("click", (e) => {
-  e.preventDefault();
-  toggleImpactDetails();
-});
 document.getElementById("sensitivitySlider").addEventListener("input", onSensitivitySlide);
 
 document.querySelectorAll(".fleet-filter-btn").forEach(btn => {
@@ -3327,6 +3324,380 @@ loadModelValidation();
 loadSensitivityScan();
 setInterval(refreshFleet, 15000);
 setInterval(pollLiveFeed, 1800);
+
+// ===========================================================================
+// PS3 part 2 -- delivering the detection to the person who has to act on it
+// ===========================================================================
+//
+// Part 1 produces a number. Everything in this section is about the gap
+// between that number and a decision: who is reading it, what the words
+// mean, how long they have, and what they hand the technician.
+//
+// None of it computes a risk level, and none of it can change one. Strip
+// this whole block out and the dashboard still detects exactly what it
+// detected before -- it just stops explaining itself.
+
+function escapeHtml(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+// --- Role switch -----------------------------------------------------------
+//
+// The FAQ names two readers the analyst-shaped dashboard was not serving: the
+// operator making a split-second call, and the engineer who has never seen
+// these parameters. Rather than three pages to keep in sync, one attribute on
+// <body> decides what is visible -- the data, endpoints and scoring are
+// identical in every role.
+
+const ROLES = {
+  operator: "Triage view — what to pull, and in what order.",
+  engineer: "Adds the why — signals, decision trace, model behaviour.",
+  analyst:  "Everything, including validation and threshold tuning.",
+};
+
+function setRole(role) {
+  if (!ROLES[role]) role = "analyst";
+  document.body.dataset.role = role;
+  document.querySelectorAll(".role-btn").forEach(b =>
+    b.setAttribute("aria-pressed", String(b.dataset.role === role)));
+  const hint = document.getElementById("roleHint");
+  if (hint) hint.textContent = ROLES[role];
+  try { localStorage.setItem("railpulse.role", role); } catch (e) { /* private mode */ }
+  renderChatChips();
+  // The open unit panel changes shape by role, so re-render it in place.
+  if (selectedUnit && unitDetailCache) renderUnitDetail(unitDetailCache);
+}
+
+function initRole() {
+  let saved = "analyst";
+  try { saved = localStorage.getItem("railpulse.role") || "analyst"; } catch (e) { /* ignore */ }
+  document.querySelectorAll(".role-btn").forEach(b =>
+    b.addEventListener("click", () => setRole(b.dataset.role)));
+  setRole(saved);
+}
+
+// --- Glossary --------------------------------------------------------------
+//
+// Every term below is one a new engineer would have to go and look up. Wrap
+// it once, at the point of use, instead of exiling the definitions to a
+// legend nobody scrolls to.
+
+const GLOSSARY = {
+  "Health Index":
+    "A 0-100 restatement of reconstruction error, where 100 is healthy. Unlike the raw error this IS comparable across doors, bogies and cars, which is why the dashboard leads with it.",
+  "Reconstruction error":
+    "How far a unit's recent behaviour sits from the pattern the model learned on healthy units. Unitless, and NOT comparable between subsystems — each autoencoder is calibrated separately.",
+  "sigma":
+    "Standard deviations from the healthy fleet average for that signal, signed so positive always means worse. The healthy pool spans every duty state, so 1-2 sigma is ordinary variation.",
+  "Lead time":
+    "How far ahead of a logged fault the system first raised a sustained alert. Measured on the injected ground-truth faults, not a live guarantee.",
+  "Sustained":
+    "The alert held for at least 70% of the remaining readings before the fault. A single isolated spike does not count — that is noise, not early warning.",
+  "Baseline z-score":
+    "The simple rolling-average check the autoencoder is measured against: how far a signal sits from its own recent history.",
+  "Response window":
+    "A service-policy target for how quickly a unit at this risk level should be looked at. It is a maintenance rule, not a model prediction of time-to-failure.",
+};
+
+function gloss(term, display) {
+  const tip = GLOSSARY[term];
+  if (!tip) return escapeHtml(display || term);
+  return `<span class="gloss" tabindex="0" data-tip="${escapeHtml(tip)}">${escapeHtml(display || term)}</span>`;
+}
+
+// --- Plain-language headline ----------------------------------------------
+//
+// The sentence goes above the numbers, never instead of them. It is built
+// from the unit's own primary_signal block, so it names the actual channel
+// and the actual deviation rather than a generic phrase.
+
+function plainLanguageSummary(d) {
+  const L = d.latest;
+  const risk = L.risk_level;
+  const p = L.primary_signal;
+
+  if (risk === "Normal" || !p || p.deviation_sigma == null) {
+    const hi = L.health_index != null ? L.health_index.toFixed(0) : "–";
+    return risk === "Normal"
+      ? `<b>${escapeHtml(d.unit_id)} is behaving normally.</b> ${gloss("Health Index")} ${hi} out of 100 — no signal is far enough from the healthy fleet to flag.`
+      : `<b>${escapeHtml(d.unit_id)} is rated ${escapeHtml(risk)}.</b> ${gloss("Health Index")} ${hi} out of 100, driven by the combination of signals rather than any single channel.`;
+  }
+
+  const dev = Math.abs(p.deviation_sigma);
+  const direction = p.worse === "low" ? "below" : "above";
+  const value = fmtWithUnit(p.value, p.unit);
+  const subsystem = d.subsystem_type;
+  return `<b>${escapeHtml(p.label)} on ${escapeHtml(d.unit_id)} is reading ${escapeHtml(value)}</b> — ${dev.toFixed(1)} ${gloss("sigma", "σ")} ${direction} the healthy average for a ${escapeHtml(subsystem)}. The system rates this <b>${escapeHtml(risk)}</b>.`;
+}
+
+// --- Response window -------------------------------------------------------
+//
+// Operators think in deadlines, not statistics. This converts the risk level
+// into one -- but the window is a SERVICE POLICY, not a prediction, and the
+// caption says so in those words. Where the unit is one of the validated
+// ground-truth faults, its real measured lead time is shown underneath as a
+// separate, clearly-attributed line.
+
+const RESPONSE_WINDOW = {
+  Critical: { num: "Now",  unit: "",      cls: "now",     text: "Withdraw at the next opportunity and inspect before the unit returns to service." },
+  Warning:  { num: "3",    unit: "days",  cls: "soon",    text: "Schedule an inspection within the next three days of service." },
+  Caution:  { num: "7",    unit: "days",  cls: "soon",    text: "Fold into the next weekly maintenance slot; no need to break the schedule." },
+  Normal:   { num: "—",    unit: "",      cls: "routine", text: "Nothing outstanding. Continue on the routine maintenance interval." },
+};
+
+function buildResponseWindowHtml(d) {
+  const w = RESPONSE_WINDOW[d.latest.risk_level] || RESPONSE_WINDOW.Normal;
+  const kf = d.known_fault;
+  const validated = (kf && kf.lead_time_days != null)
+    ? `<br><span style="opacity:0.85;">On this unit the system raised a sustained alert <b>${kf.lead_time_days.toFixed(1)} days</b> before the logged fault — measured, not projected.</span>`
+    : "";
+  return `
+    <div class="act-by ${w.cls}">
+      <div class="act-by-clock">
+        <span class="act-by-num">${escapeHtml(w.num)}</span>
+        ${w.unit ? `<span class="act-by-unit">${escapeHtml(w.unit)}</span>` : ""}
+      </div>
+      <div class="act-by-text">
+        <b>${gloss("Response window")}</b> — ${escapeHtml(w.text)}${validated}
+      </div>
+    </div>`;
+}
+
+// --- Printable work card ---------------------------------------------------
+//
+// The handover artefact. An operator who has decided to act needs to give a
+// technician something that survives leaving the screen, and that carries the
+// provenance with it -- including, loudly, that these are synthetic figures.
+
+function buildWorkCard(d) {
+  const L = d.latest;
+  const w = RESPONSE_WINDOW[L.risk_level] || RESPONSE_WINDOW.Normal;
+  const signals = (L.signal_detail || []).filter(s => s.modelled);
+  const rows = signals.map(s => `
+      <tr>
+        <td>${escapeHtml(s.label)}</td>
+        <td>${escapeHtml(fmtWithUnit(s.value, s.unit))}</td>
+        <td>${s.deviation_sigma != null ? (s.deviation_sigma >= 0 ? "+" : "") + s.deviation_sigma.toFixed(1) + "&sigma;" : "context"}</td>
+      </tr>`).join("");
+
+  const kf = d.known_fault;
+  const leadLine = (kf && kf.lead_time_days != null)
+    ? `<p>Validated warning on this unit: a sustained alert was raised ${kf.lead_time_days.toFixed(1)} days before the logged fault.</p>`
+    : "";
+
+  document.getElementById("workCard").innerHTML = `
+    <h1>Maintenance Work Card — ${escapeHtml(d.unit_id)}</h1>
+    <div class="wc-sub">
+      RAILPULSE predictive detection · ${escapeHtml(d.subsystem_type)} · ${escapeHtml(d.train_id)}
+      · reading as of ${escapeHtml(L.timestamp)} · printed ${escapeHtml(new Date().toLocaleString())}
+    </div>
+
+    <div class="wc-band">
+      <div class="wc-lvl">${escapeHtml(L.risk_level)}</div>
+      <div>Response window: ${escapeHtml(w.num)} ${escapeHtml(w.unit)} — ${escapeHtml(w.text)}</div>
+      <div>Health Index ${L.health_index != null ? L.health_index.toFixed(0) : "–"} / 100
+           · reconstruction error ${L.ae_recon_error != null ? L.ae_recon_error.toFixed(2) : "–"}
+           (Critical cut point ${L.thresholds ? L.thresholds.Critical : "–"})</div>
+    </div>
+
+    <div class="wc-block">
+      <p class="wc-sec">What the system saw</p>
+      <p>${plainLanguageSummary(d).replace(/<[^>]+>/g, "")}</p>
+      ${leadLine}
+    </div>
+
+    <p class="wc-sec">Signal readings at detection</p>
+    <table>
+      <thead><tr><th>Signal</th><th>Reading</th><th>vs healthy fleet</th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="3">No modelled signals recorded.</td></tr>`}</tbody>
+    </table>
+
+    <div class="wc-block">
+      <p class="wc-sec">Recommended action</p>
+      <p>${escapeHtml(d.recommended_action || "—")}</p>
+      <p><i>This is a statistical deviation from healthy behaviour, not a confirmed fault.
+      Any mechanical cause below must be established by inspection.</i></p>
+    </div>
+
+    <div class="wc-block">
+      <p class="wc-sec">Inspection findings</p>
+      <p style="min-height:70px; border:1px solid #bbb;"></p>
+    </div>
+
+    <div class="wc-sign">
+      <div>Inspected by / date</div>
+      <div>Outcome / work order ref</div>
+    </div>
+
+    <div class="wc-foot">
+      Generated from a SYNTHETIC placeholder dataset — the real LTA dataset is pending.
+      Figures on this card are not measurements of a real vehicle.
+    </div>`;
+}
+
+function printWorkCard(unitId) {
+  if (!unitDetailCache || unitDetailCache.unit_id !== unitId) return;
+  buildWorkCard(unitDetailCache);
+  window.print();
+}
+
+// --- Fleet Assistant -------------------------------------------------------
+//
+// The conversational translation layer. Posts to this project's own /chat
+// route, which holds the Anthropic and Exa keys server-side and assembles the
+// grounding context from the very endpoints this page renders -- so an answer
+// can never disagree with what is on screen. The browser never sees a key and
+// never calls a provider directly.
+
+let chatHistory = [];       // [{role, content}] -- this session only, never persisted
+let chatBusy = false;
+
+const CHAT_CHIPS = {
+  operator: [
+    "Which unit should I pull first, and why?",
+    "Is anything safe to leave until tomorrow?",
+    "What do I tell the depot about this unit?",
+  ],
+  engineer: [
+    "Why was this unit flagged?",
+    "What does reconstruction error actually mean?",
+    "Has this failure mode been documented before?",
+  ],
+  analyst: [
+    "How does the autoencoder compare with the z-score baseline?",
+    "Which signals drive this unit's score?",
+    "What lead time has the system actually demonstrated?",
+  ],
+};
+
+function chatEl(id) { return document.getElementById(id); }
+
+function renderChatChips() {
+  const wrap = chatEl("chatChips");
+  if (!wrap) return;
+  // Chips disappear once the conversation is underway -- they are a way in,
+  // not a permanent menu.
+  if (chatHistory.length) { wrap.innerHTML = ""; return; }
+  const role = document.body.dataset.role || "analyst";
+  wrap.innerHTML = (CHAT_CHIPS[role] || CHAT_CHIPS.analyst)
+    .map(q => `<button class="chat-chip">${escapeHtml(q)}</button>`).join("");
+  wrap.querySelectorAll(".chat-chip").forEach(b =>
+    b.addEventListener("click", () => { chatEl("chatInput").value = b.textContent; sendChat(); }));
+}
+
+function updateChatScope() {
+  const el = chatEl("chatScope");
+  if (!el) return;
+  el.innerHTML = selectedUnit
+    ? `Focused on <b>${escapeHtml(selectedUnit)}</b> — questions default to this unit.`
+    : `Asking about the whole fleet — select a unit to focus the conversation.`;
+}
+
+function appendChat(role, html, cls) {
+  const log = chatEl("chatLog");
+  const div = document.createElement("div");
+  div.className = `chat-msg ${role}${cls ? " " + cls : ""}`;
+  div.innerHTML = html;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+  return div;
+}
+
+async function sendChat() {
+  if (chatBusy) return;
+  const input = chatEl("chatInput");
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.value = "";
+  input.style.height = "auto";
+  chatHistory.push({ role: "user", content: text });
+  appendChat("user", escapeHtml(text));
+  renderChatChips();
+
+  chatBusy = true;
+  chatEl("chatSend").disabled = true;
+  const typing = appendChat("bot", `<span></span><span></span><span></span>`);
+  typing.className = "chat-typing";
+
+  try {
+    const res = await fetch(`${API_BASE}/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: chatHistory, unit_id: selectedUnit || null }),
+    });
+    const data = await res.json();
+    typing.remove();
+
+    if (data.status !== "ok") {
+      appendChat("bot", `The assistant is unavailable right now.${data.reason ? `<span class="cm-src">${escapeHtml(data.reason)}</span>` : ""}`, "err");
+      // A failed turn is dropped from the history so the next question is not
+      // sent with a dangling user message the model never answered.
+      chatHistory.pop();
+      return;
+    }
+
+    chatHistory.push({ role: "assistant", content: data.reply });
+    const sources = (data.sources || []).length
+      ? `<span class="cm-src">Literature (describes other equipment, not this unit):<br>${
+          data.sources.map(s => `<a href="${escapeHtml(s.url)}" target="_blank" rel="noopener">${escapeHtml(s.title)}</a>`).join("<br>")
+        }</span>`
+      : "";
+    appendChat("bot", escapeHtml(data.reply) + sources);
+  } catch (e) {
+    typing.remove();
+    chatHistory.pop();
+    appendChat("bot", "Could not reach the API. Is it running on port 8000?", "err");
+    console.error(e);
+  } finally {
+    chatBusy = false;
+    chatEl("chatSend").disabled = false;
+  }
+}
+
+function initChat() {
+  const fab = chatEl("chatFab"), dock = chatEl("chatDock");
+  if (!fab || !dock) return;
+
+  const open = () => {
+    dock.classList.add("open");
+    fab.hidden = true;
+    updateChatScope();
+    renderChatChips();
+    if (!chatHistory.length && !chatEl("chatLog").children.length) {
+      appendChat("bot", "Ask me about any unit, any number on this page, or what to do first. I read the same pipeline output the dashboard does.");
+    }
+    chatEl("chatInput").focus();
+  };
+  const close = () => { dock.classList.remove("open"); fab.hidden = false; };
+
+  fab.addEventListener("click", open);
+  chatEl("chatClose").addEventListener("click", close);
+  chatEl("chatSend").addEventListener("click", sendChat);
+
+  const input = chatEl("chatInput");
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChat(); }
+  });
+  input.addEventListener("input", () => {
+    input.style.height = "auto";
+    input.style.height = Math.min(input.scrollHeight, 96) + "px";
+  });
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && dock.classList.contains("open")) close();
+  });
+
+  apiGet("/chat-status").then(s => {
+    const chip = chatEl("chatModelChip");
+    if (!s.api_key_configured) { chip.textContent = "no API key"; return; }
+    chip.textContent = s.literature_search ? "Claude + Exa" : "Claude";
+  }).catch(() => { chatEl("chatModelChip").textContent = "offline"; });
+}
+
+initRole();
+initChat();
 </script>
 
 </body>

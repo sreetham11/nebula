@@ -58,8 +58,7 @@ import ingest  # noqa: E402 -- CSV upload scored against the frozen trained mode
 
 import copilot  # noqa: E402 -- Maintenance Copilot (server-side Anthropic API call; key never leaves the server)
 import research  # noqa: E402 -- Investigate Fault (server-side Exa search; key never leaves the server)
-import logistics  # noqa: E402 -- Maintenance Logistics (server-side Google Routes; key never leaves the server)
-import locations_config  # noqa: E402 -- the single place the fabricated demo coordinates live
+import chat  # noqa: E402 -- Fleet Assistant chatbox (Claude + Exa, keys stay server-side)
 
 app = FastAPI(title="NEBULA X Fault Detection API", version="0.1.0")
 app.add_middleware(
@@ -238,7 +237,6 @@ def startup():
     # api/prefetch_copilot.py so they survive a restart.
     copilot.load_cache()
     research.load_cache()
-    logistics.load_cache()
     _load_real_models()
 
 
@@ -1015,55 +1013,6 @@ def research_status():
         "search_type": research.EXA_SEARCH_TYPE,
         "cached_units": research.cache_entries(),
     }
-
-
-# ---------------------------------------------------------------------------
-# Maintenance Logistics (Google Routes)
-# ---------------------------------------------------------------------------
-#
-# *** Routes between FABRICATED coordinates. *** The synthetic dataset has no
-# geolocation at all; api/locations_config.py invents train positions and
-# depot sites, and is the only place that does. Every response carries its
-# DATA_NOTICE, which the dashboard renders as a banner, not a footnote.
-#
-# Shown only for units the pipeline escalated to Warning/Critical --
-# dispatching a healthy unit to a depot would be a recommendation the
-# detection system never made.
-#
-# The map image is proxied through /logistics/{unit_id}/map so the Static
-# Maps URL (and the API key in it) never reaches the browser.
-
-@app.get("/logistics/{unit_id}")
-def logistics_plan(unit_id: str, refresh: bool = False):
-    unit = unit_detail(unit_id, history_points=1)  # 404s for an unknown unit
-    return logistics.plan(
-        unit_id,
-        train_id=unit["train_id"],
-        risk_level=unit["latest"]["risk_level"],
-        force_refresh=refresh,
-    )
-
-
-@app.get("/logistics/{unit_id}/map")
-def logistics_map(unit_id: str):
-    """Static route image, fetched server-side so the key stays off the page."""
-    png = logistics.map_image(unit_id)
-    if png is None:
-        raise HTTPException(404, "no route map available for this unit")
-    return Response(content=png, media_type="image/png",
-                    headers={"Cache-Control": "public, max-age=86400"})
-
-
-@app.get("/logistics-status")
-def logistics_status():
-    return {
-        "api_key_configured": logistics.api_key_present(),
-        "depots": [{"id": d["id"], "name": d["name"]} for d in locations_config.DEPOTS],
-        "data_notice": locations_config.DATA_NOTICE,
-        "cached_units": logistics.cache_entries(),
-    }
-
-
 # ---------------------------------------------------------------------------
 # Real-data models (trained on the actual PS3 Door / Rail_Corrugation data)
 # ---------------------------------------------------------------------------
@@ -1114,3 +1063,99 @@ def predict_rail_real(file: UploadFile = File(...)):
     except real_inference.InputError as e:
         raise HTTPException(422, str(e))
     return {"file_id": file.filename, **result}
+
+
+# ---------------------------------------------------------------------------
+# Fleet Assistant (chat)
+# ---------------------------------------------------------------------------
+#
+# The conversational half of the answer to "how does a person who is not a
+# data analyst use any of this". Same containment as the copilot: the browser
+# posts a transcript here, this process holds the keys, and nothing the
+# assistant does can write to the fleet or change a risk level.
+#
+# The tools it may call are wired to the very same functions that serve the
+# dashboard -- unit_detail() and fleet_status() below -- so an answer can
+# never disagree with what is on screen.
+
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+
+class ChatRequest(BaseModel):
+    messages: List[ChatMessage]
+    unit_id: Optional[str] = None
+
+
+def _chat_get_unit(unit_id: str) -> Dict:
+    """Tool backing for get_unit. Unknown ids come back as a KeyError so
+    chat.py can turn them into a plain 'no such unit' answer rather than a
+    500."""
+    try:
+        return unit_detail(unit_id, history_points=1)
+    except HTTPException:
+        raise KeyError(unit_id)
+
+
+def _chat_rank_fleet(limit: int, risk_level: Optional[str] = None) -> List[Dict]:
+    """Tool backing for rank_fleet: worst Health Index first, optionally
+    filtered to one risk level."""
+    rows = fleet_status()["units"]
+    if risk_level:
+        wanted = str(risk_level).strip().lower()
+        rows = [r for r in rows if str(r.get("risk_level", "")).lower() == wanted]
+    rows = sorted(rows, key=lambda r: r.get("health_index") if r.get("health_index") is not None else 101)
+    return [
+        {
+            "unit_id": r.get("unit_id"),
+            "subsystem_type": r.get("subsystem_type"),
+            "train_id": r.get("train_id"),
+            "risk_level": r.get("risk_level"),
+            "health_index": r.get("health_index"),
+            "ae_recon_error": r.get("ae_recon_error"),
+        }
+        for r in rows[:max(1, min(int(limit), 25))]
+    ]
+
+
+@app.post("/chat")
+def chat_turn(req: ChatRequest):
+    """
+    One assistant turn. Returns status:"unavailable" with a reason rather than
+    an error status on every failure path, so a missing key or a provider
+    outage renders as a message in the chat window instead of looking like the
+    dashboard itself is broken.
+    """
+    unit = None
+    if req.unit_id:
+        try:
+            unit = unit_detail(req.unit_id, history_points=1)
+        except HTTPException:
+            unit = None  # a stale selection in the browser is not an error
+
+    try:
+        validation = validation_summary()
+    except HTTPException:
+        validation = None  # pipeline/validate.py hasn't been run
+
+    context = chat.build_context(
+        fleet=fleet_status()["units"],
+        validation=validation,
+        unit=unit,
+    )
+    return chat.answer(
+        messages=[m.model_dump() for m in req.messages],
+        context=context,
+        get_unit=_chat_get_unit,
+        rank_fleet=_chat_rank_fleet,
+    )
+
+
+@app.get("/chat-status")
+def chat_status():
+    return {
+        "api_key_configured": chat.anthropic_key_present(),
+        "model": chat.MODEL,
+        "literature_search": chat.exa_key_present(),
+    }

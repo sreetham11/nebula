@@ -161,6 +161,91 @@ Two things to know about the artifacts themselves:
   Both load correctly and are checked against their expected feature names at
   startup, but retraining under the pinned version would remove the warning.
 
+## Reading it as an operator, not an analyst
+
+Part 1 of PS3 produces a number. This section is the other half: getting that
+number to the person who has to act on it. Four things carry it, and none of
+them computes or can change a risk level -- delete the lot and the detection
+is byte-identical, it just stops explaining itself.
+
+**A role switch, top right.** One page, three readers, one attribute on
+`<body>`:
+
+| Role | Sees | Rationale |
+|------|------|-----------|
+| **Operator** | Triage, digital twin, unit detail, work orders, live feed | Needs what to pull and in what order. Reconstruction error, the cost model and the percentile slider are not decisions they make. |
+| **Engineer** | The above plus decision trace, signal table, copilot, literature search, model validation | Needs the *why*, and the vocabulary explained. |
+| **Analyst** | Everything, including the business case and sensitivity tuning | The Part 1 view. |
+
+The choice is remembered per browser. Every role reads the same endpoints and
+the same scores -- this hides panels, it does not compute anything different.
+
+**The sentence before the number.** Unit detail and the priority cards now
+lead with a plain reading built from that unit's own `primary_signal` --
+*"Brake capacity on BOGIE_04_1 is reading 79.8%, 33.3σ below the healthy
+average for a bogie"* -- with the Health Index and reconstruction error
+directly underneath. The numbers are never removed, only demoted.
+
+**A response window instead of a statistic.** Critical reads *now*, Warning
+*3 days*, Caution *7 days*. This is a **service policy** keyed off the risk
+level, not a model prediction of time-to-failure, and it is captioned as such;
+where a unit is one of the validated ground-truth faults, its actual measured
+lead time appears underneath as a separate, attributed line.
+
+**A glossary on hover.** Every term a new engineer would have to look up --
+Health Index, reconstruction error, σ, lead time, sustained, baseline
+z-score -- carries its definition at the point of use.
+
+**A printable work card.** *Print work card* in unit detail produces a
+one-page handover: risk level, response window, the plain reading, the signal
+table at detection, the recommended action, blank inspection findings and
+signature lines -- and the synthetic-data notice, so provenance survives the
+page leaving the screen.
+
+## Fleet Assistant (chatbox -- needs the Anthropic key, Exa optional)
+
+The floating button on every view. Ask in your own words: *"which unit do I
+pull first?"*, *"what does reconstruction error actually mean?"*, *"has this
+failure been documented before?"* The suggested openers change with the
+selected role, and the selected unit scopes the conversation.
+
+`POST /chat`, handled by `api/chat.py`. One Claude call per turn, with a
+bounded tool loop (at most four steps):
+
+| Tool | Does |
+|------|------|
+| `get_unit` | Reads `/unit/{id}` — the exact function serving the dashboard |
+| `rank_fleet` | Orders `/fleet-status` worst-first, optionally by risk level |
+| `search_literature` | One Exa search, same endpoint and exclusion list as **Investigate Fault** |
+
+Three constraints, enforced in the prompt and by the wiring:
+
+1. **It cannot invent a number.** Everything it sees is the grounding context
+   assembled from `/fleet-status`, `/validation-summary` and `/unit/{id}`, or
+   a tool result from those same functions. Asked about something the data
+   does not carry, it says so rather than estimating.
+2. **It cannot change a risk level.** There is no write path.
+3. **It never states a cause as fact.** The pipeline detects a statistical
+   deviation; a mechanical explanation is a hypothesis for a technician to
+   confirm, and the system prompt requires it to be worded that way.
+
+Literature results are labelled as describing *other* equipment — they never
+confirm anything about this fleet.
+
+```bash
+# api/.env -- ANTHROPIC_API_KEY is required, EXA_API_KEY only for the
+# literature tool (without it the assistant still answers, minus search)
+ANTHROPIC_API_KEY=...
+EXA_API_KEY=...
+```
+
+Same containment as the copilot: the browser holds no key and never calls
+Anthropic or Exa. `GET /chat-status` reports which keys are configured. Every
+failure path returns `status:"unavailable"` with a reason, so a missing key or
+a provider outage renders as a message in the chat window rather than looking
+like a broken dashboard. Transcripts live in the page for the session only --
+nothing is persisted, server-side or in the browser.
+
 ## Maintenance Copilot (optional, needs an Anthropic API key)
 
 The Unit Detail panel has a **Maintenance Copilot** card that turns a unit's
@@ -214,48 +299,6 @@ bullet is attributed to the domain it came from. The caption under the results
 prove, or diagnose a fault on this unit") is a fixed server-side constant that
 no API response can override or omit.
 
-## Maintenance Logistics (optional, needs a Google Maps API key)
-
-Units the pipeline has escalated to **Warning or Critical** get a depot-routing
-panel: recommended depot, real road distance, estimated travel time, and a
-route map. Normal/Caution units don't show the section at all -- dispatching a
-healthy unit would be a recommendation the detection system never made, and the
-API enforces that gate too, so the panel can't be summoned by calling the route
-directly.
-
-> ### DEMO / SIMULATED LOCATIONS
->
-> **The synthetic dataset contains no geolocation data of any kind** -- no GPS
-> trace, no depot assignment, no position field. `api/locations_config.py`
-> invents it: four real Singapore MRT depot sites (used so routing looks
-> plausible on a map) and a fixed made-up position per demo train. A train's
-> position never changes and no sensor feeds it.
->
-> The distances and ETAs are **genuine Google Routes API results** -- computed
-> between **invented points**. The dashboard renders this notice as a bold
-> banner across the top of the panel, not a footnote. If a real deployment
-> supplies actual positions, `locations_config.py` is the only file to replace.
-
-```bash
-# add to api/.env, then restart the API
-GOOGLE_MAPS_API_KEY=...
-```
-
-Requires the **Routes API** enabled on the key, plus the **Maps Static API**
-for the route image. Without the latter the panel still renders fully, just
-without the map.
-
-**Key containment.** The map image is proxied through this service's own
-`/logistics/{unit_id}/map` endpoint rather than emitting a Static Maps URL into
-an `<img src>` -- that would publish the key to every viewer. The browser never
-sees a Google URL.
-
-**Cost shape.** Two Routes calls on a unit's first view (one
-`computeRouteMatrix` to rank shortlisted depots by real drive time, one
-`computeRoutes` for the polyline), then cached indefinitely in
-`api/logistics_cache.json` -- the inputs are static constants, so a re-call
-could only return the same answer.
-
 ### Before a live demo: pre-warm the cache
 
 The first click on a unit makes a live call. Pre-generate the handful you plan
@@ -298,8 +341,7 @@ models/         trained model/scaler/threshold artifacts (git-ignored),
 validation_outputs/  per-fault plots + lead-time summary
 api/            FastAPI service + real_inference.py (real-data models)
                 + copilot.py (Claude) + research.py (Exa)
-                + logistics.py (Google Routes) + locations_config.py
-                (ALL fabricated demo coordinates live here)
+                + chat.py (Fleet Assistant chatbox: Claude + Exa tool)
                 + prefetch_copilot.py (demo cache warm-up)
 dashboard/      static HTML/JS/Chart.js dashboard
 ASSUMPTIONS.md  every judgment call, for review
