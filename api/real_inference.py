@@ -17,6 +17,7 @@ import torch  # noqa: E402 -- must precede numpy/pandas
 import torch.nn as nn  # noqa: E402
 
 import os
+import re
 import pickle
 import struct
 import threading
@@ -62,6 +63,48 @@ class RealDoorAutoencoder(nn.Module):
 
 class InputError(ValueError):
     """Bad uploaded data (maps to HTTP 422)."""
+
+
+def _norm_header(name):
+    return re.sub(r"\s+", "", str(name).replace("\ufeff", "")).lower()
+
+
+def align_columns(df, expected):
+    """
+    Renames columns that differ from an expected name only in whitespace,
+    case or a stray BOM -- e.g. the header doc's "Motor current (mA)" for the
+    file's "Motor current(mA)" -- so a formatting difference is not reported
+    as if the data were absent. Anything else still has to match exactly.
+    """
+    by_norm = {}
+    for c in df.columns:
+        by_norm.setdefault(_norm_header(c), c)
+    rename = {}
+    for e in expected:
+        if e in df.columns:
+            continue
+        src = by_norm.get(_norm_header(e))
+        if src is not None and src not in expected:
+            rename[src] = e
+    return df.rename(columns=rename) if rename else df
+
+
+def _found_summary(df):
+    cols = [str(c) for c in df.columns]
+    shown = ", ".join(repr(c[:50]) for c in cols[:6])
+    more = f", … ({len(cols)} in total)" if len(cols) > 6 else ""
+    return f"the file has {len(cols)} column{'s' if len(cols) != 1 else ''}: {shown}{more}"
+
+
+def _diagnosis(df, other_cols, other_name):
+    """One sentence pointing at the likely cause of an all-columns-missing file."""
+    overlap = sum(1 for c in other_cols if c in df.columns)
+    if overlap >= max(3, len(other_cols) // 2):
+        return f" This looks like a {other_name} file — pick the {other_name} option instead."
+    if df.shape[1] <= 2:
+        return (" That is too few columns for this dataset: the file is probably not comma-separated, "
+                "or has an extra line above the header row (the first line must be the column names).")
+    return " Check that this is the right file for the selected dataset."
 
 
 def load_real_models(models_dir):
@@ -127,9 +170,13 @@ def format_door_datetime(ts):
 
 
 def predict_door(df, models):
+    df = align_columns(df, ["Datetime"] + DOOR_SIGNAL_COLS)
     missing = [c for c in ["Datetime"] + DOOR_SIGNAL_COLS if c not in df.columns]
     if missing:
-        raise InputError(f"missing required columns: {missing}")
+        raise InputError(
+            f"missing required columns: {missing}. Found: {_found_summary(df)}."
+            + _diagnosis(df, models["rail_columns"], "Rail Corrugation")
+        )
     if len(df) == 0:
         raise InputError("CSV has no rows")
 
@@ -183,11 +230,13 @@ def predict_door(df, models):
 
 def predict_rail(df, models):
     cols = models["rail_columns"]
+    df = align_columns(df, cols)
     missing = [c for c in cols if c not in df.columns]
     if missing:
         raise InputError(
             f"expected the {len(cols)} Rail_Corrugation columns; missing {len(missing)}, "
-            f"e.g. {missing[:3]}"
+            f"e.g. {missing[:3]}. Found: {_found_summary(df)}."
+            + _diagnosis(df, DOOR_SIGNAL_COLS + ["Datetime"], "Door")
         )
     if len(df) < 2:
         raise InputError("CSV needs a full recording (the dataset uses 10,000 rows per file)")

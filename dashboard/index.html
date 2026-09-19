@@ -99,8 +99,9 @@
     font-size: 26px;
     font-weight: 700;
     letter-spacing: 0.3px;
+    text-transform: uppercase;
     margin: 0;
-    color: var(--accent);
+    color: #FFFFFF;
     line-height: 1.1;
   }
   .brand-subtitle {
@@ -564,14 +565,28 @@
   .lt-days-num { font-family: var(--font-heading); font-size: 17px; font-weight: 700; color: var(--accent); }
   .lt-days-unit { font-family: var(--font-body); font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.3px; }
 
-  #unitChartBox { height: 200px; margin-top: var(--sp-1); }
+  #unitChartBox { height: 220px; }
+
+  /* The investigative tail of Unit Detail (trace, Copilot, research, trend)
+     sits in its own full-width row under the twin, so it flows into columns
+     instead of stacking in the narrow summary panel beside the twin. */
+  .unit-trace-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--sp-3);
+    align-items: start;
+  }
+  .ut-h {
+    color: var(--text-dim); font-size: 10.5px; text-transform: uppercase;
+    letter-spacing: 0.4px; margin-bottom: var(--sp-1);
+  }
 
   footer { text-align: center; color: var(--text-dim); font-size: 11px; padding: var(--sp-3); }
 
   /* Business impact calculator -- compact summary by default (secondary to
      Fleet Health / Active Anomalies), full breakdown expands on click */
-  .impact-panel { grid-column: 1 / -1; padding: 14px var(--sp-3); }
-  .impact-caption { font-size: 10.5px; color: var(--text-dim); margin-top: var(--sp-2); line-height: 1.5; }
+  .impact-panel { grid-column: 1 / -1; padding: var(--sp-4); }
+  .impact-caption { font-size: 11px; color: var(--text-dim); margin-top: var(--sp-4); line-height: 1.6; }
 
   /* Detection sensitivity slider */
   .sensitivity-panel { margin-bottom: var(--sp-3); }
@@ -878,6 +893,70 @@
   .upload-table-wrap td { padding: 7px 10px; border-bottom: 1px solid rgba(var(--border-rgb), 0.35); }
   .upload-table-wrap tr:last-child td { border-bottom: none; }
 
+  /* --- PS3 real-data mode -----------------------------------------------
+     Additive to the synthetic-fleet upload above: a data-source selector,
+     and results that read as plain predictions (no Health Index or sigma
+     deviations -- those belong to the synthetic models). Elements are
+     tagged syn-only / real-only / real-door / real-rail and shown by the
+     panel's data-mode and data-real attributes. */
+  .upload-mode { display: flex; flex-direction: column; gap: 10px; margin-bottom: var(--sp-3); }
+  .upload-mode-row { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+  .upload-mode-label { width: 62px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 700; color: var(--text-dim); }
+  .upload-mode-note { font-size: 11.5px; color: var(--text-dim); }
+  .upload-seg { display: inline-flex; border: 1px solid var(--border); border-radius: var(--radius-pill); overflow: hidden; }
+  .upload-seg-btn { background: transparent; border: none; color: var(--text-dim); font-family: var(--font-body); font-size: 11.5px; font-weight: 600; padding: 7px 16px; cursor: pointer; transition: background 0.15s ease, color 0.15s ease; }
+  .upload-seg-btn + .upload-seg-btn { border-left: 1px solid var(--border); }
+  .upload-seg-btn:hover { color: var(--text); }
+  .upload-seg-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .upload-seg-btn.active { background: rgba(var(--accent-rgb), 0.16); color: var(--accent); }
+
+  #uploadPanel .real-only, #uploadPanel .real-door, #uploadPanel .real-rail { display: none; }
+  #uploadPanel[data-mode="real"] .syn-only { display: none; }
+  #uploadPanel[data-mode="real"] .upload-mode-row.real-only { display: flex; }
+  #uploadPanel[data-mode="real"][data-real="door"] .real-door,
+  #uploadPanel[data-mode="real"][data-real="rail"] .real-rail { display: block; }
+
+  .upload-file-chip {
+    display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px 10px;
+    max-width: 100%;
+    background: var(--panel-alt); border: 1px solid var(--border); border-radius: var(--radius-md);
+    padding: 8px 14px; margin-bottom: var(--sp-2); font-size: 12px; color: var(--text-dim);
+  }
+  .upload-file-chip svg { width: 15px; height: 15px; color: var(--accent); flex-shrink: 0; }
+  .upload-file-chip .fname { color: var(--text); font-weight: 600; word-break: break-all; }
+  .upload-file-chip .sep { opacity: 0.5; }
+  .upload-file-chip .warn { color: var(--caution); }
+  .upload-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+  .upload-download {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: rgba(var(--accent-rgb), 0.14); border: 1px solid rgba(var(--accent-rgb), 0.45); color: var(--accent);
+    border-radius: var(--radius-md); padding: 7px 14px; font-size: 11.5px; font-weight: 600; cursor: pointer;
+  }
+  .upload-download:hover { background: rgba(var(--accent-rgb), 0.24); }
+  .upload-download svg { width: 14px; height: 14px; }
+  .upload-table-wrap tr.row-abnormal td { background: rgba(var(--critical-rgb), 0.07); }
+  .upload-table-wrap tr.row-abnormal td:first-child { box-shadow: inset 3px 0 0 var(--critical); }
+
+  .real-pred-card {
+    padding: var(--sp-3);
+    border-radius: var(--radius-md);
+    background: var(--panel-alt);
+    border: 1px solid var(--border);
+    margin-bottom: var(--sp-2);
+  }
+  .real-pred-card.fault { border-color: rgba(var(--critical-rgb), 0.45); background: rgba(var(--critical-rgb), 0.06); }
+  .real-pred-k { color: var(--text-dim); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 10px; }
+  .real-pred-v { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .real-pred-v .badge { font-size: 20px; padding: 8px 20px; }
+  .real-pred-v .conf { font-size: 12.5px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .real-pred-explain { margin-top: 12px; font-size: 12.5px; line-height: 1.55; color: var(--text); }
+  .real-prob-row { display: flex; align-items: flex-start; gap: var(--sp-1); }
+  .real-prob-row .pct { margin-left: auto; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 12.5px; }
+  .real-prob-bar { height: 4px; border-radius: 2px; background: rgba(var(--border-rgb), 0.5); margin-top: 6px; overflow: hidden; }
+  .real-prob-bar i { display: block; height: 100%; background: var(--text-dim); }
+  .real-prob-row.top .real-prob-bar i { background: var(--accent); }
+  .real-prob-row.top.fault .real-prob-bar i { background: var(--critical); }
+
   /* --- Unit detail: per-signal readout ---------------------------------- */
   .sig-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 4px; }
   .sig-table td { padding: 5px 0; border-bottom: 1px solid rgba(var(--border-rgb), 0.3); vertical-align: middle; }
@@ -954,54 +1033,60 @@
   }
 
   /* --- Who sees what ---------------------------------------------------
-     Each role keeps only what that reader acts on, and leads with the
-     panel that answers their first question. Order is set per role so
-     the three tabs are genuinely different pages, not the same scroll
-     with gaps in it.
+     Every panel has exactly ONE owner. A role's list below is the panels
+     it hides; the three lists are complements, so no panel appears on two
+     tabs and the tabs are genuinely different pages.
 
-       Operator  triage and dispatch  — fleet, twin, unit, work orders, feed
-       Engineer  the why              — unit, fleet, twin, validation, tuning, upload, services
-       Analyst   the model and case   — impact, validation, tuning, fleet, unit, upload
+       Operator  what to pull, and when   fleet overview (counts, priority
+                                          alert + lead time, unit list),
+                                          maintenance actions, live feed
+       Engineer  why it was flagged       digital twin, unit detail (summary,
+                                          signals), decision trace + Copilot
+                                          + research, external services
+       Analyst   the model and the case   business impact, model validation,
+                                          detection sensitivity, score your
+                                          own data
 
-     Only the fleet table and unit detail appear in all three, because
-     they are the subject matter. Everything else lives in one or two. */
+     The Digital Twin and Unit Detail sit in one .twin-detail-row, so that
+     row is hidden as a whole; #unitTracePanel is the Unit Detail's
+     full-width continuation and follows it. */
 
   body[data-role="operator"] #businessImpact,
+  body[data-role="operator"] .twin-detail-row,
+  body[data-role="operator"] #unitTracePanel,
   body[data-role="operator"] #uploadPanel,
   body[data-role="operator"] #aiPanel,
   body[data-role="operator"] #modelValidationPanel,
-  body[data-role="operator"] #sensitivityPanel,
-  body[data-role="operator"] .ud-engineer-only { display: none; }
+  body[data-role="operator"] #sensitivityPanel { display: none; }
 
   body[data-role="engineer"] #businessImpact,
+  body[data-role="engineer"] #fleetPanel,
   body[data-role="engineer"] #maintenanceActionsPanel,
-  body[data-role="engineer"] #liveFeedPanel { display: none; }
+  body[data-role="engineer"] #liveFeedPanel,
+  body[data-role="engineer"] #uploadPanel,
+  body[data-role="engineer"] #modelValidationPanel,
+  body[data-role="engineer"] #sensitivityPanel { display: none; }
 
-  body[data-role="analyst"] #trainDiagramPanel,
+  body[data-role="analyst"] .twin-detail-row,
+  body[data-role="analyst"] #unitTracePanel,
+  body[data-role="analyst"] #fleetPanel,
   body[data-role="analyst"] #maintenanceActionsPanel,
   body[data-role="analyst"] #liveFeedPanel,
   body[data-role="analyst"] #aiPanel { display: none; }
 
   /* Lead with the panel that answers the role's first question. */
   body[data-role="operator"] #fleetPanel        { order: 1; }
-  body[data-role="operator"] .twin-detail-row   { order: 2; }
-  body[data-role="operator"] #maintenanceActionsPanel { order: 3; }
-  body[data-role="operator"] #liveFeedPanel     { order: 4; }
+  body[data-role="operator"] #maintenanceActionsPanel { order: 2; }
+  body[data-role="operator"] #liveFeedPanel     { order: 3; }
 
   body[data-role="engineer"] .twin-detail-row   { order: 1; }
-  body[data-role="engineer"] #fleetPanel        { order: 2; }
-  body[data-role="engineer"] #modelValidationPanel { order: 3; }
-  body[data-role="engineer"] #sensitivityPanel  { order: 4; }
-  body[data-role="engineer"] #uploadPanel       { order: 5; }
-  body[data-role="engineer"] #aiPanel           { order: 6; }
+  body[data-role="engineer"] #unitTracePanel    { order: 2; }
+  body[data-role="engineer"] #aiPanel           { order: 3; }
 
   body[data-role="analyst"] #businessImpact     { order: 1; }
   body[data-role="analyst"] #modelValidationPanel { order: 2; }
   body[data-role="analyst"] #sensitivityPanel   { order: 3; }
-  body[data-role="analyst"] #fleetPanel         { order: 4; }
-  /* Unit detail takes the whole row once the twin beside it is gone. */
-  body[data-role="analyst"] .twin-detail-row    { order: 5; grid-template-columns: 1fr; }
-  body[data-role="analyst"] #uploadPanel        { order: 6; }
+  body[data-role="analyst"] #uploadPanel        { order: 4; }
 
   /* --- Plain-language headline ----------------------------------------
      The sentence a reader can act on, above the numbers it came from.
@@ -1120,67 +1205,14 @@
     #workCard .wc-foot { margin-top: 18px; font-size: 10px; color: #444; border-top: 1px solid #ccc; padding-top: 7px; }
   }
 
-  /* --- Business impact: form left, consequences right ------------------
-     Nine assumptions and two derivations do not belong in one column.
-     The inputs are a narrow, scannable stack of label/value rows; the
-     results sit beside them and move as you type. */
-  .impact-layout { display: grid; grid-template-columns: 330px 1fr; gap: var(--sp-3); align-items: start; }
-  @media (max-width: 1000px) { .impact-layout { grid-template-columns: 1fr; } }
+  /* --- Business impact ---------------------------------------------------
+     Read top to bottom: the answer (headline), the working (one card per
+     fault, one for the year), the caveat, and last the assumptions -- which
+     stay folded away until someone wants to change them. Savings are green
+     and signed +, costs orange and signed -, each with a bar down the left
+     edge, so a column of figures scans by colour and never loses its sign. */
+  .impact-body { display: flex; flex-direction: column; gap: var(--sp-4); }
 
-  .impact-form { display: flex; flex-direction: column; gap: 18px; }
-  .impact-group { display: flex; flex-direction: column; gap: 2px; }
-  .impact-group-head {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.7px;
-    font-weight: 700;
-    color: var(--accent);
-    padding-bottom: 6px;
-    margin-bottom: 4px;
-    border-bottom: 1px solid var(--border);
-  }
-  .impact-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 6px 0;
-    border-bottom: 1px solid rgba(var(--accent-rgb), 0.07);
-  }
-  .impact-row:last-child { border-bottom: 0; }
-  .impact-row label { flex: 1; font-size: 11.5px; line-height: 1.35; color: var(--text-dim); }
-  .impact-field { position: relative; flex-shrink: 0; width: 104px; }
-  .impact-field .unit {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 11px;
-    color: var(--text-dim);
-    pointer-events: none;
-  }
-  .impact-field .unit.pre { left: 9px; }
-  .impact-field .unit.post { right: 9px; }
-  .impact-field input {
-    width: 100%;
-    background: var(--panel-alt);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm, 6px);
-    padding: 7px 9px;
-    color: var(--text);
-    font-size: 13px;
-    font-weight: 600;
-    font-family: var(--font-body);
-    font-variant-numeric: tabular-nums;
-    text-align: right;
-    transition: border-color 0.18s ease;
-  }
-  .impact-field.has-pre input { padding-left: 20px; }
-  .impact-field.has-post input { padding-right: 24px; }
-  .impact-field input:focus { outline: none; border-color: var(--accent); }
-  .impact-field input::-webkit-outer-spin-button,
-  .impact-field input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-  .impact-field input[type=number] { -moz-appearance: textfield; }
-
-  .impact-results { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
   .impact-headline {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -1208,38 +1240,165 @@
     line-height: 1.4;
   }
 
-  .impact-tbl-head {
+  .impact-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-3); align-items: start; }
+  @media (max-width: 1000px) { .impact-cards { grid-template-columns: 1fr; } }
+  .impact-card {
+    background: var(--panel-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--sp-3) var(--sp-3) var(--sp-2);
+  }
+  .impact-card-eyebrow {
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.7px;
     font-weight: 700;
-    color: var(--text-dim);
-    margin-bottom: 7px;
+    color: var(--accent);
+    margin-bottom: 6px;
   }
-  .impact-breakdown { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-  .impact-breakdown td { padding: 9px 0; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; }
+  .impact-card-title {
+    font-family: var(--font-heading);
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--text);
+    margin: 0 0 var(--sp-1);
+    padding-bottom: var(--sp-2);
+    border-bottom: 1px solid var(--border-strong);
+  }
+
+  .impact-breakdown { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .impact-breakdown td { padding: 15px 0; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; }
+  .impact-breakdown td:first-child { padding-left: 14px; }
+  .impact-breakdown td .sub { display: block; font-size: 11px; color: var(--text-dim); margin-top: 4px; line-height: 1.5; }
   .impact-breakdown td.num {
     text-align: right;
     white-space: nowrap;
-    padding-left: 14px;
+    padding-left: 20px;
     font-variant-numeric: tabular-nums;
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 14px;
   }
-  .impact-breakdown td .sub { display: block; font-size: 10.5px; color: var(--text-dim); margin-top: 3px; line-height: 1.45; }
-  .impact-breakdown tr.neg td.num { color: var(--warning); }
-  .impact-breakdown tr.total td { border-bottom: 0; border-top: 1px solid var(--accent); font-weight: 700; padding-top: 11px; }
-  .impact-breakdown tr.total td.num { color: var(--accent); font-size: 15px; }
+  .impact-breakdown tr.pos  td:first-child { box-shadow: inset 3px 0 0 var(--normal); }
+  .impact-breakdown tr.neg  td:first-child { box-shadow: inset 3px 0 0 var(--warning); }
+  .impact-breakdown tr.pos  td.num { color: var(--normal); }
+  .impact-breakdown tr.neg  td.num { color: var(--warning); }
+  .impact-breakdown tr.zero td.num { color: var(--text-dim); font-weight: 500; }
+  .impact-breakdown tr:nth-last-child(2) td { border-bottom: 0; }
+  .impact-breakdown tr.total td { border-bottom: 0; border-top: 2px solid var(--accent); padding-top: 18px; padding-bottom: 8px; font-weight: 700; font-size: 14px; }
+  .impact-breakdown tr.total td.num { color: var(--accent); font-family: var(--font-heading); font-size: 21px; }
 
   .impact-assumption {
-    font-size: 11px;
+    font-size: 11.5px;
     color: var(--text-dim);
-    line-height: 1.6;
-    padding: 12px 14px;
+    line-height: 1.65;
+    padding: var(--sp-2) var(--sp-3);
     background: var(--panel-alt);
     border-radius: var(--radius-md);
     border-left: 2px solid var(--border);
   }
   .impact-assumption b { color: var(--text); }
+
+  /* Assumptions: closed by default so the form does not dominate the page. */
+  .impact-customize { background: var(--panel-alt); border: 1px solid var(--border); border-radius: var(--radius-md); }
+  .impact-customize > summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: var(--sp-2) var(--sp-3);
+    border-radius: var(--radius-md);
+  }
+  .impact-customize > summary::-webkit-details-marker { display: none; }
+  .impact-customize > summary:hover .ic-title { color: var(--accent); }
+  .impact-customize > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .impact-customize .ic-chev { width: 16px; height: 16px; flex-shrink: 0; color: var(--accent); transition: transform 0.2s ease; }
+  .impact-customize[open] .ic-chev { transform: rotate(90deg); }
+  .impact-customize .ic-title { font-size: 13px; font-weight: 600; color: var(--text); transition: color 0.18s ease; }
+  .impact-customize .ic-hint { font-size: 11.5px; color: var(--text-dim); }
+  .impact-customize .ic-state { margin-left: auto; font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 600; color: var(--accent); }
+  .impact-customize .ic-state .when-open { display: none; }
+  .impact-customize[open] .ic-state .when-open { display: inline; }
+  .impact-customize[open] .ic-state .when-closed { display: none; }
+  @media (prefers-reduced-motion: reduce) { .impact-customize .ic-chev { transition: none; } }
+  @media (max-width: 700px) { .impact-customize .ic-hint { display: none; } }
+
+  .impact-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(270px, 100%), 1fr));
+    gap: var(--sp-3);
+    padding: 0 var(--sp-3) var(--sp-3);
+  }
+  .impact-group {
+    display: flex;
+    flex-direction: column;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--sp-3);
+  }
+  .impact-group-head {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    font-weight: 700;
+    color: var(--accent);
+    padding-bottom: 12px;
+    margin-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .impact-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 11px 0;
+    border-bottom: 1px solid rgba(var(--accent-rgb), 0.07);
+  }
+  .impact-row:last-child { border-bottom: 0; }
+  .impact-row label { flex: 1; font-size: 12px; line-height: 1.4; color: var(--text-dim); }
+  .impact-field { position: relative; flex-shrink: 0; width: 112px; }
+  .impact-field .unit {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 11px;
+    color: var(--text-dim);
+    pointer-events: none;
+  }
+  .impact-field .unit.pre { left: 10px; }
+  .impact-field .unit.post { right: 10px; }
+  .impact-field input {
+    width: 100%;
+    background: var(--panel-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm, 6px);
+    padding: 8px 10px;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: var(--font-body);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    transition: border-color 0.18s ease;
+  }
+  .impact-field.has-pre input { padding-left: 22px; }
+  .impact-field.has-post input { padding-right: 26px; }
+  .impact-field input:focus { outline: none; border-color: var(--accent); }
+  .impact-field input::-webkit-outer-spin-button,
+  .impact-field input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .impact-field input[type=number] { -moz-appearance: textfield; }
+
+  /* Phone width: the generous desktop padding stacks (panel + fold-out +
+     card) and would leave the inputs with no room, so it steps down. */
+  @media (max-width: 600px) {
+    .impact-panel { padding: var(--sp-2); }
+    .impact-card, .impact-group { padding: var(--sp-2); }
+    .impact-customize > summary { padding: var(--sp-2); }
+    .impact-form { padding: 0 var(--sp-2) var(--sp-2); gap: var(--sp-2); }
+    .impact-field { width: 96px; }
+    .impact-breakdown td.num { padding-left: 12px; }
+  }
 
   /* --- Fleet Assistant -------------------------------------------------
      Floating so it is reachable from any tab without taking layout from
@@ -1421,7 +1580,7 @@
   }
 </style>
 </head>
-<body>
+<body data-role="operator">
 
 <header>
   <div class="header-inner">
@@ -1435,7 +1594,7 @@
     </div>
     <div class="header-tagline">"Early signals. Scheduled fixes."</div>
     <div class="role-tabs" role="tablist" aria-label="Dashboard view">
-      <button class="role-tab" role="tab" data-role="operator" aria-selected="false">
+      <button class="role-tab" role="tab" data-role="operator" aria-selected="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5L21 19.5H3L12 3.5z"/><path d="M12 10v4"/><circle cx="12" cy="17" r="0.9" fill="currentColor" stroke="none"/></svg>
         <span class="role-tab-text">Operator<span class="rt-sub">What to pull, and when</span></span>
       </button>
@@ -1443,7 +1602,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 00-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 005.4-5.4l-2.6 2.6-2-2 2.6-2.6z"/></svg>
         <span class="role-tab-text">Engineer<span class="rt-sub">Why it was flagged</span></span>
       </button>
-      <button class="role-tab" role="tab" data-role="analyst" aria-selected="true">
+      <button class="role-tab" role="tab" data-role="analyst" aria-selected="false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16"/><path d="M8 15.5l3.5-4.5 3 3L20 7"/></svg>
         <span class="role-tab-text">Analyst<span class="rt-sub">The model and the case</span></span>
       </button>
@@ -1457,9 +1616,50 @@
       <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.7-2.5 1.8c0 2.6 5 1.2 5 3.8 0 1.1-1.1 1.9-2.5 1.9s-2.5-.9-2.5-2"/></svg>
       Business Impact Calculator
     </h2>
-    <div class="impact-layout">
-      <div class="impact-form">
-        <div class="impact-group">
+    <div class="impact-body">
+      <div class="impact-headline">
+        <div class="impact-stat">
+          <div class="v" id="impactPerFault">–</div>
+          <div class="k">Saved per fault caught early</div>
+        </div>
+        <div class="impact-stat">
+          <div class="v" id="impactAnnualSavings">–</div>
+          <div class="k">Net per year, <span id="impactAnnualUnitCount">–</span> units</div>
+        </div>
+        <div class="impact-stat">
+          <div class="v" id="impactPerTrain">–</div>
+          <div class="k">Net per unit per year</div>
+        </div>
+        <div class="impact-stat">
+          <div class="v" id="impactPayback">–</div>
+          <div class="k">To cover the running cost</div>
+        </div>
+      </div>
+
+      <div class="impact-cards">
+        <section class="impact-card">
+          <div class="impact-card-eyebrow">Per fault</div>
+          <h3 class="impact-card-title">Per fault caught before it reached service</h3>
+          <table class="impact-breakdown"><tbody id="impactPerFaultBody"></tbody></table>
+        </section>
+        <section class="impact-card">
+          <div class="impact-card-eyebrow">Per year</div>
+          <h3 class="impact-card-title">Annual, at the scaled fleet</h3>
+          <table class="impact-breakdown"><tbody id="impactAnnualBody"></tbody></table>
+        </section>
+      </div>
+
+      <div class="impact-assumption" id="impactAssumptions"></div>
+
+      <details class="impact-customize" id="impactCustomize">
+        <summary>
+          <svg class="ic-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+          <span class="ic-title">Customize assumptions</span>
+          <span class="ic-hint">11 inputs — defaults are illustrative rail-industry figures</span>
+          <span class="ic-state"><span class="when-closed">Show</span><span class="when-open">Hide</span></span>
+        </summary>
+        <div class="impact-form">
+          <div class="impact-group">
           <div class="impact-group-head">If it fails in service</div>
           <div class="impact-row">
             <label for="costFailure">Emergency repair &amp; recovery</label>
@@ -1525,40 +1725,8 @@
               <input type="number" id="programCost" value="120000" min="0" step="10000"></div>
           </div>
         </div>
-      </div>
-
-      <div class="impact-results">
-        <div class="impact-headline">
-          <div class="impact-stat">
-            <div class="v" id="impactPerFault">–</div>
-            <div class="k">Saved per fault caught early</div>
-          </div>
-          <div class="impact-stat">
-            <div class="v" id="impactAnnualSavings">–</div>
-            <div class="k">Net per year, <span id="impactAnnualUnitCount">–</span> units</div>
-          </div>
-          <div class="impact-stat">
-            <div class="v" id="impactPerTrain">–</div>
-            <div class="k">Net per unit per year</div>
-          </div>
-          <div class="impact-stat">
-            <div class="v" id="impactPayback">–</div>
-            <div class="k">To cover the running cost</div>
-          </div>
         </div>
-
-        <div>
-          <div class="impact-tbl-head">Per fault caught before it reached service</div>
-          <table class="impact-breakdown"><tbody id="impactPerFaultBody"></tbody></table>
-        </div>
-
-        <div>
-          <div class="impact-tbl-head">Annual, at the scaled fleet</div>
-          <table class="impact-breakdown"><tbody id="impactAnnualBody"></tbody></table>
-        </div>
-
-        <div class="impact-assumption" id="impactAssumptions"></div>
-      </div>
+      </details>
     </div>
 
     <div class="impact-caption">
@@ -1613,30 +1781,80 @@
         <div class="ud-empty">
           <img src="assets/bogie_illustration.png" alt="No unit selected illustration" class="ud-empty-illustration" />
           <div class="ud-empty-title">No unit selected</div>
-          <div class="ud-empty-prompt">Select any <b class="hl-critical">red</b> or <b class="hl-warning">orange</b> unit above to see why it's flagged</div>
-          <div class="ud-empty-hint">Click a row in the fleet table, or a door/bogie shape in the digital twin.</div>
+          <div class="ud-empty-prompt">Select any <b class="hl-critical">red</b> or <b class="hl-warning">orange</b> unit in the digital twin to see why it's flagged</div>
+          <div class="ud-empty-hint">Click a unit shape or a chip in the digital twin.</div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="panel full-width-panel" id="uploadPanel">
+  <div class="panel full-width-panel" id="unitTracePanel">
+    <h2>
+      <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h6"/><circle cx="19" cy="15" r="3"/></svg>
+      Decision Trace &amp; Investigation
+    </h2>
+    <div id="unitTraceBody"><div class="placeholder">Select a unit in the digital twin to see how it was scored.</div></div>
+  </div>
+
+  <div class="panel full-width-panel" id="uploadPanel" data-mode="synthetic" data-real="door">
     <h2>
       <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M12 4L8 8M12 4l4 4"/><path d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
       Score Your Own Data
     </h2>
 
+    <div class="upload-mode">
+      <div class="upload-mode-row">
+        <span class="upload-mode-label">Data</span>
+        <div class="upload-seg" role="group" aria-label="Data source">
+          <button type="button" class="upload-seg-btn active" data-mode="synthetic" aria-pressed="true">Synthetic Fleet</button>
+          <button type="button" class="upload-seg-btn" data-mode="real" aria-pressed="false">PS3 Real Data</button>
+        </div>
+        <span class="upload-mode-note syn-only">Door · Bogie · Car — scored by the fleet's own models</span>
+      </div>
+      <div class="upload-mode-row upload-mode-row-real real-only">
+        <span class="upload-mode-label">Dataset</span>
+        <div class="upload-seg" role="group" aria-label="PS3 dataset">
+          <button type="button" class="upload-seg-btn active" data-real="door" aria-pressed="true">Door</button>
+          <button type="button" class="upload-seg-btn" data-real="rail" aria-pressed="false">Rail Corrugation</button>
+        </div>
+        <span class="upload-mode-note">Scored by models trained on the real PS3 competition data</span>
+      </div>
+    </div>
+
     <div id="uploadZoneWrap">
       <div class="drop-zone" id="dropZone" tabindex="0" role="button" aria-label="Upload a telemetry file to score">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16.5V4.5M12 4.5L7.5 9M12 4.5L16.5 9"/><path d="M3.5 14.5v3.5a2.5 2.5 0 002.5 2.5h12a2.5 2.5 0 002.5-2.5v-3.5"/></svg>
         <div class="drop-title">Drop a telemetry file here</div>
-        <div class="drop-sub">or click to browse — every unit in it is scored by the models already trained on this fleet</div>
-        <div class="drop-formats">
+        <div class="drop-sub syn-only">or click to browse — every unit in it is scored by the models already trained on this fleet</div>
+        <div class="drop-sub real-door">or click to browse — the stream is split into door cycles and each cycle is classified Normal or Abnormal resistance</div>
+        <div class="drop-sub real-rail">or click to browse — one 1-second recording is classified Normal, Side I or Side II corrugation</div>
+        <div class="drop-formats syn-only">
           <code>.csv</code> <code>.parquet</code> &nbsp;·&nbsp; needs a unit id, a timestamp, and the signal columns for one subsystem
         </div>
+        <div class="drop-formats real-door"><code>.csv</code> &nbsp;·&nbsp; the real PS3 Door stream (Train.csv / Test.csv layout)</div>
+        <div class="drop-formats real-rail"><code>.csv</code> &nbsp;·&nbsp; one real PS3 Rail_Corrugation recording (Train / Test file layout)</div>
       </div>
       <input type="file" id="uploadInput" accept=".csv,.parquet,text/csv" hidden />
-      <div class="diagram-caption" id="uploadSchemaHint">Loading expected columns…</div>
+      <div class="diagram-caption syn-only" id="uploadSchemaHint">Loading expected columns…</div>
+      <div class="diagram-caption real-door" id="uploadHintDoor">
+        Expected columns — <code>Datetime</code> (Year-Month-Date-Hour-Minute-Second-Millisecond, not zero-padded, e.g. <code>2023-7-5-0-0-3-760</code>),
+        <code>Motor current(mA)</code> <code>Motor Voltage(10mV)</code> <code>Motor electrodynamic force</code>
+        <code>Door opening time(.1s)</code> <code>Door closing time(.1s)</code>
+        <code>Close command</code> <code>Open command</code>
+        <code>DCSR</code> <code>DCSL</code> <code>DLSR</code> <code>DLSL</code>
+        <code>Door Opened</code> <code>Door Locked</code>
+        <code>Door is opening</code> <code>Door is closing</code>
+        <code>Door leaf position</code>.
+        The model reads six of these — motor current, motor voltage, electrodynamic force, opening and closing time, and leaf position —
+        plus <code>Datetime</code>; the rest may be present but are not used. Rows are split into door cycles wherever consecutive
+        readings are more than 0.1&nbsp;s apart.
+      </div>
+      <div class="diagram-caption real-rail" id="uploadHintRail">
+        Expected columns — 129 in total: <code>Rotating speed</code>, then for each of 8 cars &times; 8 axle-box positions a
+        <code>Vibration of bearing in position N of car M</code> and a <code>Shock of bearing in position N of car M</code> column
+        (N = 1–8, M = 1–8). One recording is 1&nbsp;s at 10&nbsp;kHz, so about 10,000 rows. Positions 1, 3, 5, 7 sit on the Side&nbsp;I rail
+        and 2, 4, 6, 8 on the Side&nbsp;II rail. Column names must match exactly.
+      </div>
     </div>
 
     <div id="uploadResult"></div>
@@ -1830,10 +2048,9 @@ let fleetCache = [];
 // HVAC, lighting, battery and radio on one model.
 let signalsCache = {};
 let subsystemMeta = {};
-let autoSelectDone = false;
 let validationCache = null;
-// Last /unit payload rendered, kept so the role switch and the work card
-// can re-render the panel without another round trip.
+// Last /unit payload rendered, kept so the work card can be built without
+// another round trip.
 let unitDetailCache = null;
 const SYNTHETIC_WINDOW_DAYS = 42; // 6-week synthetic generation window (data_gen/config.py: DURATION_WEEKS=6)
 const DAYS_PER_YEAR = 365;
@@ -1964,16 +2181,7 @@ async function refreshFleet() {
     renderPriorityAlerts(data.units);
     recalcImpact();
 
-    // On first load only, auto-select the single worst unit so Unit Detail
-    // is populated immediately instead of showing the empty state -- uses
-    // the exact same selectUnit() entry point as a manual click, so it's
-    // one code path, not a special case. Never re-fires on later polls, so
-    // it can't clobber a selection the user made themselves.
-    if (!autoSelectDone) {
-      autoSelectDone = true;
-      const worst = getWorstUnit(data.units);
-      if (worst) selectUnit(worst.unit_id);
-    }
+    autoSelectWorstForEngineer();
   } catch (e) {
     setApiStatus(false);
     console.error(e);
@@ -2108,23 +2316,21 @@ function recalcImpact() {
   const perFault      = repairDelta + downtimeDelta;
 
   const money = v => (v < 0 ? "−" : "") + fmtMoney(Math.abs(v));
-  document.getElementById("impactPerFaultBody").innerHTML = `
-    <tr>
-      <td>Emergency repair avoided<span class="sub">The unplanned failure that would otherwise have happened</span></td>
-      <td class="num">${money(costFailure)}</td>
-    </tr>
-    <tr class="neg">
-      <td>Planned intervention instead<span class="sub">The work still gets done — earlier, and in a slot</span></td>
-      <td class="num">−${fmtMoney(costMaintenance)}</td>
-    </tr>
-    <tr>
-      <td>Service time recovered<span class="sub">${hoursSaved.toFixed(0)} h &times; ${fmtMoney(costDowntimeHour)}/h — ${hoursUnplanned}h unplanned vs ${hoursPlanned}h planned</span></td>
-      <td class="num">${money(downtimeDelta)}</td>
-    </tr>
-    <tr class="total">
-      <td>Net per fault caught in advance</td>
-      <td class="num">${money(perFault)}</td>
-    </tr>`;
+  // Line items carry their sign and a tone (pos = saving, neg = cost, zero =
+  // nothing claimed) so the table can colour them; totals stay unsigned to
+  // match the headline figures above.
+  const signed = v => Math.abs(v) < 0.5 ? fmtMoney(0) : (v < 0 ? "−" : "+") + fmtMoney(Math.abs(v));
+  const tone = v => Math.abs(v) < 0.5 ? "zero" : v < 0 ? "neg" : "pos";
+  const row = (label, sub, v) =>
+    `<tr class="${tone(v)}"><td>${label}<span class="sub">${sub}</span></td><td class="num">${signed(v)}</td></tr>`;
+  const totalRow = (label, v) =>
+    `<tr class="total"><td>${label}</td><td class="num">${money(v)}</td></tr>`;
+
+  document.getElementById("impactPerFaultBody").innerHTML =
+    row("Emergency repair avoided", "The unplanned failure that would otherwise have happened", costFailure) +
+    row("Planned intervention instead", "The work still gets done — earlier, and in a slot", -costMaintenance) +
+    row("Service time recovered", `${hoursSaved.toFixed(0)} h &times; ${fmtMoney(costDowntimeHour)}/h — ${hoursUnplanned}h unplanned vs ${hoursPlanned}h planned`, downtimeDelta) +
+    totalRow("Net per fault caught in advance", perFault);
 
   // --- Annual ------------------------------------------------------------
   // The fault RATE is an input, not something this dataset can tell you.
@@ -2146,27 +2352,12 @@ function recalcImpact() {
   // and the input above is visible rather than buried.
   const seededRatePer100 = (n / currentFleetUnits) * (DAYS_PER_YEAR / SYNTHETIC_WINDOW_DAYS) * 100;
 
-  document.getElementById("impactAnnualBody").innerHTML = `
-    <tr>
-      <td>Failures caught before service<span class="sub">${caught.toFixed(0)} of ${expectedFailures.toFixed(0)} expected per year &times; ${money(perFault)} — at ${(detectionRate * 100).toFixed(0)}% detection across ${scaledUnits} units</span></td>
-      <td class="num">${money(grossAnnual)}</td>
-    </tr>
-    <tr>
-      <td>Failures still reaching service<span class="sub">${missed.toFixed(0)} per year — no saving claimed on these</span></td>
-      <td class="num">${fmtMoney(0)}</td>
-    </tr>
-    <tr class="neg">
-      <td>False alarms investigated<span class="sub">${falseAlarmsPerYear.toFixed(0)} per year &times; ${fmtMoney(falseAlarmCost)} — healthy units pulled in on a flag</span></td>
-      <td class="num">−${fmtMoney(falseAlarmAnnual)}</td>
-    </tr>
-    <tr class="neg">
-      <td>Running the system<span class="sub">Compute, licences and upkeep</span></td>
-      <td class="num">−${fmtMoney(programCost)}</td>
-    </tr>
-    <tr class="total">
-      <td>Net annual benefit</td>
-      <td class="num">${money(netAnnual)}</td>
-    </tr>`;
+  document.getElementById("impactAnnualBody").innerHTML =
+    row("Failures caught before service", `${caught.toFixed(0)} of ${expectedFailures.toFixed(0)} expected per year &times; ${money(perFault)} — at ${(detectionRate * 100).toFixed(0)}% detection across ${scaledUnits} units`, grossAnnual) +
+    row("Failures still reaching service", `${missed.toFixed(0)} per year — no saving claimed on these`, 0) +
+    row("False alarms investigated", `${falseAlarmsPerYear.toFixed(0)} per year &times; ${fmtMoney(falseAlarmCost)} — healthy units pulled in on a flag`, -falseAlarmAnnual) +
+    row("Running the system", "Compute, licences and upkeep", -programCost) +
+    totalRow("Net annual benefit", netAnnual);
 
   document.getElementById("impactPerFault").textContent = money(perFault);
   document.getElementById("impactAnnualSavings").textContent = money(netAnnual);
@@ -2189,8 +2380,8 @@ function recalcImpact() {
     `all ${n} seeded faults were detected before they were logged. The <b>failure rate is not from this ` +
     `dataset</b>: <code>data_gen/</code> seeds faults into ${n} of ${currentFleetUnits} units in six weeks to ` +
     `give validation something to find, which implies roughly <b>${seededRatePer100.toFixed(0)} failures per ` +
-    `100 units per year</b> — a test fixture, not a fleet. Put your own reliability history in the rate field ` +
-    `above. Detection rate defaults below the ${n}/${n} observed here because a seeded fault is easier than a ` +
+    `100 units per year</b> — a test fixture, not a fleet. Put your own reliability history in the failure-rate field ` +
+    `under Customize assumptions. Detection rate defaults below the ${n}/${n} observed here because a seeded fault is easier than a ` +
     `real one, and no claim is made on the failures the system misses. Directional, not a budget.`;
 }
 
@@ -2213,7 +2404,7 @@ const SIGNAL_LABELS = {
 
 // Highest-risk units, ranked worst-first: Critical units (by reconstruction
 // error, descending) if any exist, else Warning units the same way. Shared
-// by the Priority Alert cards (top 3) and the auto-select-on-load unit
+// by the Priority Alert cards (top 3) and the Engineer tab's default unit
 // (top 1) so both agree on what "worst" means.
 function getRankedCandidates(units) {
   let level = "Critical";
@@ -2228,6 +2419,28 @@ function getRankedCandidates(units) {
 
 function getWorstUnit(units) {
   return getRankedCandidates(units).candidates[0] || null;
+}
+
+// Unit Detail lives only on the Engineer tab, so that is the only place an
+// empty state can be seen. Populate it with the single worst unit through
+// the same selectUnit() entry point as a manual click. Only fires when
+// nothing is selected, so it can never clobber the user's own selection,
+// and it stays quiet on Operator/Analyst where the panel is not shown (no
+// hidden Copilot request on every page load).
+function autoSelectWorstForEngineer() {
+  if (selectedUnit || document.body.dataset.role !== "engineer" || !fleetCache.length) return;
+  const worst = getWorstUnit(fleetCache);
+  if (worst) selectUnit(worst.unit_id);
+}
+
+// Operator surfaces (priority cards, unit list) answer "what to pull"; the
+// why is the Engineer tab's job. Clicking a unit there hands it over.
+// selectUnit() runs first so setRole() sees a selection and does not
+// auto-select the worst unit in its place.
+function investigateUnit(unitId) {
+  selectUnit(unitId);
+  if (document.body.dataset.role !== "engineer") setRole("engineer");
+  document.getElementById("unitDetail").scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
 async function renderPriorityAlerts(units) {
@@ -2270,15 +2483,13 @@ async function renderPriorityAlerts(units) {
           <div class="priority-card-row">${gloss("Reconstruction error")}: <b>${u.ae_recon_error != null ? u.ae_recon_error.toFixed(2) : "–"}</b></div>
           <div class="priority-card-row">Primary signal: ${signalLine}</div>
           <div class="priority-card-row">Action: <b>${actionText}</b></div>
+          ${d ? buildLeadTimeHtml(d) : ""}
         </div>
       `;
     }).join("");
 
     container.querySelectorAll(".priority-card").forEach(card => {
-      card.addEventListener("click", () => {
-        selectUnit(card.dataset.unitId);
-        document.getElementById("unitDetail").scrollIntoView({ behavior: "smooth", block: "nearest" });
-      });
+      card.addEventListener("click", () => investigateUnit(card.dataset.unitId));
     });
   } catch (e) {
     container.innerHTML = `<div class="priority-alert-empty">Priority alerts unavailable.</div>`;
@@ -2343,7 +2554,7 @@ function renderFleetTable(units) {
     for (const u of sorted) {
       const tr = document.createElement("tr");
       tr.className = "unit-row" + (selectedUnit === u.unit_id ? " selected" : "");
-      tr.onclick = () => selectUnit(u.unit_id);
+      tr.onclick = () => investigateUnit(u.unit_id);
 
       const sig = primarySignal(u.unit_id);
       const primaryCell = sig
@@ -2869,7 +3080,9 @@ async function selectUnit(unitId) {
   renderFleetTable(fleetCache);
   updateDiagramSelection();
   const body = document.getElementById("unitDetailBody");
+  const traceBody = document.getElementById("unitTraceBody");
   body.innerHTML = `<div class="placeholder">Loading ${unitId}…</div>`;
+  traceBody.innerHTML = `<div class="placeholder">Loading ${unitId}…</div>`;
   try {
     const d = await apiGet(`/unit/${unitId}?history_points=200`);
     // A newer selection may have been made while this request was in
@@ -2881,6 +3094,7 @@ async function selectUnit(unitId) {
   } catch (e) {
     if (selectedUnit !== unitId) return;
     body.innerHTML = `<div class="placeholder">Failed to load ${unitId}</div>`;
+    traceBody.innerHTML = `<div class="placeholder">Failed to load ${unitId}</div>`;
     console.error(e);
   }
 }
@@ -3031,12 +3245,10 @@ function renderUnitDetail(d) {
       <div style="color:var(--text-dim); font-size:11.5px; margin-top:4px;">${d.subsystem_type} · ${d.train_id} · as of ${d.latest.timestamp}</div>
       <div class="plain-read" style="margin-top:12px;">${plainLanguageSummary(d)}</div>
       ${buildResponseWindowHtml(d)}
-      <div class="ud-engineer-only" style="margin-top:12px;">${headline}</div>
-      <div class="ud-engineer-only" style="margin-top:12px;">${renderSignalTable(L.signal_detail)}</div>
+      <div style="margin-top:12px;">${headline}</div>
+      <div style="margin-top:12px;">${renderSignalTable(L.signal_detail)}</div>
     </div>
     <div class="why-flagged">${buildWhyFlaggedHtml(d)}</div>
-    <div class="ud-engineer-only">${buildLeadTimeHtml(d)}</div>
-    <div id="traceSteps" class="ud-engineer-only"></div>
     <div class="action-box">
       <div class="lbl">Recommended Action</div>
       ${d.recommended_action}
@@ -3048,15 +3260,29 @@ function renderUnitDetail(d) {
       </button>
       <span class="wc-hint">A one-page handover for the technician, with provenance attached.</span>
     </div>
-    <div id="copilotPanel" class="ud-engineer-only"></div>
-    <div class="research-launch ud-engineer-only">
-      <button class="research-btn" id="researchBtn" onclick="investigateFault('${d.unit_id}')">
-        <span class="rb-dot"></span>Investigate Fault
-      </button>
-      <span class="research-hint">Search published engineering literature for similar signatures</span>
+  `;
+
+  document.getElementById("unitTraceBody").innerHTML = `
+    <div class="unit-trace-grid">
+      <div>
+        <div class="ut-h">Decision trace — ${d.unit_id}</div>
+        <div id="traceSteps"></div>
+      </div>
+      <div>
+        <div id="copilotPanel"></div>
+        <div class="research-launch">
+          <button class="research-btn" id="researchBtn" onclick="investigateFault('${d.unit_id}')">
+            <span class="rb-dot"></span>Investigate Fault
+          </button>
+          <span class="research-hint">Search published engineering literature for similar signatures</span>
+        </div>
+        <div id="researchPanel"></div>
+      </div>
+      <div>
+        <div class="ut-h">Anomaly trend</div>
+        <div id="unitChartBox"><canvas id="unitLineChart"></canvas></div>
+      </div>
     </div>
-    <div id="researchPanel" class="ud-engineer-only"></div>
-    <div id="unitChartBox"><canvas id="unitLineChart"></canvas></div>
   `;
 
   updateChatScope();
@@ -3151,7 +3377,7 @@ function renderCopilotFallback(reason) {
   if (!el) return;
   const reasonLine = reason ? `<span class="reason">${reason}</span>` : "";
   el.innerHTML = copilotShell(
-    `<div class="copilot-fallback">AI explanation unavailable — see decision trace above.${reasonLine}</div>`
+    `<div class="copilot-fallback">AI explanation unavailable — the decision trace alongside is unaffected.${reasonLine}</div>`
   );
 }
 
@@ -3418,7 +3644,7 @@ const AI_SERVICES = [
     provider: "Anthropic — Claude",
     endpoint: "/copilot-status",
     desc: "Rewrites a unit's existing decision trace in plain English: why it was flagged, a hypothesised mechanical cause, and a suggested inspection. One structured API call per unit — not an agent, no tools, no loop. It only ever sees numbers the pipeline already computed.",
-    where: "Unit Detail panel — appears automatically when you select any unit.",
+    where: "Decision Trace & Investigation panel — appears automatically when you select any unit.",
   },
   {
     key: "chat",
@@ -3434,7 +3660,7 @@ const AI_SERVICES = [
     provider: "Exa — web search",
     endpoint: "/research-status",
     desc: "Searches published engineering literature for documented failures with a similar signal signature. Deliberately non-generative: the bullets are extracted from result titles and highlights, so no model can invent a claim about this unit.",
-    where: "Unit Detail panel — click the <b>Investigate Fault</b> button.",
+    where: "Decision Trace & Investigation panel — click the <b>Investigate Fault</b> button.",
   },
 ];
 
@@ -3503,14 +3729,15 @@ async function loadUploadSchema() {
   }
 }
 
-function uploadBusy(filename) {
-  document.getElementById("uploadResult").innerHTML =
-    `<div class="upload-busy"><span class="upload-spinner"></span>Scoring ${filename}…</div>`;
+function uploadBusy(filename, chipHtml) {
+  document.getElementById("uploadResult").innerHTML = chipHtml
+    ? `${chipHtml}<div class="upload-busy"><span class="upload-spinner"></span>Scoring…</div>`
+    : `<div class="upload-busy"><span class="upload-spinner"></span>Scoring ${filename}…</div>`;
 }
 
-function uploadError(message) {
+function uploadError(message, chipHtml = "") {
   document.getElementById("uploadResult").innerHTML =
-    `<div class="upload-error">
+    `${chipHtml}<div class="upload-error">
        <div class="t">Could not score this file</div>
        <div>${message}</div>
      </div>
@@ -3613,12 +3840,15 @@ function renderUploadResult(r) {
 
 async function handleUploadFile(file) {
   if (!file) return;
+  if (uploadState.mode === "real") return handleRealUpload(file);
+  const seq = ++uploadSeq;
   uploadBusy(file.name);
   const form = new FormData();
   form.append("file", file);
   try {
     const res = await fetch(API_BASE + "/upload", { method: "POST", body: form });
     const data = await res.json();
+    if (seq !== uploadSeq) return;   // the mode was switched while this was in flight -- don't paint it into the other mode's panel
     if (!res.ok) {
       uploadError(data.detail || `Upload failed (${res.status}).`);
       return;
@@ -3626,13 +3856,243 @@ async function handleUploadFile(file) {
     renderUploadResult(data);
   } catch (e) {
     console.error(e);
+    if (seq !== uploadSeq) return;
     uploadError("Could not reach the API. Is it running on " + API_BASE + "?");
+  }
+}
+
+// --- PS3 real-data mode ---------------------------------------------------
+//
+// Sends the file to /predict-door-real or /predict-rail-real -- the models
+// trained on the actual PS3 competition data -- instead of /upload. Results
+// are shown as plain predictions and can be downloaded in the exact CSV
+// layout of 04_Example_Submission/ (LF line endings, no quoting, trailing
+// newline). Nothing here touches the synthetic scoring path above.
+
+const uploadState = { mode: "synthetic", real: "door" };
+let uploadSeq = 0;          // bumps on every mode switch / upload so a stale response can't render
+let realExport = null;      // { filename, text } for the result currently on screen
+let realUploadFile = null;  // { name, size, cols } of the file being (or last) scored in real-data mode
+
+const REAL_ENDPOINTS = { door: "/predict-door-real", rail: "/predict-rail-real" };
+const RAIL_CLASSES = {
+  "Normal":  { fault: false, text: "Both rails read normal — no corrugation detected on either side." },
+  "Side I":  { fault: true,  text: "Corrugation detected on the <b>Side I</b> rail (axle-box positions 1, 3, 5, 7); the Side II rail reads normal." },
+  "Side II": { fault: true,  text: "Corrugation detected on the <b>Side II</b> rail (axle-box positions 2, 4, 6, 8); the Side I rail reads normal." },
+};
+
+function setUploadMode(mode, real) {
+  uploadState.mode = mode;
+  // Leaving real-data mode forgets which dataset was open, so coming back
+  // always starts from the same place (Door) rather than a leftover choice.
+  if (mode === "synthetic") uploadState.real = "door";
+  else if (real) uploadState.real = real;
+  uploadSeq++;
+  const panel = document.getElementById("uploadPanel");
+  panel.dataset.mode = uploadState.mode;
+  panel.dataset.real = uploadState.real;
+  panel.querySelectorAll(".upload-seg-btn[data-mode]").forEach(b => {
+    const on = b.dataset.mode === uploadState.mode;
+    b.classList.toggle("active", on); b.setAttribute("aria-pressed", String(on));
+  });
+  panel.querySelectorAll(".upload-seg-btn[data-real]").forEach(b => {
+    const on = b.dataset.real === uploadState.real;
+    b.classList.toggle("active", on); b.setAttribute("aria-pressed", String(on));
+  });
+  // The real endpoints read CSV only; the synthetic path also takes parquet.
+  document.getElementById("uploadInput").accept = uploadState.mode === "real" ? ".csv,text/csv" : ".csv,.parquet,text/csv";
+  document.getElementById("dropZone").setAttribute("aria-label",
+    uploadState.mode === "real"
+      ? `Upload a real PS3 ${uploadState.real === "door" ? "Door" : "Rail Corrugation"} CSV to classify`
+      : "Upload a telemetry file to score");
+  realExport = null;
+  realUploadFile = null;
+  resetUpload();
+}
+
+function fmtBytes(n) {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(n < 10240 ? 1 : 0)} KB`;
+  return `${(n / 1048576).toFixed(1)} MB`;
+}
+
+// Reads only the first 16 KB to count header columns, so the chip can say how
+// wide the file is the instant it is picked -- enough to spot a Rail file
+// (129 columns) in Door mode, or a semicolon-separated export (which reads as
+// one column to a comma parser) before anyone waits on a result.
+async function peekCsvColumns(file) {
+  try {
+    // text() honours a UTF-16 byte-order mark and would read the header
+    // cleanly, but the API only reads UTF-8 -- so don't imply it's scoreable.
+    const bom = new Uint8Array(await file.slice(0, 2).arrayBuffer());
+    if ((bom[0] === 0xFF && bom[1] === 0xFE) || (bom[0] === 0xFE && bom[1] === 0xFF)) return null;
+    const head = (await file.slice(0, 16384).text()).replace(/^\uFEFF/, "");
+    const first = head.split(/\r?\n/)[0] || "";
+    if (!first.trim() || /[\uFFFD\u0000]/.test(first)) return null;   // empty, or not UTF-8 text
+    const counts = { ",": first.split(",").length - 1, ";": first.split(";").length - 1, "\t": first.split("\t").length - 1 };
+    const best = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
+    if (!counts[best]) return { cols: 1, sep: null };
+    return { cols: counts[best] + 1, sep: best === "," ? null : best === ";" ? "semicolon" : "tab" };
+  } catch (e) {
+    return null;
+  }
+}
+
+const FILE_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/></svg>`;
+
+function fileChipHtml() {
+  const f = realUploadFile;
+  if (!f) return "";
+  const cols = f.cols
+    ? `<span class="sep">·</span><span>${f.cols.cols} column${f.cols.cols === 1 ? "" : "s"}${f.cols.sep ? ` <span class="warn">(${f.cols.sep}-separated)</span>` : ""}</span>`
+    : "";
+  return `<div class="upload-file-chip">${FILE_ICON}<span class="fname">${escapeHtml(f.name)}</span><span class="sep">·</span><span>${fmtBytes(f.size)}</span>${cols}</div>`;
+}
+
+function downloadCsv(filename, text) {
+  const url = URL.createObjectURL(new Blob([text], { type: "text/csv;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function csvField(v) {
+  const s = String(v);
+  return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+function downloadRealCsv() {
+  if (realExport) downloadCsv(realExport.filename, realExport.text);
+}
+
+const DOWNLOAD_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M12 15l-4-4M12 15l4-4"/><path d="M4 19h16"/></svg>`;
+
+function realActionsHtml() {
+  return `<div class="upload-actions">
+      <button type="button" class="upload-download" onclick="downloadRealCsv()">${DOWNLOAD_ICON}Download CSV</button>
+      <button type="button" class="upload-reset" onclick="resetUpload()">Score another file</button>
+    </div>`;
+}
+
+function renderRealDoorResult(r) {
+  const preds = r.predictions;
+  // door_predictions.csv, exactly as 04_Example_Submission/ lays it out.
+  realExport = {
+    filename: "door_predictions.csv",
+    text: "start_time,end_time,prediction\n" + preds.map(p => `${p.start_time},${p.end_time},${p.prediction}`).join("\n") + "\n",
+  };
+  const rows = preds.map(p => {
+    const abnormal = p.prediction === "Abnormal resistance";
+    return `<tr class="${abnormal ? "row-abnormal" : ""}">
+        <td class="mono">${escapeHtml(p.start_time)}</td>
+        <td class="mono">${escapeHtml(p.end_time)}</td>
+        <td><span class="badge ${abnormal ? "Critical" : "Normal"}">${escapeHtml(p.prediction)}</span></td>
+      </tr>`;
+  }).join("");
+  const normal = r.n_segments - r.n_abnormal;
+
+  document.getElementById("uploadZoneWrap").hidden = true;
+  document.getElementById("uploadResult").innerHTML = `
+    ${fileChipHtml()}
+    <div class="upload-summary-row">
+      <div class="upload-stat"><div class="v">${r.n_segments.toLocaleString("en-US")}</div><div class="k">Door cycles detected</div></div>
+      <div class="upload-stat"><div class="v" style="color:${r.n_abnormal ? RISK_COLORS.Critical : RISK_COLORS.Normal}">${r.n_abnormal.toLocaleString("en-US")}</div><div class="k">Abnormal resistance</div></div>
+      <div class="upload-stat"><div class="v" style="color:${RISK_COLORS.Normal}">${normal.toLocaleString("en-US")}</div><div class="k">Normal</div></div>
+      <div class="upload-stat"><div class="v">${r.n_rows.toLocaleString("en-US")}</div><div class="k">Rows in file</div></div>
+    </div>
+    <div class="sub-note" style="margin-bottom:10px;">
+      Each door cycle is scored by an autoencoder trained on real PS3 Door data; a cycle whose reconstruction error is above
+      ${r.threshold.toFixed(3)} is flagged. That cut-off sits at the 75th percentile of normal cycles, so some Normal cycles are expected to be flagged too.
+    </div>
+    <div class="upload-table-wrap">
+      <table>
+        <thead><tr><th>Start time</th><th>End time</th><th>Prediction</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    ${realActionsHtml()}`;
+}
+
+function renderRealRailResult(r) {
+  const info = RAIL_CLASSES[r.prediction] || { fault: r.prediction !== "Normal", text: "" };
+  // rail_predictions.csv, exactly as 04_Example_Submission/ lays it out.
+  realExport = {
+    filename: "rail_predictions.csv",
+    text: `file_id,prediction\n${csvField(r.file_id)},${r.prediction}\n`,
+  };
+  const order = ["Normal", "Side I", "Side II"];
+  const probs = order.filter(c => c in r.probabilities).map(c => {
+    const pct = r.probabilities[c] * 100;
+    const top = c === r.prediction;
+    return `<div class="trace-step real-prob-row ${top ? "top" : ""} ${top && info.fault ? "fault" : ""}">
+        <div class="trace-dot ${top ? "on" : ""}"></div>
+        <div style="flex:1;">
+          <div class="st-title">${c}</div>
+          <div class="real-prob-bar"><i style="width:${Math.max(0.5, pct).toFixed(1)}%"></i></div>
+        </div>
+        <div class="pct">${pct.toFixed(1)}%</div>
+      </div>`;
+  }).join("");
+  const top = r.probabilities[r.prediction];
+
+  document.getElementById("uploadZoneWrap").hidden = true;
+  document.getElementById("uploadResult").innerHTML = `
+    ${fileChipHtml()}
+    <div class="real-pred-card ${info.fault ? "fault" : ""}">
+      <div class="real-pred-k">Prediction — ${escapeHtml(r.file_id)}</div>
+      <div class="real-pred-v">
+        <span class="badge ${info.fault ? "Critical" : "Normal"}">${escapeHtml(r.prediction)}</span>
+        ${top != null ? `<span class="conf">${(top * 100).toFixed(1)}% model confidence · ${r.n_rows.toLocaleString("en-US")} rows</span>` : ""}
+      </div>
+      ${info.text ? `<div class="real-pred-explain">${info.text}</div>` : ""}
+    </div>
+    <div class="fleet-table-title" style="margin-bottom:4px;">Class probabilities</div>
+    <div>${probs}</div>
+    ${realActionsHtml()}`;
+}
+
+async function handleRealUpload(file) {
+  if (!file) return;
+  const kind = uploadState.real;
+  const seq = ++uploadSeq;
+  realUploadFile = { name: file.name, size: file.size, cols: null };
+  if (!/\.csv$/i.test(file.name)) {
+    uploadError(`Real-data mode reads <b>.csv</b> files only — ${escapeHtml(file.name)} isn't one.`, fileChipHtml());
+    return;
+  }
+  realUploadFile.cols = await peekCsvColumns(file);
+  if (seq !== uploadSeq) return;
+  uploadBusy(null, fileChipHtml());
+  const form = new FormData();
+  form.append("file", file);
+  try {
+    const res = await fetch(API_BASE + REAL_ENDPOINTS[kind], { method: "POST", body: form });
+    const data = await res.json().catch(() => ({}));
+    if (seq !== uploadSeq) return;   // the mode was switched, or another file dropped, while this was in flight
+    if (!res.ok) {
+      const d = data.detail;
+      uploadError(escapeHtml(typeof d === "string" ? d : d ? JSON.stringify(d) : `Upload failed (${res.status}).`), fileChipHtml());
+      return;
+    }
+    (kind === "door" ? renderRealDoorResult : renderRealRailResult)(data);
+  } catch (e) {
+    console.error(e);
+    if (seq !== uploadSeq) return;
+    uploadError("Could not reach the API. Is it running on " + API_BASE + "?", fileChipHtml());
   }
 }
 
 function initUpload() {
   const zone = document.getElementById("dropZone");
   const input = document.getElementById("uploadInput");
+
+  document.querySelectorAll("#uploadPanel .upload-seg-btn").forEach(b =>
+    b.addEventListener("click", () => {
+      const mode = b.dataset.mode || uploadState.mode, real = b.dataset.real || uploadState.real;
+      if (mode === uploadState.mode && real === uploadState.real) return;   // don't wipe a result for a no-op click
+      setUploadMode(mode, real);
+    }));
 
   zone.addEventListener("click", () => input.click());
   zone.addEventListener("keydown", e => {
@@ -3717,29 +4177,30 @@ function escapeHtml(s) {
 // <body> decides what is visible -- the data, endpoints and scoring are
 // identical in every role.
 
+const DEFAULT_ROLE = "operator"; // the most immediately actionable view for a first-time viewer
+
 const ROLES = {
-  operator: "Triage view — what to pull, and in what order.",
-  engineer: "Adds the why — signals, decision trace, model behaviour.",
-  analyst:  "Everything, including validation and threshold tuning.",
+  operator: "What to pull, and when.",
+  engineer: "Why it was flagged.",
+  analyst:  "The model and the case.",
 };
 
 function setRole(role, userInitiated) {
-  if (!ROLES[role]) role = "analyst";
+  if (!ROLES[role]) role = DEFAULT_ROLE;
   document.body.dataset.role = role;
   document.querySelectorAll(".role-tab").forEach(b =>
     b.setAttribute("aria-selected", String(b.dataset.role === role)));
   try { localStorage.setItem("railpulse.role", role); } catch (e) { /* private mode */ }
   renderChatChips();
-  // The open unit panel changes shape by role, so re-render it in place.
-  if (selectedUnit && unitDetailCache) renderUnitDetail(unitDetailCache);
+  autoSelectWorstForEngineer();
   // Switching view is navigation: land at the top of the new view rather
   // than halfway down wherever the previous one was scrolled to.
   if (userInitiated) window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function initRole() {
-  let saved = "analyst";
-  try { saved = localStorage.getItem("railpulse.role") || "analyst"; } catch (e) { /* ignore */ }
+  let saved = DEFAULT_ROLE;
+  try { saved = localStorage.getItem("railpulse.role") || DEFAULT_ROLE; } catch (e) { /* ignore */ }
   const tabs = [...document.querySelectorAll(".role-tab")];
   tabs.forEach((b, i) => {
     b.addEventListener("click", () => setRole(b.dataset.role, true));
@@ -3957,8 +4418,8 @@ function renderChatChips() {
   // Chips disappear once the conversation is underway -- they are a way in,
   // not a permanent menu.
   if (chatHistory.length) { wrap.innerHTML = ""; return; }
-  const role = document.body.dataset.role || "analyst";
-  wrap.innerHTML = (CHAT_CHIPS[role] || CHAT_CHIPS.analyst)
+  const role = document.body.dataset.role || DEFAULT_ROLE;
+  wrap.innerHTML = (CHAT_CHIPS[role] || CHAT_CHIPS[DEFAULT_ROLE])
     .map(q => `<button class="chat-chip">${escapeHtml(q)}</button>`).join("");
   wrap.querySelectorAll(".chat-chip").forEach(b =>
     b.addEventListener("click", () => { chatEl("chatInput").value = b.textContent; sendChat(); }));

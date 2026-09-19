@@ -1026,6 +1026,17 @@ def _require_real_models():
 def _read_uploaded_csv(file: UploadFile):
     try:
         df = pd.read_csv(file.file)
+        # A semicolon- or tab-separated export (common from Excel in some
+        # locales) parses as ONE column; retry with the separator it shows.
+        if df.shape[1] == 1:
+            first = str(df.columns[0])
+            for sep in (";", "\t"):
+                if sep in first:
+                    file.file.seek(0)
+                    df = pd.read_csv(file.file, sep=sep)
+                    break
+    except UnicodeDecodeError:
+        raise HTTPException(400, "the file is not UTF-8 text — re-save it as plain CSV (UTF-8) and try again")
     except Exception as e:  # noqa: BLE001
         raise HTTPException(400, f"could not parse uploaded file as CSV: {e}")
     return df
