@@ -178,5 +178,20 @@
       "recommended_inspection": "No action is required at this time. If convenient during a routine depot visit, a technician could spot-check the battery charger output voltage and confirm HVAC operating mode at the time of reading to verify the low current draw matches the expected demand setting.",
       "disclaimer": "AI-assisted suggestion generated from this unit's pipeline output -- not a confirmed diagnosis."
     }
+  },
+  "BOGIE_04_1": {
+    "fingerprint": "e115506d15c54c61",
+    "model": "claude-opus-5",
+    "generated_at": "2026-09-19T02:53:17+00:00",
+    "response": {
+      "unit_id": "BOGIE_04_1",
+      "status": "ok",
+      "model": "claude-opus-5",
+      "generated_at": "2026-09-19T02:53:17+00:00",
+      "why_flagged": "The autoencoder reconstruction error is 229.1754, far above the Critical threshold of 0.7063, so this bogie is flagged at the highest risk level. The dominant contributor is friction brake capacity at 79.75%, which is 33.32 sigma below the healthy-fleet mean of 97.9998% - a very large drop for a signal where low is bad. Secondary, much smaller deviations include axle bearing temperature at 40.99 C (+1.60 sigma) and vibration RMS at 0.3945 (+1.12 sigma), while traction motor RPM sits at 61.7 (-1.63 sigma) and traction motor temperature at 58.79 C (-1.09 sigma).",
+      "predicted_issue": "One plausible explanation is friction brake wear or reduced braking effectiveness on this bogie - for example worn pads or shoes, or a loss of actuating force - which would show as a sustained fall in reported brake capacity. The mild rise in axle bearing temperature and vibration is consistent with added drag or uneven running, though both remain close to baseline and may be incidental. This is a hypothesis from the signal pattern only, not a confirmed fault.",
+      "recommended_inspection": "With the unit stabled, have a technician visually check the friction brake assemblies on this bogie for pad/shoe wear and measure remaining friction material against the service limit, and confirm the brake actuators apply and release cleanly. While access is open, check the axle bearing for abnormal heat or roughness by hand-turn and record the readings for comparison.",
+      "disclaimer": "AI-assisted suggestion generated from this unit's pipeline output -- not a confirmed diagnosis."
+    }
   }
 }

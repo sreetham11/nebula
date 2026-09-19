@@ -173,9 +173,9 @@ is byte-identical, it just stops explaining itself.
 
 | Role | Sees | Rationale |
 |------|------|-----------|
-| **Operator** | Triage, digital twin, unit detail, work orders, live feed | Needs what to pull and in what order. Reconstruction error, the cost model and the percentile slider are not decisions they make. |
-| **Engineer** | The above plus decision trace, signal table, copilot, literature search, model validation | Needs the *why*, and the vocabulary explained. |
-| **Analyst** | Everything, including the business case and sensitivity tuning | The Part 1 view. |
+| **Operator** | Fleet triage, digital twin, unit detail, work orders, live feed | Needs what to pull and in what order. Reconstruction error, the cost model and the percentile slider are not decisions they make. |
+| **Engineer** | The above plus decision trace, signal table, copilot, literature search, model validation, CSV scoring | Needs the *why*, and the vocabulary explained. |
+| **Analyst** | Fleet table, unit detail, CSV scoring, model validation, sensitivity tuning, business case — but **not** the twin, work-order queue or live feed | Reasoning about the model and the case for it, not walking a platform. The shop-floor instruments cost a screenful each and answer nothing they asked. |
 
 The choice is remembered per browser. Every role reads the same endpoints and
 the same scores -- this hides panels, it does not compute anything different.
